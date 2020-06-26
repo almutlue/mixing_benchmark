@@ -1,0 +1,864 @@
+---
+title: "Correlation metrics with batch characteristics"
+author: "Almut Lütge"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+params:
+  sce_name:
+  sce:
+  meta:
+  metrics:
+  summary:
+  de:
+  last:
+  out_cor:
+output:
+  html_document:
+    self_contained: no
+    lib_dir: '../../docs/site_libs'
+    code_folding: hide
+    theme: journal
+    highlight: tango
+    number_sections: no
+    toc: yes
+    toc_depth: 3
+    toc_float: true
+    collapsed: no
+    smooth_scroll: yes
+---
+
+
+```{r libraries, warning=FALSE}
+suppressPackageStartupMessages({
+  library(CellMixS)
+  library(purrr)
+  library(tidyr)
+  library(plyr)
+  library(gridExtra)
+  library(scran)
+  library(cowplot)
+  library(jcolors)
+  library(ggpubr)
+  library(circlize)
+  library(viridis)
+  library(ComplexHeatmap)
+  library(scran)
+  library(magrittr)
+  library(colorspace)
+    library(corrplot)
+    library(RColorBrewer)
+    library(dplyr)
+})
+
+options(bitmapType='cairo')
+```
+
+
+### Dataset and metrics
+```{r data}
+sce_name <- unlist(c(strsplit(params$sce_name, ",")))
+metrics <- unlist(c(strsplit(params$metrics, ",")))
+
+sce_vec <- c(paste0(params$sce, sce_name, "_", params$last, "_sce.rds"))
+names(sce_vec) <- sce_name
+
+meta_vec <- c(paste0(params$meta, sce_name, "_meta.rds"))
+names(meta_vec) <- sce_name
+
+sum_vec <- c(paste0(params$summary, sce_name, ".rds"))
+names(sum_vec) <- sce_name
+
+de_vec <- c(paste0(params$de, sce_name, ".rds"))
+names(de_vec) <- sce_name
+
+out_path_cor <- params$out_cor
+
+cols_data <-c(c(jcolors('pal6'),jcolors('pal8'))[c(1,8,14,5,2:4,6,7,9:13,15:20)],jcolors('pal4'))
+names(cols_data) <- c()
+
+cols <-c(c(jcolors('pal6'),jcolors('pal8'), jcolors('pal7'))[c(1,12,18,25,27,2,4,7,3,6,8,14,9,20)],jcolors('pal4'))
+names(cols) <- c()
+```
+
+
+## Metric scores and batch characteristics
+
+```{r metric scores, warning=FALSE}
+metric_summary <- lapply(sce_name, function(sce_nam, met = metrics){
+  sce <- readRDS(sce_vec[sce_nam])
+  meta <- readRDS(meta_vec[sce_nam])
+  metric_vec <- gsub("_", ".", met)
+  metric_vec <- gsub("default", "", metric_vec)
+  metric_nam <- unique (grep(paste(metric_vec, collapse="|"),
+                             names(colData(sce)), value=TRUE))
+  metric_nam <- metric_nam[-grep("smooth", metric_nam)]
+  #exclude random batches
+  if (length(meta[["batch"]]) > 1) {
+      batch_str <- paste0("batch", seq(10, 100, 10), collapse="|")
+      metric_nam <- metric_nam[-grep(batch_str, metric_nam)]
+  }
+  # mean score
+  d <- colMeans(as.matrix(colData(sce)[, metric_nam]), na.rm = TRUE)
+  names(d) <- gsub(paste0('.', meta[["batch"]][1]), '', metric_nam)
+  # score variance
+  metric_var <- as_tibble(colData(sce)) %>%
+      group_by_at(meta[["celltype"]]) %>%
+      summarize_at(metric_nam, mean, na.rm = TRUE) %>%
+      select(-one_of(meta[["celltype"]])) %>%
+      as.matrix() %>% colVars(.,na.rm = TRUE) %>%
+      set_names(paste0("ct_var_", names(d)))
+  d <- c(d, metric_var)
+}) %>% set_names(sce_name)
+
+metric_summary <- bind_rows(!!!metric_summary) %>% set_rownames(sce_name)
+
+#### ---------- Order by metric type ----------------------------------####### 
+#(manual needs to be adjusted if new metrics are added)
+metric_fullnam <- colnames(metric_summary)[-grep( "ct_", colnames(metric_summary))]
+cms_ind <- grep("cms", metric_fullnam)
+lisi_ind <- grep("isi", metric_fullnam)
+ent_ind <- grep("entropy", metric_fullnam)
+mm_ind <- grep("mm", metric_fullnam)
+asw_ind <- grep("^asw", metric_fullnam)
+kbet_ind <- grep("kbet", metric_fullnam)
+graph_ind <- grep("graph", metric_fullnam)
+pcr_ind <- grep("pcr", metric_fullnam)
+metric_order <- metric_fullnam[c(cms_ind, lisi_ind, ent_ind, mm_ind, 
+                                       kbet_ind, asw_ind, graph_ind, pcr_ind)]
+names(cols) <- metric_fullnam
+cols <- cols[metric_fullnam]
+####--------------------------------------------------------------------########
+
+
+```
+
+
+Per celltype metric scores and batch characteristics
+```{r metric scores per celltype}
+
+ct_summary <- lapply(sce_name, function(sce_nam, met = metrics){
+    gc()
+  sce <- readRDS(sce_vec[sce_nam])
+  meta <- readRDS(meta_vec[sce_nam])
+  de <- readRDS(de_vec[sce_nam])
+  metric_vec <- gsub("_", ".", met)
+  metric_vec <- gsub("default", "", metric_vec)
+  metric_nam <- unique (grep(paste(metric_vec, collapse="|"),
+                             names(colData(sce)), value=TRUE))
+  metric_nam <- metric_nam[-grep("smooth", metric_nam)]
+  #exclude random batches
+  if (length(meta[["batch"]]) > 1) {
+      batch_str <- paste0("batch", seq(10, 100, 10), collapse="|")
+      metric_nam <- metric_nam[-grep(batch_str, metric_nam)]
+  }
+  nam_met <- gsub(paste0('.', meta[["batch"]][1]), '', metric_nam)
+
+  ct_mean <- as_tibble(colData(sce)) %>%
+      group_by_at(meta[["celltype"]]) %>%
+      summarize_at(metric_nam, mean, na.rm = TRUE)
+
+  n_de <- lapply(de[["table"]], function(y) vapply(y, function(x) sum(x$PValue < 0.05), numeric(1)))
+  n_de_sum <- bind_rows(!!!n_de) %>% colMeans()
+
+  mean_lfc <- lapply(de[["table"]], function(y) vapply(y, function(x) mean(abs(x$logFC)), numeric(1)))
+  mean_lfc_sum <- bind_rows(!!!mean_lfc) %>% colMeans()
+
+  mean_lfc_de <- lapply(de[["table"]], function(y) vapply(y, function(x){
+      de <- which(x$PValue < 0.05)
+      mean(abs(x[de, "logFC"]))
+      }, numeric(1)))
+  mean_lfc_de_sum <- bind_rows(!!!mean_lfc_de) %>% colMeans()
+
+  ct_mean$n_de <- n_de_sum
+  ct_mean$mean_lfc <- mean_lfc_sum
+  ct_mean$mean_lfc_de <- mean_lfc_de_sum
+  # add number of cells per celltype
+  n_ct <- table(colData(sce)[, meta[["celltype"]]])
+  ct_mean$n_cells <- n_ct[ct_mean[,meta[["celltype"]]][[1]]]
+  ct_mean
+}) %>% set_names(sce_name)
+
+
+```
+
+
+Summarized batch characteristics
+```{r batch summaries}
+batch_size <- lapply(sce_name, function(sce_nam){
+  sum <- readRDS(sum_vec[sce_nam])
+  d <- data.frame("mean_var_batch" = sum$mean_var_batch,
+                  "mean_var_celltype" = sum$mean_var_celltype,
+                  "mean_de_genes" = sum$mean_mean_n_de_genes)
+}) %>% set_names(sce_name) %>% bind_rows() %>% set_rownames(sce_name)
+
+
+size_metric <- cbind(batch_size, metric_summary)
+
+size_metric$batch_origin <- rep(NA, nrow(size_metric))
+size_metric[c("pbmc2_media", "pbmc_roche", "csf_media"), "batch_origin"] <- "media"
+size_metric[c("csf_patient", "kang", "pbmc2_pat"), "batch_origin"] <- "patient"
+size_metric[c("pancreas", "cellbench", "hca"), "batch_origin"] <- "protocol"
+size_metric$dataset <- rownames(size_metric)
+
+size_metric <- size_metric %>% arrange(desc(mean_var_batch))
+rownames(size_metric) <- size_metric$dataset
+
+#batch type
+size_metric <- size_metric %>% mutate("batch_type" = revalue(dataset, c("cellbench" = "linear",
+                                                        "csf_media" = "additive",
+                                                        "csf_patient" = "additive",
+                                                       "hca" = "none",
+                                                       "kang" = "none",
+                                                       "pancreas" = "interacting",
+                                                       "pbmc_roche" = "interacting",
+                                                       "pbmc2_media" = "interacting", 
+                                                       "pbmc2_pat" = "none")))
+
+
+
+```
+
+
+### Batch size parameter
+How does the metric scores changes along size characteristics
+```{r size hm}
+#colors
+q_size <- sequential_hcl(5, palette = "Blues")
+col_size <- colorRamp2(c(0.2, 0.1, 0.03, 0.01, 0), q_size)
+
+q_type <- qualitative_hcl(4, palette = "Dark 3")
+col_type <- c("protocol" = q_type[1], "media" = q_type[3], "patient" = q_type[4])
+col_batch_type <- c("linear" = cols_data[1], "additive" = cols_data[2], 
+                    "interacting" = cols_data[3], "none" = cols_data[4])
+
+q_size2 <- sequential_hcl(5, palette = "Mint")
+col_size2 <- colorRamp2(c(0.65, 0.5, 0.3, 0.2, 0.1), q_size2)
+
+
+pal_metr <- "Reds" 
+q_metr <- sequential_hcl(5, palette = pal_metr)
+
+col_vec <- function(mean_tab){
+    min_col <- min(mean_tab, na.rm = TRUE)
+    max_col <- max(mean_tab, na.rm = TRUE)
+    mean_col <- mean(mean_tab, na.rm = TRUE)
+    q <- quantile(mean_tab, probs = c(0.25, 0.75), na.rm = TRUE)
+    col_v <- c(min_col, q[1], mean_col, q[2], max_col)
+}
+
+
+#annotation
+ha_type = HeatmapAnnotation("batch_origin" = size_metric$batch_origin,
+                            "batch_type" = size_metric$batch_type,
+                            simple_anno_size = unit(1, "cm"),
+                            col = list("batch_origin" = col_type,
+                                       "batch_type" = col_batch_type), 
+                            annotation_height = unit(1, "cm"),
+                            annotation_name_side = "left")
+
+ha_type_only = HeatmapAnnotation("batch_type" = size_metric$batch_type,
+                            simple_anno_size = unit(0.8, "cm"),
+                            col = list("batch_type" = col_batch_type), 
+                            annotation_height = unit(0.8, "cm"),
+                            annotation_name_side = "left")
+
+### Heatmaps
+
+## Size Parameter
+
+# mean variance part
+n_batches <- t(as.matrix(size_metric[,c("mean_var_batch", "mean_var_celltype")])) %>% 
+  set_colnames(size_metric$dataset)
+rownames(n_batches) <- c("var_batch", "var_celltype")
+
+h_size1 <- Heatmap(n_batches, 
+          cluster_rows = FALSE, 
+          cluster_columns = FALSE,
+          name = "variance",
+          column_names_side = "bottom",
+          column_names_rot = 0,
+          column_names_centered = TRUE,
+          column_names_gp = gpar(fontsize = 8),
+          row_names_side = "left", 
+          col = col_size,
+          top_annotation = ha_type_only,
+          rect_gp = gpar(col= "white"))
+
+
+mean_de_genes <- t(as.matrix(size_metric$mean_de_genes))
+colnames(mean_de_genes) <- size_metric$dataset
+rownames(mean_de_genes) <- "de_genes"
+
+h_size2 <- Heatmap(mean_de_genes, 
+          cluster_rows = FALSE, 
+          cluster_columns = FALSE,
+          name = "de genes [%]",
+          column_names_side = "bottom",
+          column_names_rot = 0,
+          column_names_centered = TRUE,
+          column_names_gp = gpar(fontsize = 8),
+          row_names_side = "left", 
+          col = col_size2,
+          rect_gp = gpar(col= "white"))
+
+# Metrics
+
+#scaled matrix
+mtr_adjust <- gsub("_", ".", metrics)
+mtr_adjust <- gsub(".default", "", mtr_adjust)
+metr_str <- paste(mtr_adjust, collapse="|")
+metr_columns <- colnames(size_metric)[grep(metr_str, colnames(size_metric))]
+metr_columns <- metr_columns[-grep("ct_var", metr_columns)]
+scal_mat <- t(apply(size_metric[,metr_columns], 2, function(x){
+    scaled <- (x - min(x, na.rm = TRUE))/(max(x, na.rm = TRUE) - min(x, na.rm = TRUE))
+}))
+    
+col_scal = colorRamp2(col_vec(scal_mat), q_metr)
+
+h_scal <- Heatmap(scal_mat, 
+          cluster_rows = FALSE, 
+          cluster_columns = FALSE,
+          name = "metrics",
+          column_names_side = "bottom",
+          column_names_rot = 45,
+          column_names_centered = TRUE,
+          column_names_gp = gpar(fontsize = 8),
+          row_names_side = "left", 
+          col = col_scal,
+          show_heatmap_legend = TRUE,
+          rect_gp = gpar(col= "white"))
+
+
+
+# cms
+cms_columns <- colnames(size_metric)[grep('cms', colnames(size_metric))]
+cms_columns <- cms_columns[-grep("ct_var", cms_columns)]
+mean_cms <- t(as.matrix(size_metric[, cms_columns]))
+colnames(mean_cms) <- size_metric$datasete
+
+col_cms = colorRamp2(col_vec(mean_cms), q_metr)
+
+h_cms <- Heatmap(mean_cms, 
+          cluster_rows = FALSE, 
+          cluster_columns = FALSE,
+          name = "cms",
+          column_names_side = "bottom",
+          column_names_rot = 45,
+          column_names_centered = TRUE,
+          column_names_gp = gpar(fontsize = 8),
+          row_names_side = "left", 
+          col = col_cms,
+          show_heatmap_legend = FALSE,
+          rect_gp = gpar(col= "white"))
+
+
+# isi's
+isi_columns <- colnames(size_metric)[grep('isi', colnames(size_metric))]
+isi_columns <- isi_columns[-grep("ct_var", isi_columns)]
+mean_isi <- t(as.matrix(size_metric[, isi_columns]))
+colnames(mean_isi) <- size_metric$dataset
+
+col_isi = colorRamp2(col_vec(mean_isi), q_metr)
+
+h_isi <- Heatmap(mean_isi, 
+          cluster_rows = FALSE, 
+          cluster_columns = FALSE,
+          name = "isi's",
+          column_names_side = "bottom",
+          column_names_rot = 45,
+          column_names_centered = TRUE,
+          column_names_gp = gpar(fontsize = 8),
+          row_names_side = "left", 
+          col = col_isi,
+          show_heatmap_legend = FALSE,
+          rect_gp = gpar(col= "white"))
+
+# entropy
+mean_entropy <- t(as.matrix(size_metric$entropy))
+colnames(mean_entropy) <- size_metric$dataset
+rownames(mean_entropy) <- "entropy"
+
+col_ent = colorRamp2(col_vec(mean_entropy), q_metr)
+
+h_ent <- Heatmap(mean_entropy, 
+          cluster_rows = FALSE, 
+          cluster_columns = FALSE,
+          name = "entropy",
+          column_names_side = "bottom",
+          column_names_rot = 45,
+          column_names_centered = TRUE,
+          column_names_gp = gpar(fontsize = 8),
+          row_names_side = "left", 
+          col = col_ent,
+          show_heatmap_legend = FALSE,
+          rect_gp = gpar(col= "white"))
+
+
+# mixingMetric
+mean_mm <- t(as.matrix(size_metric$mm))
+colnames(mean_mm) <- size_metric$dataset
+rownames(mean_mm) <- "mixingMetric"
+
+col_mm = colorRamp2(col_vec(mean_mm), rev(q_metr))
+
+h_mm <- Heatmap(mean_mm, 
+          cluster_rows = FALSE, 
+          cluster_columns = FALSE,
+          name = "mixingMetric",
+          column_names_side = "bottom",
+          column_names_rot = 45,
+          column_names_centered = TRUE,
+          column_names_gp = gpar(fontsize = 8),
+          row_names_side = "left", 
+          col = col_mm,
+          show_heatmap_legend = FALSE,
+          rect_gp = gpar(col= "white"))
+
+
+# kBet
+mean_kbet <- t(as.matrix(size_metric$kbet))
+colnames(mean_kbet) <- size_metric$dataset
+rownames(mean_kbet) <- "kbet"
+
+col_kbet = colorRamp2(col_vec(mean_kbet), rev(q_metr))
+
+h_kbet <- Heatmap(mean_kbet, 
+          cluster_rows = FALSE, 
+          cluster_columns = FALSE,
+          name = "kbet",
+          column_names_side = "bottom",
+          column_names_rot = 45,
+          column_names_centered = TRUE,
+          column_names_gp = gpar(fontsize = 8),
+          row_names_side = "left", 
+          col = col_kbet,
+          show_heatmap_legend = FALSE,
+          rect_gp = gpar(col= "white"))
+
+# pcr
+mean_pcr <- t(as.matrix(size_metric$pcr))
+colnames(mean_pcr) <- size_metric$dataset
+rownames(mean_pcr) <- "pcr"
+
+col_pcr = colorRamp2(col_vec(mean_pcr), rev(q_metr))
+
+h_pcr <- Heatmap(mean_pcr, 
+          cluster_rows = FALSE, 
+          cluster_columns = FALSE,
+          name = "pcr",
+          column_names_side = "bottom",
+          column_names_rot = 45,
+          column_names_centered = TRUE,
+          column_names_gp = gpar(fontsize = 8),
+          row_names_side = "left", 
+          col = col_pcr,
+          show_heatmap_legend = FALSE,
+          rect_gp = gpar(col= "white"))
+
+# asw
+mean_asw <- t(as.matrix(size_metric$asw))
+colnames(mean_asw) <- size_metric$dataset
+rownames(mean_asw) <- "asw"
+
+col_asw = colorRamp2(col_vec(mean_asw), q_metr)
+
+h_asw <- Heatmap(mean_asw, 
+          cluster_rows = FALSE, 
+          cluster_columns = FALSE,
+          name = "asw",
+          column_names_side = "bottom",
+          column_names_rot = 45,
+          column_names_centered = TRUE,
+          column_names_gp = gpar(fontsize = 8),
+          row_names_side = "left", 
+          col = col_asw,
+          show_heatmap_legend = FALSE,
+          rect_gp = gpar(col= "white"))
+
+
+# graph_connectivity
+mean_gcon <- t(as.matrix(size_metric$graph_connectivity))
+colnames(mean_gcon) <- size_metric$dataset
+rownames(mean_gcon) <- "graph_connectivity"
+
+col_gcon = colorRamp2(col_vec(mean_gcon), rev(q_metr))
+
+h_gcon <- Heatmap(mean_gcon, 
+          cluster_rows = FALSE, 
+          cluster_columns = FALSE,
+          name = "graph_connectivity",
+          column_names_side = "bottom",
+          column_names_rot = 45,
+          column_names_centered = TRUE,
+          column_names_gp = gpar(fontsize = 8),
+          row_names_side = "left", 
+          col = col_gcon,
+          show_heatmap_legend = FALSE,
+          rect_gp = gpar(col= "white"))
+
+#LEGENDcols
+col_fun = colorRamp2(c(0, 0.25, 0.5, 0.75, 1), rev(q_metr))
+lgd = Legend(col_fun = col_fun, title = "relative batch size", at = c(0, 0.5, 1), 
+    labels = c("low", "median", "high"))
+
+
+h_list <-  h_size1 %v% h_size2 %v% h_cms %v% h_isi %v% h_mm %v% h_ent %v% h_kbet %v% h_asw %v% h_gcon %v% h_pcr
+h_list2 <- h_size1 %v% h_size2 %v% h_scal
+
+draw(h_list, annotation_legend_list = list(lgd))
+draw(h_list2)
+```
+
+Correlation with batch size parameters
+```{r size cor, fig.width=10, fig.height=10}
+size_columns <- colnames(batch_size)[!colnames(batch_size) %in% "mean_var_celltype"]
+size_mat <- size_metric[, c(metr_columns, size_columns)]
+size_cor <- cor(size_mat, use = "complete.obs", method = "spearman")
+
+###------------------ metric order -----------------------------------#########
+cms_ind <- grep("cms", colnames(size_cor))
+lisi_ind <- grep("isi", colnames(size_cor))
+ent_ind <- grep("entropy", colnames(size_cor))
+mm_ind <- grep("mm", colnames(size_cor))
+asw_ind <- grep("^asw", colnames(size_cor))
+kbet_ind <- grep("kbet",colnames(size_cor))
+graph_ind <- grep("graph", colnames(size_cor))
+pcr_ind <- grep("pcr", colnames(size_cor))
+size_ind <- grep("mean_", colnames(size_cor))
+metric_order <- colnames(size_cor)[c(size_ind, cms_ind, lisi_ind, ent_ind, mm_ind, 
+                                       kbet_ind, asw_ind, graph_ind, pcr_ind)]
+###------------------ metric reorder -----------------------------------#######
+size_cor <- size_cor[metric_order, metric_order]
+
+
+corrplot(size_cor, 
+         type="upper", 
+         order="original",
+         hclust.method = "complete",
+         col=brewer.pal(n=8, name="PuOr"),
+         addgrid.col = NA,
+         addCoef.col = "black",
+         diag = FALSE)
+
+#save correlation
+saveRDS(size_cor, out_path_cor)
+
+```
+
+## Per celltype metric score
+
+```{r ct metric score}
+size_hm <- function(dataset) {
+    ### Heatmaps
+    ct_mat <- ct_summary[[dataset]]
+    ct_mat <- ct_mat[order(ct_mat$mean_lfc_de),]
+    n_batches <- t(as.matrix(ct_mat[,c("mean_lfc", "mean_lfc_de")])) 
+    col_size <- colorRamp2(rev(col_vec(n_batches)), q_size)
+    
+    h_size1 <- Heatmap(n_batches, 
+          column_title = dataset,
+          cluster_rows = FALSE, 
+          cluster_columns = FALSE,
+          name = "mean_lfc",
+          column_names_side = "bottom",
+          column_names_rot = 0,
+          column_names_centered = TRUE,
+          column_names_gp = gpar(fontsize = 8),
+          row_names_side = "left", 
+          col = col_size,
+          rect_gp = gpar(col= "white"))
+
+    mean_de_genes <- t(as.matrix(ct_mat$n_de))
+    rownames(mean_de_genes) <- "de_genes"
+    col_size2 <- colorRamp2(rev(col_vec(mean_de_genes)), q_size2)
+
+    h_size2 <- Heatmap(mean_de_genes, 
+          cluster_rows = FALSE, 
+          cluster_columns = FALSE,
+          name = "#de genes",
+          column_names_side = "bottom",
+          column_names_rot = 0,
+          column_names_centered = TRUE,
+          column_names_gp = gpar(fontsize = 8),
+          row_names_side = "left", 
+          col = col_size2,
+          rect_gp = gpar(col= "white"))
+    
+    # n_genes
+    n_cells <- t(as.matrix(ct_mat$n_cells))
+    rownames(n_cells) <- "n_cells"
+    q_size3 <- sequential_hcl(5, palette = "Purples")
+    col_cells = colorRamp2(col_vec(n_cells), rev(q_size3))
+    
+    h_size3 <- Heatmap(n_cells, 
+          cluster_rows = FALSE, 
+          cluster_columns = FALSE,
+          name = "#cells",
+          column_names_side = "bottom",
+          column_names_rot = 0,
+          column_names_centered = TRUE,
+          column_names_gp = gpar(fontsize = 8),
+          row_names_side = "left", 
+          col = col_cells,
+          rect_gp = gpar(col= "white"))
+
+    # cms
+    cms_columns <- colnames(ct_mat)[grep('cms', colnames(ct_mat))]
+    mean_cms <- t(as.matrix(ct_mat[, cms_columns]))
+
+    col_cms = colorRamp2(col_vec(mean_cms), q_metr)
+
+    h_cms <- Heatmap(mean_cms, 
+          cluster_rows = FALSE, 
+          cluster_columns = FALSE,
+          name = "cms",
+          column_names_side = "bottom",
+          column_names_rot = 45,
+          column_names_centered = TRUE,
+          column_names_gp = gpar(fontsize = 8),
+          row_names_side = "left", 
+          col = col_cms,
+          show_heatmap_legend = FALSE,
+          rect_gp = gpar(col= "white"))
+
+    # isi's
+    isi_columns <- colnames(ct_mat)[grep('isi', colnames(ct_mat))]
+    mean_isi <- t(as.matrix(ct_mat[, isi_columns]))
+
+    col_isi = colorRamp2(col_vec(mean_isi), q_metr)
+
+    h_isi <- Heatmap(mean_isi, 
+          cluster_rows = FALSE, 
+          cluster_columns = FALSE,
+          name = "isi's",
+          column_names_side = "bottom",
+          column_names_rot = 45,
+          column_names_centered = TRUE,
+          column_names_gp = gpar(fontsize = 8),
+          row_names_side = "left", 
+          col = col_isi,
+          show_heatmap_legend = FALSE,
+          rect_gp = gpar(col= "white"))
+
+    # entropy
+    ent_columns <- colnames(ct_mat)[grep('entropy', colnames(ct_mat))]
+    mean_entropy <- t(as.matrix(ct_mat[, ent_columns]))
+    rownames(mean_entropy) <- "entropy"
+
+    col_ent = colorRamp2(col_vec(mean_entropy), q_metr)
+
+    h_ent <- Heatmap(mean_entropy, 
+          cluster_rows = FALSE, 
+          cluster_columns = FALSE,
+          name = "entropy",
+          column_names_side = "bottom",
+          column_names_rot = 45,
+          column_names_centered = TRUE,
+          column_names_gp = gpar(fontsize = 8),
+          row_names_side = "left", 
+          col = col_ent,
+          show_heatmap_legend = FALSE,
+          rect_gp = gpar(col= "white"))
+
+    # mixingMetric
+    mm_columns <- colnames(ct_mat)[grep('mm', colnames(ct_mat))]
+    mean_mm <- t(as.matrix(ct_mat[, mm_columns]))
+    rownames(mean_mm) <- "mixingMetric"
+
+    col_mm = colorRamp2(col_vec(mean_mm), rev(q_metr))
+
+    h_mm <- Heatmap(mean_mm, 
+          cluster_rows = FALSE, 
+          cluster_columns = FALSE,
+          name = "mixingMetric",
+          column_names_side = "bottom",
+          column_names_rot = 45,
+          column_names_centered = TRUE,
+          column_names_gp = gpar(fontsize = 8),
+          row_names_side = "left", 
+          col = col_mm,
+          show_heatmap_legend = FALSE,
+          rect_gp = gpar(col= "white"))
+
+
+    # kBet
+    kbet_columns <- colnames(ct_mat)[grep('kbet', colnames(ct_mat))]
+    mean_kbet <- t(as.matrix(ct_mat[, kbet_columns]))
+    rownames(mean_kbet) <- "kbet"
+    
+    if (min(mean_kbet, na.rm = TRUE) == max(mean_kbet, na.rm = TRUE)) {
+        col_kbet = colorRamp2(c(0, 0.25, 0.5, 0.75, 1), rev(q_metr))
+    } else {
+        col_kbet = colorRamp2(col_vec(mean_kbet), rev(q_metr))
+    }
+    
+
+    h_kbet <- Heatmap(mean_kbet, 
+          cluster_rows = FALSE, 
+          cluster_columns = FALSE,
+          name = "kbet",
+          column_names_side = "bottom",
+          column_names_rot = 45,
+          column_names_centered = TRUE,
+          column_names_gp = gpar(fontsize = 8),
+          row_names_side = "left", 
+          col = col_kbet,
+          show_heatmap_legend = FALSE,
+          rect_gp = gpar(col= "white"))
+    
+    # asw
+    asw_columns <- colnames(ct_mat)[grep('asw', colnames(ct_mat))]
+    mean_asw <- t(as.matrix(ct_mat[, asw_columns]))
+
+    col_asw = colorRamp2(col_vec(mean_asw), rev(q_metr))
+
+    h_asw <- Heatmap(mean_asw, 
+          cluster_rows = FALSE, 
+          cluster_columns = FALSE,
+          name = "asw",
+          column_names_side = "bottom",
+          column_names_rot = 45,
+          column_names_centered = TRUE,
+          column_names_gp = gpar(fontsize = 8),
+          row_names_side = "left", 
+          col = col_asw,
+          show_heatmap_legend = FALSE,
+          rect_gp = gpar(col= "white"))
+    
+    #LEGEND
+    col_fun = colorRamp2(c(0, 0.25, 0.5, 0.75, 1), rev(q_metr))
+    lgd = Legend(col_fun = col_fun, title = "relative batch size", at = c(0, 0.5, 1), 
+    labels = c("low", "median", "high"))
+
+    h_list <-  h_size1 %v% h_size2 %v% h_size3 %v% h_cms %v% h_isi %v% h_mm %v% h_ent %v% h_kbet %v% h_asw
+    draw(h_list, annotation_legend_list = list(lgd))
+}
+
+
+```
+
+
+
+### Celltype score distributions {.tabset}
+How does the metric scores change across celltypes
+```{r hm, warning=FALSE, message=FALSE, echo=FALSE}
+
+template_hm <- c(
+    "#### {{dataset}}\n",
+    "```{r hm{{dataset}}, echo = FALSE}\n",
+    "h <- size_hm('{{dataset}}')\n",
+    "```\n",
+    "\n"
+  )
+
+plots_hm <- lapply(sce_name, 
+  function(dataset) knitr::knit_expand(text = template_hm)
+)
+```
+`r knitr::knit(text = unlist(plots_hm))`
+
+## Celltype metric correlations
+Correlation with batch size parameters
+```{r size cor ct, fig.width=6, fig.height=6}
+cor_fun <- function(dataset){
+    ct_mat <- ct_summary[[dataset]]
+    # unify metric names
+    met <- colnames(ct_mat)
+    metric_nam <- met[grep(metr_str, met)]
+    ind_kmin <- grep("kmin", metric_nam)
+    ind_bmin <- grep("bmin", metric_nam)
+    metric_nam <- gsub("_.*", "", metric_nam)
+    metric_nam <- gsub("\\..*", "", metric_nam)
+    metric_nam[ind_bmin] <- "cms.bmin80"
+    metric_nam[ind_kmin] <- "cms.kmin80"
+    colnames(ct_mat)[grep(metr_str, met)] <- metric_nam
+    # get correlations
+    ct_mat <- ct_mat[order(ct_mat$mean_lfc),]
+    ct_mat <- ct_mat %>% filter(n_cells > 100) %>% select_if(is.numeric) %>%
+        select(-n_cells)
+    size_cor <- cor(ct_mat, use = "complete.obs", method = "spearman")
+}
+
+cor_list <- lapply(sce_name, cor_fun) %>% set_names(sce_name)
+cor_combine <- do.call(rbind, cor_list) 
+cor_all <- as.data.frame(cor_combine) %>% 
+    mutate("dataset" = rep(names(cor_list), each = nrow(cor_list[[1]])), 
+           "metric" =  rownames(cor_combine)) %>% 
+    filter(!metric %in% c("mean_lfc", "mean_lfc_de", "n_de"))
+
+#add batch type
+cor_all$dataset <- as.factor(cor_all$dataset)
+cor_all <- cor_all %>% mutate("batch_type" = revalue(dataset, c("cellbench" = "linear",
+                                                        "csf_media" = "additive",
+                                                        "csf_patient" = "additive",
+                                                       "hca" = "none",
+                                                       "kang" = "none",
+                                                       "pancreas" = "interacting",
+                                                       "pbmc_roche" = "interacting",
+                                                       "pbmc2_media" = "interacting", 
+                                                       "pbmc2_pat" = "none")))
+
+cor_all[is.na(cor_all)] <- 0
+
+ggplot(cor_all, aes(x = metric , y = mean_lfc_de, fill = batch_type)) + 
+    geom_boxplot(fill = cols[1:length(levels(as.factor(cor_all$metric)))], alpha = 0.5) + 
+    geom_dotplot(binaxis='y', stackdir='center', dotsize=0.5) +
+    scale_fill_manual(values=cols_data) + 
+    theme_bw() +
+    theme(axis.text.x = element_text(face="bold", size=10, angle=45))
+
+
+ggplot(cor_all, aes(x = metric , y = mean_lfc, fill = batch_type)) + 
+    geom_boxplot(fill = cols[1:length(levels(as.factor(cor_all$metric)))], alpha = 0.5) +
+    geom_dotplot(binaxis='y', stackdir='center', dotsize=0.5) +
+    scale_fill_manual(values=cols_data) + 
+    theme_bw() +
+    theme(axis.text.x = element_text(face="bold", size=10, angle=45))
+
+
+ggplot(cor_all, aes(x = metric , y = n_de, fill = batch_type)) + 
+    geom_boxplot(fill = cols[1:length(levels(as.factor(cor_all$metric)))], alpha = 0.5) +
+    geom_dotplot(binaxis='y', stackdir='center', dotsize=0.5) +
+    scale_fill_manual(values=cols_data) + 
+    theme_bw() +
+    theme(axis.text.x = element_text(face="bold", size=10, angle=45))
+
+
+plot_cor <- function(dataset){
+    cor_tab <- cor_list[[dataset]]
+    cor_tab[is.na(cor_tab)] <- 0
+    corrplot(cor_tab, 
+         type="upper", 
+         order="hclust",
+         hclust.method = "complete",
+         col=brewer.pal(n=8, name="PuOr"),
+         addgrid.col = NA,
+         addCoef.col = "black")
+}
+
+
+```
+
+
+### Celltype score correlations {.tabset}
+How does the metric scores correlate across celltypes
+```{r cor metric ct, warning=FALSE, message=FALSE, echo=FALSE}
+template_cor <- c(
+    "#### {{dataset}}\n",
+    "```{r cor{{dataset}}, echo = FALSE, fig.width = 9, fig.height = 9}\n",
+    "c <- plot_cor('{{dataset}}')\n",
+    "```\n",
+    "\n"
+  )
+
+plots_cor <- lapply(sce_name, 
+  function(dataset) knitr::knit_expand(text = template_cor)
+)
+```
+
+`r knitr::knit(text = unlist(plots_cor))`
+
+
+```{r}
+sessionInfo()
+```
+

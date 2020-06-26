@@ -1,0 +1,13 @@
+name: "Metric benchmark snakemake"
+navbar:
+  title: "Batch metric benchmark"
+  type: inverse
+  left:
+    - text: "Benchmark tasks"
+      href: index_benchmark_tasks.html
+    - text: "Metrics"
+      href: index_metrics.html
+    - text: "batch_characterization/simulation"
+      href: index_characterization.html
+    - text: "Summary"
+      href: index_summary.html

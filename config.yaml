@@ -1,0 +1,65 @@
+### Note: To keep the suggested file and directory structure run "snakemake dir_setup"
+### This will generate a subfolder structure as presented here within your directory. 
+### It will only work if an 'out' and a 'log' folder already exist
+
+## general settings
+ROOT: "."
+R_lib: "renv/library/"
+src: "src/"
+log: "logs/"
+out: "out/"
+
+## Path to scripts
+src_data: "src/datasets/"
+src_meta: "src/meta_files/"
+src_data_mgt: "src/data_management/"
+src_analysis: "src/analysis/"
+src_com: "src/comparison/"
+src_summary: "src/summary_files/"
+src_de: "src/de_files/"
+src_index: "src/index_files/"
+
+
+## Path to output 
+out_time: "out/time/"
+out_cms_def: "out/cms_default/"
+out_cms_kmin: "out/cms_kmin/"
+out_cms_bmin: "out/cms_bmin/"
+out_mm: "out/mm/"
+out_wisi: "out/wisi/"
+out_isi: "out/isi/"
+out_entr: "out/entropy/"
+out_lisi: "out/lisi/"
+out_asw: "out/asw/"
+out_kbet: "out/kbet/"
+out_pcr: "out/pcr/"
+out_gcon: "out/graph_connectivity/"
+out_cor: "out/cor_summary/"
+out_res: "out/res/"
+
+## Path to logs
+log_dir: "log/dir_setup/"
+log_cms_def: "log/cms_default/"
+log_cms_kmin: "log/cms_kmin/"
+log_cms_bmin: "log/cms_bmin/"
+log_mm: "log/mm/"
+log_wisi: "log/wisi/"
+log_isi: "log/isi/"
+log_entr: "log/entropy/"
+log_lisi: "log/lisi/"
+log_asw: "log/asw/"
+log_kbet: "log/kbet/"
+log_pcr: "log/pcr/"
+log_gcon: "log/graph_connectivity/"
+
+
+## Path to website files
+docs: "docs/"
+docs_libs: "docs/site_libs"
+
+
+## Subdirectory names 
+### Names of subfdirectories to be generated in output and log directories
+### Here they correspond to the rule names
+dir_names: time cms_default cms_kmin cms_bmin mm isi wisi entropy lisi kbet asw pcr gcon out_cor out_res
+

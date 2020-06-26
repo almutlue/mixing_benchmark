@@ -1,0 +1,312 @@
+---
+title: "Metrics Scaling random"
+author: "Almut Lütge"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+params:
+  data:
+  meta:
+  metrics:
+  out_cor:
+output:
+  html_document:
+    self_contained: no
+    lib_dir: '../../docs/site_libs'
+    code_folding: show
+    theme: journal
+    highlight: tango
+    number_sections: no
+    toc: yes
+    toc_depth: 3
+    toc_float: true
+    collapsed: no
+    smooth_scroll: yes
+---
+
+
+```{r dataset name, include=FALSE}
+param <- readRDS(params$meta)
+dataset_name <- param[["dataset_name"]]
+
+```
+
+## `r paste(dataset_name)`
+
+[Back to home](index.html)
+
+```{r libraries, warning=FALSE}
+suppressPackageStartupMessages({
+  library(scater)
+  library(CellMixS)
+  library(purrr)
+  library(tidyr)
+  library(dplyr)
+  library(gridExtra)
+  library(scran)
+  library(cowplot)
+  library(jcolors)
+  library(ggpubr)
+  library(hrbrthemes)
+  library(magrittr)
+  library(viridis)
+  library(scales)
+  library(corrplot)
+  library(RColorBrewer)
+})
+
+options(bitmapType='cairo')
+```
+
+
+### Dataset and metrics
+```{r data}
+sce <- readRDS(params$data)
+metrics <- params$metrics
+metrics
+
+out_path_cor <- params$out_cor
+
+dim_red_nam <- ifelse("TSNE" %in% reducedDimNames(sce), "TSNE", "tsne")
+
+cols_data <-c(c(jcolors('pal6'),jcolors('pal8'))[c(1,8,14,5,2:4,6,7,9:13,15:20)],jcolors('pal4'))
+names(cols_data) <- c()
+
+cols <-c(c(jcolors('pal6'),jcolors('pal8'), jcolors('pal7'))[c(1,12,18,25,27,2,4,7,3,6,8,14,9,20)],jcolors('pal4'))
+
+```
+
+## Visualize metric scores
+
+### Effects on score distribution - histograms {.tabset}
+How does the metric scores change across batches
+```{r vi hist, warning=FALSE, message=FALSE, echo=FALSE}
+metrics <- c(names(colData(sce))[names(colData(sce)) %>% grepl("\\_batch0", .)], names(colData(sce))[names(colData(sce)) %>% grepl("\\.batch0", .)])
+metrics <- gsub("_batch0", "", metrics)
+metrics <- gsub(".batch0", "", metrics)
+metrics[which(metrics %in% "cms")] <- "cms.batch"
+metrics_raw <- metrics[!grepl("smooth", metrics)]
+
+#### ---------- Order by metric type ----------------------------------####### 
+#(manual needs to be adjusted if new metrics are added)
+cms_ind <- grep("cms", metrics_raw)
+lisi_ind <- grep("isi", metrics_raw)
+ent_ind <- grep("entropy", metrics_raw)
+mm_ind <- grep("mm", metrics_raw)
+asw_ind <- grep("sw", metrics_raw)
+kbet_ind <- grep("kbet", metrics_raw)
+graph_ind <- grep("graph", metrics_raw)
+pcr_ind <- grep("pcr", metrics_raw)
+metric_order <- metrics_raw[c(cms_ind, lisi_ind, ent_ind, mm_ind, 
+                                       kbet_ind, asw_ind, graph_ind, pcr_ind)]
+names(cols) <- metric_order
+#cols <- cols[names(res_by_met[[1]])]
+####--------------------------------------------------------------------########
+
+
+
+template <- c(
+    "#### {{nm}}\n",
+    "```{r hist{{nm}}, echo = FALSE}\n",
+    "visHist(sce, metric = '{{nm}}', n_col = 3)\n",
+    "```\n",
+    "\n"
+  )
+
+plots <- lapply(metrics_raw, 
+  function(nm) knitr::knit_expand(text = template)
+)
+```
+
+`r knitr::knit(text = unlist(plots))`
+
+### Effects on score distribution - Range plots {.tabset}
+How does the metric scores change across batches
+```{r vi range, warning=FALSE, message=FALSE, echo=FALSE}
+
+template_range <- c(
+    "#### {{nm}}\n",
+    "```{r range{{nm}}, echo = FALSE}\n",
+    "visIntegration(sce, metric = '{{nm}}', metric_name = '{{nm}}')\n",
+    "```\n",
+    "\n"
+  )
+
+plots_range <- lapply(metrics_raw, 
+  function(nm) knitr::knit_expand(text = template_range)
+)
+```
+`r knitr::knit(text = unlist(plots_range))`
+
+
+### Cellspecific score {.tabset}
+How does the metric scores change across batches
+```{r vi metric, warning=FALSE, message=FALSE, echo=FALSE}
+
+template_tsne <- c(
+    "#### {{nm}}\n",
+    "```{r tsne{{nm}}, echo = FALSE, fig.height=10,fig.width=10}\n",
+    "metric_all_b <- as_tibble(colData(sce)) %>% select(starts_with('{{nm}}')) %>% colnames()",
+    "p <- do.call(plot_grid, c(lapply(metric_all_b, function(metric_b){
+        visMetric(sce, metric_var = metric_b, dim_red = dim_red_nam) + ggtitle('') +
+                guides(color=guide_legend(title='{{nm}}'))
+    }), ncol = 3))",
+    "p\n",
+    "```\n",
+    "\n"
+  )
+
+plots_tsne <- lapply(metrics, 
+  function(nm, dim_red_nam = dim_red_nam) knitr::knit_expand(text = template_tsne)
+)
+```
+
+`r knitr::knit(text = unlist(plots_tsne))`
+
+
+## Mean score trend {.tabset}
+```{r mean score}
+
+mean_score <- function(score){
+  score_all_b <- as_tibble(colData(sce)) %>% select(starts_with(score)) %>% 
+    colMeans(na.rm = TRUE)
+  mean_tab <- data.frame(score = score_all_b,
+                         "randomness" = seq.int(from = 0, to = 100, by = 10))
+  #get colour index
+  col_ind <- which(metrics_raw %in% score)
+  p <- ggplot(mean_tab, aes(x=randomness, y=score)) +
+    geom_point(size=4, color=cols[score]) + 
+    geom_smooth(method = lm, se = FALSE, color = "black") +
+    labs(title=score, x="percent mixed label", y = paste0("average ", score)) +
+    scale_color_manual(values=cols) + theme_classic() + stat_cor(method = "pearson")
+  plot(p)
+}
+
+template_cor <- c(
+    "### {{nm}}\n",
+    "```{r cor{{nm}}, echo = FALSE}\n",
+    "mean_score('{{nm}}')\n",
+    "```\n",
+    "\n"
+  )
+
+plots_cor <- lapply(metrics_raw, 
+  function(nm) knitr::knit_expand(text = template_cor)
+)
+```
+
+`r knitr::knit(text = unlist(plots_cor))`
+
+## Summary/Comparison
+
+```{r sum comp}
+#correlation coeff
+scaling_sum <- lapply(metrics_raw, function(score){
+  score_all_b <- as_tibble(colData(sce)) %>% select(starts_with(score)) %>% 
+    colMeans(na.rm = TRUE)
+  mean_tab <- data.frame(score = score_all_b,
+                         "randomness" = seq.int(from = 0, to = 100, by = 10))
+  r <- cor(mean_tab$score, mean_tab$randomness, method = "spearman")
+  }) %>% set_names(metrics_raw) %>% bind_cols() %>% t() %>%
+  set_colnames("R") %>% as_tibble(.) %>% mutate("metric" = metrics_raw)
+
+
+#"effect size"
+effect_sum <- lapply(metrics_raw, function(score){
+  score_all_b <- as_tibble(colData(sce)) %>% select(starts_with(score)) %>% 
+    colMeans(na.rm = TRUE)
+  effect_tab <- data.frame(score = score_all_b,
+                         "percent_score" = score_all_b/score_all_b[11])
+  effect_tab_sum <- data.frame("min" = ifelse(score_all_b[1] < score_all_b[11], 
+                                              effect_tab[1, "percent_score"],
+                                               1/score_all_b[1]), 
+                               "range" = effect_tab[11,"score"] - effect_tab[1,"score"])
+  }) %>% set_names(metrics_raw) %>% bind_rows() 
+
+scaling_sum <- cbind(scaling_sum, effect_sum)
+
+
+```
+
+# Combined results
+```{r}
+#scale means
+mean_res <- lapply(metrics_raw, function(score){
+  score_all_b <- as_tibble(colData(sce)) %>% select(starts_with(score)) %>% 
+    colMeans(na.rm = TRUE)
+}) %>% set_names(metrics_raw) %>% bind_cols() %>% 
+    mutate(randomness = seq.int(from = 0, to = 100, by = 10))
+
+#correlation
+cor_metrics <- cor(mean_res, method = "spearman")
+
+dir_ind <- which(!colnames(mean_res) %in% c("randomness", "mm", "kbet", "pcr"))
+mean_res[, dir_ind] <- mean_res[, dir_ind] * -1
+scale_res <-  mean_res %>% select(-randomness) %>% scale() %>% as.data.frame()
+scale_res$randomness <- mean_res$randomness
+
+mean_long <- scale_res %>% pivot_longer(-randomness, names_to = "metric",
+                                           values_to = "scaled_result")
+
+mean_long$metric <- factor(mean_long$metric,levels = metric_order)
+
+ggplot(mean_long, aes(x = randomness, y = scaled_result)) +
+    geom_line(aes(color = metric)) + 
+    geom_point(aes(color = metric)) +
+    theme_bw() +
+    scale_color_manual(values = cols[levels(as.factor(mean_long$metric))]) 
+
+
+```
+
+
+
+## Separated plots
+```{r spagetti separated,  fig.width = 8, fig.height = 7}
+
+scale_long <- scale_res %>% pivot_longer(-randomness, names_to = "metric",
+                                           values_to = "scaled_score")
+
+scale_long$metric <- factor(scale_long$metric,levels = metric_order)
+
+scale_long <- scale_long %>% mutate(metric2 = metric)
+cols_rep <- rep(cols[levels(as.factor(scale_long$metric))], each = nrow(mean_res))
+p <- ggplot(scale_long, aes(x = randomness, y = scaled_score)) +
+      geom_line(data=scale_long %>% dplyr::select(-metric), aes(group=metric2),
+                 color="grey", size=0.5, alpha=0.5) + 
+      geom_line( aes(color=metric), color=cols_rep, size=1.2 ) + 
+      scale_color_viridis(discrete = TRUE) +
+      theme_ipsum() +
+      theme(
+        legend.position="none",
+        plot.title = element_text(size=14),
+        panel.grid.minor = element_blank()
+      ) +
+      ggtitle("Gradual increased randomness - starting with a strong batch effect") +
+      facet_wrap(~metric) 
+p
+
+
+```
+
+# Correlation of metrices
+```{r correlation, fig.width=9, fig.height=9}
+
+corrplot(cor_metrics, 
+         type="upper", 
+         order="original",
+         hclust.method = "complete",
+         col=brewer.pal(n=8, name="PuOr"),
+         addgrid.col = NA,
+         addCoef.col = "black",
+         diag = FALSE)
+
+#save correlation
+saveRDS(cor_metrics, out_path_cor)
+
+```
+
+
+
+```{r}
+sessionInfo()
+```
+

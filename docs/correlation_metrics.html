@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Almut Lütge" />
+
+
+<title>Correlation_metrics</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/journal.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; background-color: #f8f8f8; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+pre, code { background-color: #f8f8f8; }
+code > span.kw { color: #204a87; font-weight: bold; } /* Keyword */
+code > span.dt { color: #204a87; } /* DataType */
+code > span.dv { color: #0000cf; } /* DecVal */
+code > span.bn { color: #0000cf; } /* BaseN */
+code > span.fl { color: #0000cf; } /* Float */
+code > span.ch { color: #4e9a06; } /* Char */
+code > span.st { color: #4e9a06; } /* String */
+code > span.co { color: #8f5902; font-style: italic; } /* Comment */
+code > span.ot { color: #8f5902; } /* Other */
+code > span.al { color: #ef2929; } /* Alert */
+code > span.fu { color: #000000; } /* Function */
+code > span.er { color: #a40000; font-weight: bold; } /* Error */
+code > span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #000000; } /* Constant */
+code > span.sc { color: #000000; } /* SpecialChar */
+code > span.vs { color: #4e9a06; } /* VerbatimString */
+code > span.ss { color: #4e9a06; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #000000; } /* Variable */
+code > span.cf { color: #204a87; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #ce5c00; font-weight: bold; } /* Operator */
+code > span.pp { color: #8f5902; font-style: italic; } /* Preprocessor */
+code > span.ex { } /* Extension */
+code > span.at { color: #c4a000; } /* Attribute */
+code > span.do { color: #8f5902; font-weight: bold; font-style: italic; } /* Documentation */
+code > span.an { color: #8f5902; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #8f5902; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #8f5902; font-weight: bold; font-style: italic; } /* Information */
+
+.sourceCode .row {
+  width: 100%;
+}
+.sourceCode {
+  overflow-x: auto;
+}
+.code-folding-btn {
+  margin-right: -30px;
+}
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 61px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 66px;
+  margin-top: -66px;
+}
+.section h2 {
+  padding-top: 66px;
+  margin-top: -66px;
+}
+.section h3 {
+  padding-top: 66px;
+  margin-top: -66px;
+}
+.section h4 {
+  padding-top: 66px;
+  margin-top: -66px;
+}
+.section h5 {
+  padding-top: 66px;
+  margin-top: -66px;
+}
+.section h6 {
+  padding-top: 66px;
+  margin-top: -66px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-inverse  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Batch metric benchmark</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index_benchmark_tasks.html">Benchmark tasks</a>
+</li>
+<li>
+  <a href="index_metrics.html">Metrics</a>
+</li>
+<li>
+  <a href="index_characterization.html">batch_characterization/simulation</a>
+</li>
+<li>
+  <a href="index_summary.html">Summary</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Correlation_metrics</h1>
+<h4 class="author">Almut Lütge</h4>
+<h4 class="date">25 June, 2020</h4>
+
+</div>
+
+
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">suppressPackageStartupMessages</span>({
+  <span class="kw">library</span>(scater)
+  <span class="kw">library</span>(CellMixS)
+  <span class="kw">library</span>(purrr)
+  <span class="kw">library</span>(tidyr)
+  <span class="kw">library</span>(dplyr)
+  <span class="kw">library</span>(gridExtra)
+  <span class="kw">library</span>(scran)
+  <span class="kw">library</span>(cowplot)
+  <span class="kw">library</span>(jcolors)
+  <span class="kw">library</span>(ggpubr)
+  <span class="kw">library</span>(stringr)
+  <span class="kw">library</span>(viridis)
+  <span class="kw">library</span>(scales)
+  <span class="kw">library</span>(hrbrthemes)
+  <span class="kw">library</span>(magrittr)
+  <span class="kw">library</span>(forcats)
+  <span class="kw">library</span>(corrplot)
+  <span class="kw">library</span>(RColorBrewer)
+  <span class="kw">library</span>(gridExtra)
+  <span class="kw">library</span>(grid)
+  <span class="kw">library</span>(cowplot)
+})
+
+<span class="kw">options</span>(<span class="dt">bitmapType=</span><span class="st">&#39;cairo&#39;</span>)</code></pre></div>
+<div id="dataset-and-metrics" class="section level3">
+<h3>Dataset and metrics</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">metrics &lt;-<span class="st"> </span><span class="kw">unlist</span>(<span class="kw">c</span>(<span class="kw">strsplit</span>(params$metrics, <span class="st">&quot;,&quot;</span>)))
+chars &lt;-<span class="st"> </span><span class="kw">unlist</span>(<span class="kw">c</span>(<span class="kw">strsplit</span>(params$chars, <span class="st">&quot;,&quot;</span>)))
+
+cor_list &lt;-<span class="st"> </span><span class="kw">lapply</span>(chars, function(char){
+  cor_file &lt;-<span class="st"> </span><span class="kw">paste0</span>(params$cor_path, <span class="st">&quot;cor_&quot;</span>, char, <span class="st">&quot;.rds&quot;</span>)
+  cor &lt;-<span class="st"> </span><span class="kw">readRDS</span>(cor_file)
+}) %&gt;%<span class="st"> </span><span class="kw">set_names</span>(chars)
+
+
+<span class="co">#make sure all imputs have common metric names</span>
+metrics[<span class="kw">which</span>(metrics %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;graph_connectivity&quot;</span>, <span class="st">&quot;cms_default&quot;</span>,
+                             <span class="st">&#39;cms_kmin&#39;</span>, <span class="st">&#39;cms_bmin&#39;</span>))] &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;graph&quot;</span>, <span class="st">&quot;cms&quot;</span>, <span class="st">&quot;cms_k&quot;</span>, <span class="st">&quot;cms_b&quot;</span>)
+
+metrics &lt;-<span class="st"> </span>metrics[-<span class="kw">which</span>(metrics %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;cms_k&quot;</span>, <span class="st">&quot;cms_b&quot;</span>, <span class="st">&quot;isi&quot;</span>, <span class="st">&quot;wisi&quot;</span>))]
+
+metric_com &lt;-<span class="st"> </span>function(cor_res){
+    met_all &lt;-<span class="st"> </span><span class="kw">colnames</span>(cor_res)
+    cms_kmin &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;kmin&quot;</span>, met_all)
+    cms_bmin &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;bmin&quot;</span>, met_all)
+    cms_ind &lt;-<span class="st">  </span><span class="kw">grep</span>(<span class="st">&quot;cms(?!.*min)&quot;</span>, met_all, <span class="dt">perl =</span> <span class="ot">TRUE</span>)
+    graph_ind &lt;-<span class="st">  </span><span class="kw">grep</span>(<span class="st">&quot;graph&quot;</span>, met_all)
+    <span class="kw">colnames</span>(cor_res)[<span class="kw">c</span>(cms_ind, cms_kmin, cms_bmin)] &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&#39;cms&#39;</span>, <span class="st">&#39;cms_k&#39;</span>, <span class="st">&#39;cms_b&#39;</span>)
+    <span class="kw">colnames</span>(cor_res)[graph_ind] &lt;-<span class="st"> &quot;graph&quot;</span>
+    <span class="kw">rownames</span>(cor_res) &lt;-<span class="st"> </span><span class="kw">colnames</span>(cor_res)
+    cor_res &lt;-<span class="st"> </span>cor_res[metrics, metrics]
+}
+cor_list &lt;-<span class="st"> </span>cor_list %&gt;%<span class="st"> </span><span class="kw">map</span>(metric_com)
+
+<span class="co">#get mean of random data to weight tasks equally</span>
+rand_char &lt;-<span class="st"> </span>chars[<span class="kw">grep</span>(<span class="st">&quot;random&quot;</span>, chars)]
+cor_list[[<span class="st">&quot;random&quot;</span>]] &lt;-<span class="st"> </span><span class="kw">t</span>(<span class="kw">apply</span>(<span class="kw">simplify2array</span>(cor_list[rand_char]), <span class="dv">1</span>:<span class="dv">2</span>, 
+                                    mean, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>))
+cor_list &lt;-<span class="st"> </span>cor_list[!<span class="kw">names</span>(cor_list) %in%<span class="st"> </span>rand_char]
+
+<span class="co"># Get mean for all tasks</span>
+cor_mean &lt;-<span class="st"> </span><span class="kw">Reduce</span>(<span class="st">&quot;+&quot;</span>, cor_list)/<span class="kw">length</span>(cor_list)
+
+cols &lt;-<span class="kw">c</span>(<span class="kw">c</span>(<span class="kw">jcolors</span>(<span class="st">&#39;pal6&#39;</span>),<span class="kw">jcolors</span>(<span class="st">&#39;pal8&#39;</span>), <span class="kw">jcolors</span>(<span class="st">&#39;pal7&#39;</span>))[<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">12</span>,<span class="dv">18</span>,<span class="dv">25</span>,<span class="dv">27</span>,<span class="dv">2</span>,<span class="dv">4</span>,<span class="dv">7</span>,<span class="dv">3</span>,<span class="dv">6</span>,<span class="dv">8</span>,<span class="dv">14</span>,<span class="dv">9</span>,<span class="dv">20</span>)],<span class="kw">jcolors</span>(<span class="st">&#39;pal4&#39;</span>))
+<span class="kw">names</span>(cols) &lt;-<span class="st"> </span><span class="kw">c</span>()
+
+
+cols_data &lt;-<span class="kw">c</span>(<span class="kw">c</span>(<span class="kw">jcolors</span>(<span class="st">&#39;pal6&#39;</span>),<span class="kw">jcolors</span>(<span class="st">&#39;pal8&#39;</span>))[<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">8</span>,<span class="dv">14</span>,<span class="dv">5</span>,<span class="dv">2</span>:<span class="dv">4</span>,<span class="dv">6</span>,<span class="dv">7</span>,<span class="dv">9</span>:<span class="dv">13</span>,<span class="dv">15</span>:<span class="dv">20</span>)],<span class="kw">jcolors</span>(<span class="st">&#39;pal4&#39;</span>))
+<span class="kw">names</span>(cols_data) &lt;-<span class="st"> </span><span class="kw">c</span>()</code></pre></div>
+</div>
+<div id="visulaize-correlation" class="section level3">
+<h3>Visulaize correlation</h3>
+<div id="corrplot" class="section level4">
+<h4>Corrplot</h4>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">#### ---------- Order by metric type ----------------------------------####### 
+<span class="co">#(manual needs to be adjusted if new metrics are added)</span>
+cms_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;cms&quot;</span>, <span class="kw">colnames</span>(cor_mean))
+lisi_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;isi&quot;</span>, <span class="kw">colnames</span>(cor_mean))
+ent_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;entropy&quot;</span>, <span class="kw">colnames</span>(cor_mean))
+mm_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;mm&quot;</span>, <span class="kw">colnames</span>(cor_mean))
+asw_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;sw&quot;</span>, <span class="kw">colnames</span>(cor_mean))
+kbet_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;kbet&quot;</span>, <span class="kw">colnames</span>(cor_mean))
+graph_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;graph&quot;</span>, <span class="kw">colnames</span>(cor_mean))
+pcr_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;pcr&quot;</span>, <span class="kw">colnames</span>(cor_mean))
+metric_order &lt;-<span class="st"> </span><span class="kw">colnames</span>(cor_mean)[<span class="kw">c</span>(cms_ind, lisi_ind, ent_ind, mm_ind, 
+                                       kbet_ind, asw_ind, graph_ind, pcr_ind)]
+<span class="kw">names</span>(cols) &lt;-<span class="st"> </span>metric_order
+cols &lt;-<span class="st"> </span>cols[metric_order]
+####--------------------------------------------------------------------########
+
+cor_mean &lt;-<span class="st"> </span>cor_mean[metric_order, metric_order]
+
+
+<span class="kw">corrplot</span>(cor_mean, 
+         <span class="dt">type=</span><span class="st">&quot;upper&quot;</span>, 
+         <span class="dt">order=</span><span class="st">&quot;original&quot;</span>,
+         <span class="dt">hclust.method =</span> <span class="st">&quot;complete&quot;</span>,
+         <span class="dt">col=</span><span class="kw">brewer.pal</span>(<span class="dt">n=</span><span class="dv">10</span>, <span class="dt">name=</span><span class="st">&quot;PuOr&quot;</span>),
+         <span class="dt">addgrid.col =</span> <span class="ot">NA</span>,
+         <span class="dt">addCoef.col =</span> <span class="st">&quot;black&quot;</span>,
+         <span class="dt">diag =</span> <span class="ot">FALSE</span>)</code></pre></div>
+<p><img src="correlation_metrics_files/figure-html/corrplot-1.svg" width="768" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#Order by hclust (take absolute values as the direction of correlation is irrelevant)</span>
+cor_mean_abs &lt;-<span class="st"> </span><span class="kw">abs</span>(cor_mean)
+<span class="kw">corrplot</span>(cor_mean_abs, 
+         <span class="dt">type=</span><span class="st">&quot;upper&quot;</span>, 
+         <span class="dt">order=</span><span class="st">&quot;hclust&quot;</span>,
+         <span class="dt">hclust.method =</span> <span class="st">&quot;complete&quot;</span>,
+         <span class="dt">col=</span><span class="kw">brewer.pal</span>(<span class="dt">n=</span><span class="dv">10</span>, <span class="dt">name=</span><span class="st">&quot;PuOr&quot;</span>),
+         <span class="dt">addgrid.col =</span> <span class="ot">NA</span>,
+         <span class="dt">addCoef.col =</span> <span class="st">&quot;black&quot;</span>,
+         <span class="dt">diag =</span> <span class="ot">FALSE</span>)</code></pre></div>
+<p><img src="correlation_metrics_files/figure-html/corrplot-2.svg" width="768" /> #### Visualize correlation contributions</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cor_list &lt;-<span class="st"> </span>cor_list %&gt;%<span class="st"> </span><span class="kw">map</span>(as.data.frame) 
+cor_wide &lt;-<span class="st"> </span><span class="kw">bind_rows</span>(cor_list, <span class="dt">.id =</span> <span class="st">&quot;benchmark_task&quot;</span>) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">metric =</span> <span class="kw">rep</span>(<span class="kw">rownames</span>(cor_list[[<span class="dv">1</span>]]), <span class="kw">length</span>(cor_list)))
+
+cor_long &lt;-<span class="st"> </span>cor_wide %&gt;%<span class="st"> </span><span class="kw">pivot_longer</span>(-<span class="kw">c</span>(metric, benchmark_task), <span class="dt">names_to =</span> <span class="st">&quot;metric2&quot;</span>,
+                                           <span class="dt">values_to =</span> <span class="st">&quot;correlation&quot;</span>)
+
+
+cor_bin_long &lt;-<span class="st"> </span>cor_long %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">correlation_bi =</span> <span class="kw">ifelse</span>(<span class="kw">abs</span>(correlation) &gt;=<span class="st"> </span><span class="fl">0.8</span>, <span class="dv">1</span>, <span class="dv">0</span>), 
+                                    <span class="dt">correlation_part =</span> <span class="kw">ifelse</span>(<span class="kw">abs</span>(correlation) &gt;=<span class="st"> </span><span class="fl">0.8</span>, <span class="fl">0.25</span>, <span class="dv">0</span>))
+cor_bin_red &lt;-<span class="st"> </span>cor_bin_long[!<span class="kw">duplicated</span>(<span class="kw">t</span>(<span class="kw">apply</span>(cor_bin_long[,<span class="kw">c</span>(<span class="st">&quot;metric&quot;</span>, <span class="st">&quot;metric2&quot;</span>, <span class="st">&quot;benchmark_task&quot;</span>)], <span class="dv">1</span>, sort))),]
+
+g1 &lt;-<span class="st"> </span><span class="kw">ggplot</span>(cor_bin_long, <span class="kw">aes</span>(<span class="dt">x=</span><span class="st">&quot;&quot;</span>, <span class="dt">y=</span>correlation_part, <span class="dt">fill=</span>benchmark_task)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_bar</span>(<span class="dt">width =</span> <span class="dv">1</span>, <span class="dt">stat =</span> <span class="st">&quot;identity&quot;</span>) +
+<span class="st">  </span><span class="kw">coord_polar</span>(<span class="st">&quot;y&quot;</span>, <span class="dt">start=</span><span class="dv">0</span>) +<span class="st"> </span><span class="kw">scale_fill_manual</span>(<span class="dt">values =</span> cols_data[<span class="dv">1</span>:<span class="dv">4</span>]) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">facet_grid</span>(<span class="dt">rows =</span> <span class="kw">vars</span>(metric), <span class="dt">cols =</span> <span class="kw">vars</span>(metric2), <span class="dt">drop=</span><span class="ot">TRUE</span>) +
+<span class="st">  </span><span class="kw">theme_minimal</span>() +
+<span class="st">  </span><span class="kw">theme</span>(
+    <span class="dt">axis.title.x =</span> <span class="kw">element_blank</span>(),
+    <span class="dt">axis.title.y =</span> <span class="kw">element_blank</span>(),
+    <span class="dt">panel.border =</span> <span class="kw">element_blank</span>(),
+    <span class="dt">panel.grid=</span><span class="kw">element_blank</span>(),
+    <span class="dt">axis.ticks =</span> <span class="kw">element_blank</span>(),
+    <span class="dt">axis.text.x=</span><span class="kw">element_blank</span>(),
+    <span class="dt">plot.title =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">14</span>),
+    <span class="dt">panel.grid.minor =</span> <span class="kw">element_blank</span>()
+      )</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cor_bin_long$metric &lt;-<span class="st"> </span><span class="kw">factor</span>(cor_bin_long$metric, <span class="dt">levels =</span> metric_order)
+cor_bin_long$metric2 &lt;-<span class="st"> </span><span class="kw">factor</span>(cor_bin_long$metric2, <span class="dt">levels =</span> metric_order)
+cor_bin_long$M1 &lt;-<span class="st"> </span><span class="kw">as.numeric</span>(cor_bin_long$metric)
+cor_bin_long$M2 &lt;-<span class="st"> </span><span class="kw">as.numeric</span>(cor_bin_long$metric2)
+cor_bin_long &lt;-<span class="st"> </span>cor_bin_long %&gt;%<span class="st"> </span><span class="kw">arrange</span>(M1) %&gt;%
+<span class="st">  </span><span class="kw">group_by</span>(M1) %&gt;%<span class="st"> </span><span class="kw">arrange</span>(M2)
+
+p.list =<span class="st"> </span><span class="kw">mapply</span>(<span class="dt">FUN=</span>function(m1, m2) {
+
+    cor_bin &lt;-<span class="st"> </span>cor_bin_long[cor_bin_long$M1 ==<span class="st"> </span>m1 &amp;<span class="st"> </span>cor_bin_long$M2 ==<span class="st"> </span>m2, ]
+    cor_bin &lt;-<span class="st"> </span>cor_bin %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">mean_correlation =</span> <span class="kw">mean</span>(correlation))
+    cor_bin$mean_correlation &lt;-<span class="st"> </span><span class="kw">round</span>(cor_bin$mean_correlation, <span class="dt">digits =</span> <span class="dv">2</span>)
+
+    g &lt;-<span class="st"> </span><span class="kw">ggplot</span>(cor_bin, <span class="kw">aes</span>(<span class="dt">x=</span><span class="st">&quot;&quot;</span>, <span class="dt">y=</span>correlation_part)) +<span class="st"> </span>
+<span class="st">      </span><span class="kw">xlab</span>(cor_bin$metric) +
+<span class="st">      </span><span class="kw">ylab</span>(cor_bin$metric2) +
+<span class="st">      </span><span class="kw">theme_minimal</span>() +<span class="st"> </span>
+<span class="st">      </span><span class="kw">theme</span>(
+        <span class="dt">axis.title.x =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">10</span>, <span class="dt">face =</span> <span class="st">&quot;bold&quot;</span>),
+        <span class="dt">axis.title.y =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">10</span>, <span class="dt">face =</span> <span class="st">&quot;bold&quot;</span>),
+        <span class="dt">panel.border =</span> <span class="kw">element_blank</span>(),
+        <span class="dt">panel.grid=</span><span class="kw">element_blank</span>(),
+        <span class="dt">axis.ticks =</span> <span class="kw">element_blank</span>(),
+        <span class="dt">axis.text=</span><span class="kw">element_blank</span>(),
+        <span class="dt">legend.position=</span><span class="st">&quot;none&quot;</span>,
+        <span class="dt">plot.title =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">14</span>),
+        <span class="dt">panel.grid.minor =</span> <span class="kw">element_blank</span>()
+      )
+
+    if (m1 ==<span class="st"> </span>m2) {
+      g =<span class="st"> </span>g +<span class="st"> </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">label=</span>metric),
+                        <span class="dt">size =</span> <span class="fl">4.5</span>, <span class="dt">colour=</span><span class="st">&quot;red&quot;</span>)
+    }
+
+    if (m1 &lt;<span class="st"> </span>m2) {
+      g =<span class="st"> </span>g +<span class="st"> </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">x =</span> <span class="fl">0.5</span>, <span class="dt">y =</span> <span class="fl">0.5</span>, <span class="dt">label=</span>mean_correlation), <span class="dt">size =</span> <span class="dv">4</span>) +
+<span class="st">        </span><span class="kw">theme</span>(<span class="dt">panel.background=</span><span class="kw">element_rect</span>(<span class="dt">fill=</span><span class="kw">hcl</span>(<span class="dv">180</span>,<span class="dv">100</span>,<span class="dv">60</span>, <span class="dt">alpha=</span><span class="fl">0.3</span>)))
+    }
+
+    if (m1 &gt;<span class="st"> </span>m2) {
+      g =<span class="st"> </span>g +<span class="st"> </span><span class="kw">geom_bar</span>(<span class="kw">aes</span>(<span class="dt">fill=</span>benchmark_task), <span class="dt">width =</span> <span class="dv">2</span>, <span class="dt">stat =</span> <span class="st">&quot;identity&quot;</span>, <span class="dt">colour =</span> <span class="st">&quot;black&quot;</span>) +<span class="st"> </span>
+<span class="st">        </span><span class="kw">coord_polar</span>(<span class="dt">theta=</span><span class="st">&#39;y&#39;</span>, <span class="dt">start=</span><span class="dv">0</span>) +<span class="st"> </span>
+<span class="st">        </span><span class="kw">geom_bar</span>(<span class="kw">aes</span>(<span class="dt">y=</span>correlation_bi, <span class="dt">fill =</span> <span class="ot">NA</span>), <span class="dt">width =</span> <span class="dv">2</span>, <span class="dt">stat =</span> <span class="st">&quot;identity&quot;</span>, <span class="dt">colour =</span> <span class="st">&quot;black&quot;</span>) +<span class="st"> </span>
+<span class="st">        </span><span class="kw">coord_polar</span>(<span class="dt">theta=</span><span class="st">&#39;y&#39;</span>, <span class="dt">start=</span><span class="dv">0</span>) +<span class="st"> </span>
+<span class="st">        </span><span class="kw">scale_fill_manual</span>(<span class="dt">values =</span> cols_data[<span class="dv">1</span>:<span class="dv">4</span>]) +
+<span class="st">        </span><span class="kw">scale_y_continuous</span>(<span class="dt">limits =</span> <span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">1</span>))
+    }
+
+    if(m1 !=<span class="st"> </span><span class="dv">1</span>) {
+      g =<span class="st"> </span>g +<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;&quot;</span>) +
+<span class="st">        </span><span class="kw">theme</span>(<span class="dt">axis.text.y=</span><span class="kw">element_blank</span>(),
+                    <span class="dt">axis.ticks.y=</span><span class="kw">element_blank</span>(),
+                    <span class="dt">axis.title =</span> <span class="kw">element_blank</span>())
+    }
+
+    if(m2 !=<span class="st"> </span><span class="kw">max</span>(cor_bin_long$M2)) {
+      g =<span class="st"> </span>g +<span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;&quot;</span>) +<span class="st"> </span>
+<span class="st">        </span><span class="kw">theme</span>(<span class="dt">axis.text.x=</span><span class="kw">element_blank</span>(),
+                    <span class="dt">axis.ticks.x=</span><span class="kw">element_blank</span>(),
+                    <span class="dt">axis.title =</span> <span class="kw">element_blank</span>())
+    }
+
+    <span class="kw">return</span>(g +<span class="st"> </span><span class="kw">theme</span>(<span class="dt">plot.margin=</span><span class="kw">unit</span>(<span class="kw">c</span>(-<span class="fl">0.3</span>,-<span class="fl">0.3</span>,-<span class="fl">0.3</span>,-<span class="fl">0.3</span>), <span class="st">&quot;lines&quot;</span>)))}, 
+    <span class="kw">expand.grid</span>(<span class="dt">M1=</span><span class="kw">unique</span>(cor_bin_long$M1), <span class="dt">M2=</span><span class="kw">unique</span>(cor_bin_long$M1))[[<span class="dv">1</span>]], 
+    <span class="kw">expand.grid</span>(<span class="dt">M1=</span><span class="kw">unique</span>(cor_bin_long$M1), <span class="dt">M2=</span><span class="kw">unique</span>(cor_bin_long$M2))[[<span class="dv">2</span>]], <span class="dt">SIMPLIFY=</span><span class="ot">FALSE</span>)
+
+
+<span class="co">#get legend</span>
+g_legend&lt;-function(a.gplot){
+  tmp &lt;-<span class="st"> </span><span class="kw">ggplot_gtable</span>(<span class="kw">ggplot_build</span>(a.gplot))
+  leg &lt;-<span class="st"> </span><span class="kw">which</span>(<span class="kw">sapply</span>(tmp$grobs, function(x) x$name) ==<span class="st"> &quot;guide-box&quot;</span>)
+  legend &lt;-<span class="st"> </span>tmp$grobs[[leg]]
+  <span class="kw">return</span>(legend)}
+
+mylegend &lt;-<span class="st"> </span><span class="kw">g_legend</span>(g1)
+
+
+<span class="kw">grid.arrange</span>(<span class="dt">top =</span> <span class="kw">textGrob</span>(<span class="st">&quot;Metrics correlation&quot;</span>, <span class="dt">gp=</span><span class="kw">gpar</span>(<span class="dt">fontsize=</span><span class="dv">15</span>,<span class="dt">font=</span><span class="dv">8</span>, <span class="dt">face =</span> <span class="st">&quot;bold&quot;</span>)),
+  <span class="kw">arrangeGrob</span>(
+    <span class="kw">arrangeGrob</span>(<span class="kw">textGrob</span>(<span class="st">&quot;&quot;</span>, <span class="dt">rot=</span><span class="dv">90</span>),
+                <span class="kw">do.call</span>(arrangeGrob, <span class="kw">c</span>(p.list, 
+                                       <span class="dt">ncol=</span><span class="kw">length</span>(<span class="kw">levels</span>(cor_bin_long$metric)))), <span class="dt">widths=</span><span class="kw">c</span>(<span class="fl">0.05</span>,<span class="fl">0.95</span>)),
+    <span class="kw">textGrob</span>(<span class="st">&quot;&quot;</span>), <span class="dt">heights=</span><span class="kw">c</span>(<span class="fl">0.95</span>,<span class="fl">0.05</span>)), mylegend, <span class="dt">ncol=</span><span class="dv">2</span>,<span class="dt">widths=</span><span class="kw">c</span>(<span class="dv">10</span>, <span class="fl">2.2</span>))</code></pre></div>
+<p><img src="correlation_metrics_files/figure-html/unnamed-chunk-1-1.svg" width="1008" /></p>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("show" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

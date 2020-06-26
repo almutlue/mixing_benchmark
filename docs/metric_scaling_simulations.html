@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Almut Lütge" />
+
+
+<title>Metrics Scaling simulation</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/journal.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; background-color: #f8f8f8; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+pre, code { background-color: #f8f8f8; }
+code > span.kw { color: #204a87; font-weight: bold; } /* Keyword */
+code > span.dt { color: #204a87; } /* DataType */
+code > span.dv { color: #0000cf; } /* DecVal */
+code > span.bn { color: #0000cf; } /* BaseN */
+code > span.fl { color: #0000cf; } /* Float */
+code > span.ch { color: #4e9a06; } /* Char */
+code > span.st { color: #4e9a06; } /* String */
+code > span.co { color: #8f5902; font-style: italic; } /* Comment */
+code > span.ot { color: #8f5902; } /* Other */
+code > span.al { color: #ef2929; } /* Alert */
+code > span.fu { color: #000000; } /* Function */
+code > span.er { color: #a40000; font-weight: bold; } /* Error */
+code > span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #000000; } /* Constant */
+code > span.sc { color: #000000; } /* SpecialChar */
+code > span.vs { color: #4e9a06; } /* VerbatimString */
+code > span.ss { color: #4e9a06; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #000000; } /* Variable */
+code > span.cf { color: #204a87; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #ce5c00; font-weight: bold; } /* Operator */
+code > span.pp { color: #8f5902; font-style: italic; } /* Preprocessor */
+code > span.ex { } /* Extension */
+code > span.at { color: #c4a000; } /* Attribute */
+code > span.do { color: #8f5902; font-weight: bold; font-style: italic; } /* Documentation */
+code > span.an { color: #8f5902; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #8f5902; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #8f5902; font-weight: bold; font-style: italic; } /* Information */
+
+.sourceCode .row {
+  width: 100%;
+}
+.sourceCode {
+  overflow-x: auto;
+}
+.code-folding-btn {
+  margin-right: -30px;
+}
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 61px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 66px;
+  margin-top: -66px;
+}
+.section h2 {
+  padding-top: 66px;
+  margin-top: -66px;
+}
+.section h3 {
+  padding-top: 66px;
+  margin-top: -66px;
+}
+.section h4 {
+  padding-top: 66px;
+  margin-top: -66px;
+}
+.section h5 {
+  padding-top: 66px;
+  margin-top: -66px;
+}
+.section h6 {
+  padding-top: 66px;
+  margin-top: -66px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-inverse  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Batch metric benchmark</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index_benchmark_tasks.html">Benchmark tasks</a>
+</li>
+<li>
+  <a href="index_metrics.html">Metrics</a>
+</li>
+<li>
+  <a href="index_characterization.html">batch_characterization/simulation</a>
+</li>
+<li>
+  <a href="index_summary.html">Summary</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Metrics Scaling simulation</h1>
+<h4 class="author">Almut Lütge</h4>
+<h4 class="date">25 June, 2020</h4>
+
+</div>
+
+
+<p><a href="index.html">Back to home</a></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">suppressPackageStartupMessages</span>({
+  <span class="kw">library</span>(scater)
+  <span class="kw">library</span>(CellMixS)
+  <span class="kw">library</span>(purrr)
+  <span class="kw">library</span>(tidyr)
+  <span class="kw">library</span>(dplyr)
+  <span class="kw">library</span>(gridExtra)
+  <span class="kw">library</span>(scran)
+  <span class="kw">library</span>(cowplot)
+  <span class="kw">library</span>(jcolors)
+  <span class="kw">library</span>(ggpubr)
+  <span class="kw">library</span>(stringr)
+  <span class="kw">library</span>(viridis)
+  <span class="kw">library</span>(scales)
+  <span class="kw">library</span>(hrbrthemes)
+  <span class="kw">library</span>(magrittr)
+  <span class="kw">library</span>(forcats)
+  <span class="kw">library</span>(corrplot)
+  <span class="kw">library</span>(RColorBrewer)
+})
+
+<span class="kw">options</span>(<span class="dt">bitmapType=</span><span class="st">&#39;cairo&#39;</span>)</code></pre></div>
+<div id="dataset-and-metrics" class="section level3">
+<h3>Dataset and metrics</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">last &lt;-<span class="st"> </span>params$last
+sce_whole_name &lt;-<span class="st"> </span><span class="kw">unlist</span>(<span class="kw">c</span>(<span class="kw">strsplit</span>(params$sce_name, <span class="st">&quot;,&quot;</span>)))
+sce_name &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&quot;^sim_&quot;</span>, <span class="st">&quot;&quot;</span>, sce_whole_name) %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">gsub</span>(<span class="st">&quot;_[0-9].*&quot;</span>, <span class="st">&quot;&quot;</span>, .) %&gt;%<span class="st"> </span><span class="kw">unique</span>()
+
+metrics &lt;-<span class="st"> </span><span class="kw">unlist</span>(<span class="kw">c</span>(<span class="kw">strsplit</span>(params$metrics, <span class="st">&quot;,&quot;</span>)))
+
+sce_sim_list &lt;-<span class="st"> </span><span class="kw">lapply</span>(sce_name, function(dataset){
+    sim_vec &lt;-<span class="st"> </span>sce_whole_name[<span class="kw">grepl</span>(dataset, sce_whole_name)]
+}) %&gt;%<span class="st"> </span><span class="kw">set_names</span>(sce_name)
+
+
+sce_list &lt;-<span class="st"> </span><span class="kw">lapply</span>(sce_name, function(dataset){
+  sim_vec &lt;-<span class="st"> </span><span class="kw">paste0</span>(params$sce, sce_sim_list[[dataset]], <span class="st">&quot;_&quot;</span>, last, <span class="st">&quot;_sce.rds&quot;</span>) %&gt;%
+<span class="st">             </span><span class="kw">set_names</span>(sce_sim_list[[dataset]])
+}) %&gt;%<span class="st"> </span><span class="kw">set_names</span>(sce_name)
+
+
+meta_list &lt;-<span class="st"> </span><span class="kw">lapply</span>(sce_name, function(dataset){
+  sim_vec &lt;-<span class="st"> </span><span class="kw">paste0</span>(params$meta, sce_sim_list[[dataset]], <span class="st">&quot;_meta.rds&quot;</span>) %&gt;%
+<span class="st">             </span><span class="kw">set_names</span>(sce_sim_list[[dataset]])
+}) %&gt;%<span class="st"> </span><span class="kw">set_names</span>(sce_name)
+
+
+out_path_cor &lt;-<span class="st"> </span>params$out_cor
+out_path_res &lt;-<span class="st"> </span>params$out_res
+
+cols_data &lt;-<span class="kw">c</span>(<span class="kw">c</span>(<span class="kw">jcolors</span>(<span class="st">&#39;pal6&#39;</span>),<span class="kw">jcolors</span>(<span class="st">&#39;pal8&#39;</span>))[<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">8</span>,<span class="dv">14</span>,<span class="dv">5</span>,<span class="dv">2</span>:<span class="dv">4</span>,<span class="dv">6</span>,<span class="dv">7</span>,<span class="dv">9</span>:<span class="dv">13</span>,<span class="dv">15</span>:<span class="dv">20</span>)],<span class="kw">jcolors</span>(<span class="st">&#39;pal4&#39;</span>))
+<span class="kw">names</span>(cols_data) &lt;-<span class="st"> </span><span class="kw">c</span>()
+
+cols &lt;-<span class="kw">c</span>(<span class="kw">c</span>(<span class="kw">jcolors</span>(<span class="st">&#39;pal6&#39;</span>),<span class="kw">jcolors</span>(<span class="st">&#39;pal8&#39;</span>), <span class="kw">jcolors</span>(<span class="st">&#39;pal7&#39;</span>))[<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">12</span>,<span class="dv">18</span>,<span class="dv">25</span>,<span class="dv">27</span>,<span class="dv">2</span>,<span class="dv">4</span>,<span class="dv">7</span>,<span class="dv">3</span>,<span class="dv">6</span>,<span class="dv">8</span>,<span class="dv">14</span>,<span class="dv">9</span>,<span class="dv">20</span>)],<span class="kw">jcolors</span>(<span class="st">&#39;pal4&#39;</span>))
+<span class="kw">names</span>(cols) &lt;-<span class="st"> </span><span class="kw">c</span>()</code></pre></div>
+</div>
+<div id="scaling-with-simulated-batches" class="section level2">
+<h2>Scaling with simulated batches</h2>
+<div id="overall-scaling" class="section level3 tabset">
+<h3>Overall scaling</h3>
+<p>How do the metric scores scale with simulated batch effects that are gradually increased?</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">metric_vec &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&quot;_&quot;</span>, <span class="st">&quot;.&quot;</span>, metrics)
+metric_vec &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&quot;default&quot;</span>, <span class="st">&quot;&quot;</span>, metric_vec)
+
+dataset_sim_tab &lt;-<span class="st"> </span>function(dataset){
+    sim_list &lt;-<span class="st"> </span><span class="kw">lapply</span>(sce_sim_list[[dataset]], function(sim_name){
+        sce &lt;-<span class="st"> </span><span class="kw">readRDS</span>(sce_list[[dataset]][[sim_name]])
+        meta &lt;-<span class="st"> </span><span class="kw">readRDS</span>(meta_list[[dataset]][[sim_name]])
+        metric_nam &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="kw">paste</span>(metric_vec, <span class="dt">collapse=</span><span class="st">&quot;|&quot;</span>),
+                             <span class="kw">names</span>(<span class="kw">colData</span>(sce)), <span class="dt">value=</span><span class="ot">TRUE</span>)
+        metric_nam &lt;-<span class="st"> </span>metric_nam[-<span class="kw">grep</span>(<span class="st">&quot;smooth&quot;</span>, metric_nam)]
+        res &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">colData</span>(sce)[, metric_nam])
+        res$cell &lt;-<span class="st"> </span><span class="kw">colnames</span>(sce)
+        res
+    }) %&gt;%<span class="st"> </span><span class="kw">set_names</span>(sce_sim_list[[dataset]])
+    sim_tab &lt;-<span class="st"> </span>sim_list %&gt;%<span class="st"> </span><span class="kw">bind_rows</span>(<span class="dt">.id =</span> <span class="st">&quot;dataset&quot;</span>)
+    metric_vec[metric_vec %in%<span class="st"> &quot;cms.&quot;</span>] &lt;-<span class="st"> &quot;cms.batch_id&quot;</span>
+    sim_wide_list &lt;-<span class="st"> </span><span class="kw">lapply</span>(metric_vec, function(met){
+        met_col &lt;-<span class="st"> </span><span class="kw">colnames</span>(sim_tab)[<span class="kw">grepl</span>(<span class="kw">paste0</span>(<span class="st">&quot;^&quot;</span>, met), <span class="kw">colnames</span>(sim_tab))]
+        metr_long &lt;-<span class="st"> </span>sim_tab[, <span class="kw">c</span>(<span class="st">&quot;dataset&quot;</span>, <span class="st">&quot;cell&quot;</span>, met_col)] 
+        metr_long$dataset &lt;-<span class="st"> </span><span class="kw">as.factor</span>(metr_long$dataset)
+        metr_wide &lt;-<span class="st"> </span><span class="kw">pivot_wider</span>(metr_long, <span class="dt">names_from =</span> dataset, 
+                                 <span class="dt">values_from =</span> met_col)
+    }) %&gt;%<span class="st"> </span><span class="kw">set_names</span>(metric_vec)
+}
+
+res_by_met &lt;-<span class="st"> </span><span class="kw">lapply</span>(sce_name, dataset_sim_tab) %&gt;%<span class="st"> </span><span class="kw">set_names</span>(sce_name)
+
+#### ---------- Order by metric type ----------------------------------####### 
+<span class="co">#(manual needs to be adjusted if new metrics are added)</span>
+cms_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;cms&quot;</span>, <span class="kw">names</span>(res_by_met[[<span class="dv">1</span>]]))
+lisi_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;isi&quot;</span>, <span class="kw">names</span>(res_by_met[[<span class="dv">1</span>]]))
+ent_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;entropy&quot;</span>, <span class="kw">names</span>(res_by_met[[<span class="dv">1</span>]]))
+mm_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;mm&quot;</span>, <span class="kw">names</span>(res_by_met[[<span class="dv">1</span>]]))
+asw_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;sw&quot;</span>, <span class="kw">names</span>(res_by_met[[<span class="dv">1</span>]]))
+kbet_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;kbet&quot;</span>, <span class="kw">names</span>(res_by_met[[<span class="dv">1</span>]]))
+graph_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;graph&quot;</span>, <span class="kw">names</span>(res_by_met[[<span class="dv">1</span>]]))
+pcr_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;pcr&quot;</span>, <span class="kw">names</span>(res_by_met[[<span class="dv">1</span>]]))
+metric_order &lt;-<span class="st"> </span><span class="kw">names</span>(res_by_met[[<span class="dv">1</span>]])[<span class="kw">c</span>(cms_ind, lisi_ind, ent_ind, mm_ind, 
+                                       kbet_ind, asw_ind, graph_ind, pcr_ind)]
+<span class="kw">names</span>(cols) &lt;-<span class="st"> </span><span class="kw">names</span>(res_by_met[[<span class="dv">1</span>]])
+<span class="co">#cols &lt;- cols[names(res_by_met[[1]])]</span>
+####--------------------------------------------------------------------########
+
+mean_tab &lt;-<span class="st"> </span><span class="kw">lapply</span>(sce_name, function(dataset){
+    met_res &lt;-<span class="st"> </span>res_by_met[[dataset]]
+    metric_vec[metric_vec %in%<span class="st"> &quot;cms.&quot;</span>] &lt;-<span class="st"> &quot;cms.batch_id&quot;</span>
+    met_mean &lt;-<span class="st"> </span><span class="kw">lapply</span>(metric_vec, function(met){
+        mean_vec &lt;-<span class="st"> </span>met_res[[met]] %&gt;%<span class="st"> </span><span class="kw">select</span>(-cell) %&gt;%<span class="st"> </span><span class="kw">as.matrix</span>() %&gt;%<span class="st"> </span><span class="kw">colMeans</span>(., <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)
+    }) %&gt;%<span class="st"> </span><span class="kw">bind_cols</span>() %&gt;%<span class="st"> </span><span class="kw">set_colnames</span>(metric_vec)
+    batch_vec &lt;-<span class="st"> </span><span class="kw">colnames</span>(met_res[[<span class="dv">1</span>]]) %&gt;%<span class="st"> </span><span class="kw">str_match</span>(<span class="st">&quot;_([0-9].*?)_&quot;</span>)
+    batch_vec &lt;-<span class="st"> </span><span class="kw">as.numeric</span>(batch_vec[!<span class="kw">is.na</span>(batch_vec[, <span class="dv">2</span>]), <span class="dv">2</span>])
+    met_mean$batch &lt;-<span class="st"> </span>batch_vec
+    met_mean
+}) %&gt;%<span class="st"> </span><span class="kw">set_names</span>(sce_name)
+
+<span class="co">#scale means</span>
+scale_means &lt;-<span class="st"> </span><span class="kw">lapply</span>(<span class="kw">names</span>(mean_tab), function(dataset){
+    mean_res &lt;-<span class="st"> </span>mean_tab[[dataset]]
+    dir_ind &lt;-<span class="st"> </span><span class="kw">which</span>(!<span class="kw">colnames</span>(mean_res) %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;batch&quot;</span>, <span class="st">&quot;mm&quot;</span>, <span class="st">&quot;kbet&quot;</span>, <span class="st">&quot;pcr&quot;</span>,
+                                                <span class="st">&quot;graph.connectivity&quot;</span>))
+    mean_res[, dir_ind] &lt;-<span class="st"> </span>mean_res[, dir_ind] *<span class="st"> </span>-<span class="dv">1</span>
+    scale_res &lt;-<span class="st"> </span>mean_res %&gt;%<span class="st"> </span><span class="kw">select</span>(-batch) %&gt;%<span class="st"> </span><span class="kw">scale</span>() %&gt;%<span class="st"> </span><span class="kw">as.data.frame</span>()
+    scale_res$batch &lt;-<span class="st"> </span>mean_res$batch
+    scale_res
+}) %&gt;%<span class="st"> </span><span class="kw">set_names</span>(<span class="kw">names</span>(mean_tab))
+
+
+plot_trends &lt;-<span class="st"> </span>function(dataset){
+    mean_res &lt;-<span class="st"> </span>scale_means[[dataset]]
+    mean_long &lt;-<span class="st"> </span>mean_res %&gt;%<span class="st"> </span><span class="kw">pivot_longer</span>(-batch, <span class="dt">names_to =</span> <span class="st">&quot;metric&quot;</span>,
+                                           <span class="dt">values_to =</span> <span class="st">&quot;scaled_score&quot;</span>)
+    mean_long$metric &lt;-<span class="st"> </span><span class="kw">factor</span>(mean_long$metric,<span class="dt">levels =</span> metric_order)
+    <span class="kw">ggplot</span>(mean_long, <span class="kw">aes</span>(<span class="dt">x =</span> batch, <span class="dt">y =</span> scaled_score)) +
+<span class="st">        </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">color =</span> metric)) +<span class="st"> </span>
+<span class="st">        </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">color =</span> metric)) +
+<span class="st">        </span><span class="kw">theme_bw</span>() +
+<span class="st">        </span><span class="kw">scale_color_manual</span>(<span class="dt">values =</span> cols) +
+<span class="st">        </span><span class="kw">ggtitle</span>(dataset)
+}
+
+template &lt;-<span class="st"> </span><span class="kw">c</span>(
+    <span class="st">&quot;#### {{nm}}</span><span class="ch">\n</span><span class="st">&quot;</span>,
+    <span class="st">&quot;```{r scaling{{nm}}, echo = FALSE}</span><span class="ch">\n</span><span class="st">&quot;</span>,
+    <span class="st">&quot;plot_trends(&#39;{{nm}}&#39;)</span><span class="ch">\n</span><span class="st">&quot;</span>,
+    <span class="st">&quot;```</span><span class="ch">\n</span><span class="st">&quot;</span>,
+    <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>
+  )
+
+plots &lt;-<span class="st"> </span><span class="kw">lapply</span>(<span class="kw">names</span>(scale_means), 
+  function(nm) knitr::<span class="kw">knit_expand</span>(<span class="dt">text =</span> template)
+)</code></pre></div>
+<div id="csf_patient" class="section level4">
+<h4>csf_patient</h4>
+<p><img src="metric_scaling_simulations_files/figure-html/scalingcsf_patient-1.svg" width="672" /></p>
+</div>
+<div id="pbmc2_pat" class="section level4">
+<h4>pbmc2_pat</h4>
+<p><img src="metric_scaling_simulations_files/figure-html/scalingpbmc2_pat-1.svg" width="672" /></p>
+</div>
+<div id="pbmc_roche" class="section level4">
+<h4>pbmc_roche</h4>
+<p><img src="metric_scaling_simulations_files/figure-html/scalingpbmc_roche-1.svg" width="672" /></p>
+</div>
+<div id="pbmc2_media" class="section level4">
+<h4>pbmc2_media</h4>
+<p><img src="metric_scaling_simulations_files/figure-html/scalingpbmc2_media-1.svg" width="672" /></p>
+</div>
+<div id="csf_media" class="section level4">
+<h4>csf_media</h4>
+<p><img src="metric_scaling_simulations_files/figure-html/scalingcsf_media-1.svg" width="672" /></p>
+</div>
+<div id="hca" class="section level4">
+<h4>hca</h4>
+<p><img src="metric_scaling_simulations_files/figure-html/scalinghca-1.svg" width="672" /></p>
+</div>
+<div id="cellbench" class="section level4">
+<h4>cellbench</h4>
+<p><img src="metric_scaling_simulations_files/figure-html/scalingcellbench-1.svg" width="672" /></p>
+</div>
+</div>
+<div id="metrics-performance-separated" class="section level3 tabset">
+<h3>Metrics performance separated</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sep_trends &lt;-<span class="st"> </span>function(dataset){
+  mean_res &lt;-<span class="st"> </span>scale_means[[dataset]]
+  mean_long &lt;-<span class="st"> </span>mean_res %&gt;%<span class="st"> </span><span class="kw">pivot_longer</span>(-batch, <span class="dt">names_to =</span> <span class="st">&quot;metric&quot;</span>,
+                                           <span class="dt">values_to =</span> <span class="st">&quot;scaled_score&quot;</span>)
+  mean_long &lt;-<span class="st"> </span>mean_long %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">metric2 =</span> metric)
+  cols_rep &lt;-<span class="st"> </span><span class="kw">rep</span>(cols[<span class="dv">1</span>:<span class="st"> </span><span class="kw">ncol</span>(mean_res)-<span class="dv">1</span>], <span class="dt">each =</span> <span class="kw">nrow</span>(mean_res))
+  mean_long$metric &lt;-<span class="st"> </span><span class="kw">factor</span>(mean_long$metric,<span class="dt">levels =</span> metric_order)
+  p &lt;-<span class="st"> </span><span class="kw">ggplot</span>(mean_long, <span class="kw">aes</span>(<span class="dt">x =</span> batch, <span class="dt">y =</span> scaled_score)) +
+<span class="st">        </span><span class="kw">geom_line</span>(<span class="dt">data=</span>mean_long %&gt;%<span class="st"> </span>dplyr::<span class="kw">select</span>(-metric), <span class="kw">aes</span>(<span class="dt">group=</span>metric2),
+                   <span class="dt">color=</span><span class="st">&quot;grey&quot;</span>, <span class="dt">size=</span><span class="fl">0.5</span>, <span class="dt">alpha=</span><span class="fl">0.5</span>) +<span class="st"> </span>
+<span class="st">        </span><span class="kw">geom_line</span>( <span class="kw">aes</span>(<span class="dt">color=</span>metric), <span class="dt">color=</span>cols_rep, <span class="dt">size=</span><span class="fl">1.2</span> ) +<span class="st"> </span>
+<span class="st">        </span><span class="kw">theme_ipsum</span>() +
+<span class="st">        </span><span class="kw">theme</span>(
+        <span class="dt">legend.position=</span><span class="st">&quot;none&quot;</span>,
+        <span class="dt">plot.title =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">14</span>),
+        <span class="dt">panel.grid =</span> <span class="kw">element_blank</span>()
+      ) +
+<span class="st">      </span><span class="kw">ggtitle</span>(dataset) +
+<span class="st">      </span><span class="kw">facet_wrap</span>(~metric)
+    p
+}
+
+template_sep &lt;-<span class="st"> </span><span class="kw">c</span>(
+    <span class="st">&quot;#### {{nm}}</span><span class="ch">\n</span><span class="st">&quot;</span>,
+    <span class="st">&quot;```{r scaling sep {{nm}}, echo = FALSE, fig.width = 8, fig.height = 7}</span><span class="ch">\n</span><span class="st">&quot;</span>,
+    <span class="st">&quot;sep_trends(&#39;{{nm}}&#39;)</span><span class="ch">\n</span><span class="st">&quot;</span>,
+    <span class="st">&quot;```</span><span class="ch">\n</span><span class="st">&quot;</span>,
+    <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>
+  )
+
+plots_sep &lt;-<span class="st"> </span><span class="kw">lapply</span>(<span class="kw">names</span>(scale_means), 
+  function(nm) knitr::<span class="kw">knit_expand</span>(<span class="dt">text =</span> template_sep)
+)</code></pre></div>
+<div id="csf_patient-1" class="section level4">
+<h4>csf_patient</h4>
+<p><img src="metric_scaling_simulations_files/figure-html/scaling%20sep%20csf_patient-1.svg" width="768" /></p>
+</div>
+<div id="pbmc2_pat-1" class="section level4">
+<h4>pbmc2_pat</h4>
+<p><img src="metric_scaling_simulations_files/figure-html/scaling%20sep%20pbmc2_pat-1.svg" width="768" /></p>
+</div>
+<div id="pbmc_roche-1" class="section level4">
+<h4>pbmc_roche</h4>
+<p><img src="metric_scaling_simulations_files/figure-html/scaling%20sep%20pbmc_roche-1.svg" width="768" /></p>
+</div>
+<div id="pbmc2_media-1" class="section level4">
+<h4>pbmc2_media</h4>
+<p><img src="metric_scaling_simulations_files/figure-html/scaling%20sep%20pbmc2_media-1.svg" width="768" /></p>
+</div>
+<div id="csf_media-1" class="section level4">
+<h4>csf_media</h4>
+<p><img src="metric_scaling_simulations_files/figure-html/scaling%20sep%20csf_media-1.svg" width="768" /></p>
+</div>
+<div id="hca-1" class="section level4">
+<h4>hca</h4>
+<p><img src="metric_scaling_simulations_files/figure-html/scaling%20sep%20hca-1.svg" width="768" /></p>
+</div>
+<div id="cellbench-1" class="section level4">
+<h4>cellbench</h4>
+<p><img src="metric_scaling_simulations_files/figure-html/scaling%20sep%20cellbench-1.svg" width="768" /></p>
+</div>
+</div>
+<div id="compare-detection-limits-and-correlation-within-limits" class="section level3 tabset">
+<h3>Compare detection limits and correlation within limits</h3>
+<p>To compare the metrics limits and their relative correlation with batch strength/size we define an upper limit at 95% of the maximal metrics score and a minimal limit at the minimal metrics score and use the corresponding batch size factor as batch limits. We check the metrics correlation with the batch size factor between it’s limits. Be aware that these limits are dataset specific and do not represent fixed limits. They can only be used to compare metrics, but are not informative about the absolut metric’s sensitivity.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">limit_list &lt;-<span class="st"> </span><span class="kw">lapply</span>(<span class="kw">names</span>(mean_tab), function(dataset){
+    mean_res &lt;-<span class="st"> </span>mean_tab[[dataset]]
+    lim_rev &lt;-<span class="st"> </span>function(x){
+        percent &lt;-<span class="st"> </span>(<span class="kw">max</span>(x) -<span class="st"> </span><span class="kw">min</span>(x))/<span class="dv">100</span>
+        lower &lt;-<span class="st"> </span><span class="kw">min</span>(x[x &gt;<span class="st"> </span>(<span class="kw">max</span>(x) -<span class="st"> </span><span class="dv">10</span> *<span class="st"> </span>percent)]) <span class="co"># smallest value above 0.95 * batch0</span>
+        upper &lt;-<span class="st"> </span><span class="kw">max</span>(x[x &lt;<span class="st"> </span>(<span class="kw">min</span>(x) +<span class="st"> </span><span class="dv">10</span> *<span class="st"> </span>percent)])
+        ind_low &lt;-<span class="st"> </span><span class="kw">which</span>(x ==<span class="st"> </span>lower)
+        ind_up &lt;-<span class="st"> </span><span class="kw">which</span>(x ==<span class="st"> </span>upper)
+        batch &lt;-<span class="st"> </span>mean_res$batch[<span class="kw">c</span>(ind_low, ind_up)]
+    }
+    batch_lim &lt;-<span class="st"> </span><span class="kw">apply</span>(mean_res, <span class="dv">2</span>, lim_rev) %&gt;%<span class="st"> </span><span class="kw">set_rownames</span>(<span class="kw">c</span>(<span class="st">&quot;lower&quot;</span>, <span class="st">&quot;upper&quot;</span>))
+    batch_lim[,<span class="kw">c</span>(<span class="st">&quot;kbet&quot;</span>, <span class="st">&quot;mm&quot;</span>, <span class="st">&quot;pcr&quot;</span>, <span class="st">&quot;graph.connectivity&quot;</span>)] &lt;-<span class="st"> </span>
+<span class="st">      </span>batch_lim[<span class="kw">c</span>(<span class="dv">2</span>,<span class="dv">1</span>), <span class="kw">c</span>(<span class="st">&quot;kbet&quot;</span>, <span class="st">&quot;mm&quot;</span>, <span class="st">&quot;pcr&quot;</span>, <span class="st">&quot;graph.connectivity&quot;</span>)]
+    batch_lim
+}) %&gt;%<span class="st"> </span><span class="kw">set_names</span>(<span class="kw">names</span>(mean_tab))
+
+lim_fun &lt;-<span class="st"> </span>function(dataset){
+    lim_res &lt;-<span class="st"> </span>limit_list[[dataset]]
+    lim_low &lt;-<span class="st"> </span>lim_res[<span class="st">&quot;lower&quot;</span>,] %&gt;%<span class="st"> </span><span class="kw">set_names</span>(<span class="kw">colnames</span>(lim_res))
+}
+
+limit_tab &lt;-<span class="st"> </span><span class="kw">names</span>(limit_list) %&gt;%<span class="st"> </span><span class="kw">map</span>(lim_fun) %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">set_names</span>(<span class="kw">names</span>(limit_list)) %&gt;%<span class="st"> </span><span class="kw">bind_cols</span>() %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">metric =</span> <span class="kw">colnames</span>(limit_list[[<span class="dv">1</span>]]))
+
+
+lim_long &lt;-<span class="st"> </span>limit_tab %&gt;%<span class="st"> </span><span class="kw">filter</span>(!metric %in%<span class="st"> &quot;batch&quot;</span>) %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">pivot_longer</span>(-metric, <span class="dt">names_to =</span> <span class="st">&quot;dataset&quot;</span>, <span class="dt">values_to =</span> <span class="st">&quot;batch_limit&quot;</span>)
+
+
+cor_list &lt;-<span class="st"> </span><span class="kw">lapply</span>(<span class="kw">names</span>(mean_tab), function(dataset){
+    mean_res &lt;-<span class="st"> </span>mean_tab[[dataset]]
+    limit_res &lt;-<span class="st"> </span>limit_list[[dataset]]
+    cor_fun &lt;-<span class="st"> </span>function(metric){
+        cor_res &lt;-<span class="st"> </span>mean_res  %&gt;%
+<span class="st">            </span><span class="kw">filter</span>(batch &lt;=<span class="st"> </span>limit_res[<span class="st">&quot;upper&quot;</span>, metric]) %&gt;%
+<span class="st">            </span><span class="kw">select</span>(metric, <span class="st">&quot;batch&quot;</span>) %&gt;%<span class="st"> </span><span class="kw">cor</span>(<span class="dt">method =</span><span class="st">&quot;spearman&quot;</span>) %&gt;%<span class="st"> </span><span class="kw">min</span>() %&gt;%<span class="st"> </span><span class="kw">abs</span>()
+        <span class="co">#%&gt;% filter(batch &gt;= limit_res[&quot;lower&quot;, metric])</span>
+    }
+    cor_tab &lt;-<span class="st"> </span><span class="kw">map</span>(<span class="kw">colnames</span>(mean_res), cor_fun) %&gt;%<span class="st"> </span><span class="kw">bind_cols</span>() %&gt;%<span class="st"> </span>
+<span class="st">        </span><span class="kw">set_colnames</span>(<span class="kw">colnames</span>(mean_res)) 
+}) %&gt;%<span class="st"> </span><span class="kw">bind_rows</span>() %&gt;%<span class="st"> </span><span class="kw">set_rownames</span>(<span class="kw">names</span>(mean_tab))
+
+cor_long &lt;-<span class="st"> </span>cor_list  %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">dataset =</span> <span class="kw">rownames</span>(.)) %&gt;%<span class="st"> </span><span class="kw">select</span>(-batch) %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">pivot_longer</span>(-dataset, <span class="dt">names_to =</span> <span class="st">&quot;metric&quot;</span>, <span class="dt">values_to =</span> <span class="st">&quot;correlation&quot;</span>)
+
+
+cor_list_all &lt;-<span class="st"> </span><span class="kw">lapply</span>(<span class="kw">names</span>(mean_tab), function(dataset){
+    mean_res &lt;-<span class="st"> </span>mean_tab[[dataset]]
+    limit_res &lt;-<span class="st"> </span>limit_list[[dataset]]
+    cor_fun &lt;-<span class="st"> </span>function(metric){
+        cor_res &lt;-<span class="st"> </span>mean_res  %&gt;%
+<span class="st">            </span><span class="kw">select</span>(metric, <span class="st">&quot;batch&quot;</span>) %&gt;%<span class="st"> </span><span class="kw">cor</span>(<span class="dt">method =</span><span class="st">&quot;spearman&quot;</span>) %&gt;%<span class="st"> </span><span class="kw">min</span>() %&gt;%<span class="st"> </span><span class="kw">abs</span>()
+    }
+    cor_tab &lt;-<span class="st"> </span><span class="kw">map</span>(<span class="kw">colnames</span>(mean_res), cor_fun) %&gt;%<span class="st"> </span><span class="kw">bind_cols</span>() %&gt;%<span class="st"> </span>
+<span class="st">        </span><span class="kw">set_colnames</span>(<span class="kw">colnames</span>(mean_res)) 
+}) %&gt;%<span class="st"> </span><span class="kw">bind_rows</span>() %&gt;%<span class="st"> </span><span class="kw">set_rownames</span>(<span class="kw">names</span>(mean_tab))
+
+cor_long_all &lt;-<span class="st"> </span>cor_list_all  %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">dataset =</span> <span class="kw">rownames</span>(.)) %&gt;%<span class="st"> </span><span class="kw">select</span>(-batch) %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">pivot_longer</span>(-dataset, <span class="dt">names_to =</span> <span class="st">&quot;metric&quot;</span>, <span class="dt">values_to =</span> <span class="st">&quot;correlation&quot;</span>)
+
+
+<span class="co"># # order by metrics type</span>
+lim_long$metric &lt;-<span class="st"> </span><span class="kw">factor</span>(lim_long$metric,<span class="dt">levels =</span> metric_order)
+cor_long$metric &lt;-<span class="st"> </span><span class="kw">factor</span>(cor_long$metric,<span class="dt">levels =</span> metric_order)
+cor_long_all$metric &lt;-<span class="st"> </span><span class="kw">factor</span>(cor_long_all$metric,<span class="dt">levels =</span> metric_order)</code></pre></div>
+<div id="batch-limits" class="section level4">
+<h4>Batch limits</h4>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(lim_long, <span class="kw">aes</span>(<span class="dt">x =</span> metric , <span class="dt">y =</span> batch_limit, <span class="dt">fill =</span> dataset)) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_boxplot</span>(<span class="dt">fill =</span> cols[<span class="dv">1</span>:<span class="kw">length</span>(<span class="kw">levels</span>(<span class="kw">as.factor</span>(lim_long$metric)))], <span class="dt">alpha =</span> <span class="fl">0.5</span>) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_dotplot</span>(<span class="dt">binaxis=</span><span class="st">&#39;y&#39;</span>, <span class="dt">stackdir=</span><span class="st">&#39;center&#39;</span>, <span class="dt">dotsize=</span><span class="fl">0.5</span>) +
+<span class="st">    </span><span class="kw">scale_fill_manual</span>(<span class="dt">values=</span>cols) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">theme_bw</span>() +
+<span class="st">    </span><span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">face=</span><span class="st">&quot;bold&quot;</span>, <span class="dt">size=</span><span class="dv">10</span>, <span class="dt">angle=</span><span class="dv">45</span>))</code></pre></div>
+<pre><code>## `stat_bindot()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<p><img src="metric_scaling_simulations_files/figure-html/batch%20lims-1.svg" width="672" /></p>
+</div>
+<div id="relative-strength-correlation" class="section level4">
+<h4>Relative strength correlation</h4>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(cor_long, <span class="kw">aes</span>(<span class="dt">x =</span> metric , <span class="dt">y =</span> correlation, <span class="dt">fill =</span> dataset)) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_boxplot</span>(<span class="dt">fill =</span> cols[<span class="dv">1</span>:<span class="kw">length</span>(<span class="kw">levels</span>(<span class="kw">as.factor</span>(cor_long$metric)))], <span class="dt">alpha =</span> <span class="fl">0.5</span>) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_dotplot</span>(<span class="dt">binaxis=</span><span class="st">&#39;y&#39;</span>, <span class="dt">stackdir=</span><span class="st">&#39;center&#39;</span>, <span class="dt">dotsize=</span><span class="fl">0.5</span>) +
+<span class="st">    </span><span class="kw">scale_fill_manual</span>(<span class="dt">values=</span>cols_data) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">theme_bw</span>() +
+<span class="st">    </span><span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">face=</span><span class="st">&quot;bold&quot;</span>, <span class="dt">size=</span><span class="dv">10</span>, <span class="dt">angle=</span><span class="dv">45</span>))</code></pre></div>
+<pre><code>## `stat_bindot()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<p><img src="metric_scaling_simulations_files/figure-html/strength%20correlation-1.svg" width="672" /></p>
+</div>
+<div id="total-strength-correlation" class="section level4">
+<h4>Total strength correlation</h4>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(cor_long_all, <span class="kw">aes</span>(<span class="dt">x =</span> metric , <span class="dt">y =</span> correlation, <span class="dt">fill =</span> dataset)) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_boxplot</span>(<span class="dt">fill =</span> cols[<span class="dv">1</span>:<span class="kw">length</span>(<span class="kw">levels</span>(<span class="kw">as.factor</span>(cor_long$metric)))], <span class="dt">alpha =</span> <span class="fl">0.5</span>) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_dotplot</span>(<span class="dt">binaxis=</span><span class="st">&#39;y&#39;</span>, <span class="dt">stackdir=</span><span class="st">&#39;center&#39;</span>, <span class="dt">dotsize=</span><span class="fl">0.5</span>) +
+<span class="st">    </span><span class="kw">scale_fill_manual</span>(<span class="dt">values=</span>cols_data) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">theme_bw</span>() +
+<span class="st">    </span><span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">face=</span><span class="st">&quot;bold&quot;</span>, <span class="dt">size=</span><span class="dv">10</span>, <span class="dt">angle=</span><span class="dv">45</span>))</code></pre></div>
+<pre><code>## `stat_bindot()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<p><img src="metric_scaling_simulations_files/figure-html/strength%20correlation%20total-1.svg" width="672" /></p>
+</div>
+<div id="plot-trade-off-between-strength-correlation-and-detection-limit" class="section level4">
+<h4>Plot trade-off between strength correlation and detection limit</h4>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#join datasets</span>
+trade_long &lt;-<span class="st"> </span><span class="kw">full_join</span>(cor_long_all, lim_long, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;dataset&quot;</span>, <span class="st">&quot;metric&quot;</span>))
+trade_sorted &lt;-<span class="st"> </span>trade_long %&gt;%<span class="st"> </span><span class="kw">group_by</span>(metric) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">mean_correlation =</span> <span class="kw">mean</span>(correlation),
+            <span class="dt">mean_limit =</span> <span class="kw">mean</span>(batch_limit),
+            <span class="dt">correlation_sd =</span> <span class="kw">sd</span>(correlation),
+            <span class="dt">batch_limit_sd =</span> <span class="kw">sd</span>(batch_limit))
+
+
+lev_metric_level &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dt">cell =</span> <span class="kw">c</span>(<span class="st">&quot;cms.bmin&quot;</span>, <span class="st">&quot;cms.batch_id&quot;</span>,<span class="st">&quot;cms.kmin&quot;</span>,
+                               <span class="st">&quot;isi&quot;</span>, <span class="st">&quot;wisi&quot;</span>, <span class="st">&quot;lisi&quot;</span>, <span class="st">&quot;entropy&quot;</span>, <span class="st">&quot;mm&quot;</span>),
+                      <span class="dt">celltype =</span> <span class="kw">c</span>(<span class="st">&quot;kbet&quot;</span>, <span class="st">&quot;asw&quot;</span>, <span class="st">&quot;graph.connectivity&quot;</span>),
+                      <span class="dt">global =</span> <span class="st">&quot;pcr&quot;</span>)
+  
+trade_sorted$metric_level &lt;-<span class="st"> </span><span class="kw">fct_collapse</span>(<span class="kw">factor</span>(trade_sorted$metric), 
+                                          <span class="dt">cell =</span> <span class="kw">c</span>(<span class="st">&quot;cms.bmin&quot;</span>, <span class="st">&quot;cms.batch_id&quot;</span>, 
+                                                   <span class="st">&quot;cms.kmin&quot;</span>, <span class="st">&quot;isi&quot;</span>, <span class="st">&quot;wisi&quot;</span>, 
+                                                   <span class="st">&quot;lisi&quot;</span>, <span class="st">&quot;entropy&quot;</span>, <span class="st">&quot;mm&quot;</span>), 
+                                          <span class="dt">celltype =</span> <span class="kw">c</span>(<span class="st">&quot;kbet&quot;</span>, <span class="st">&quot;asw&quot;</span>, <span class="st">&quot;sw&quot;</span>, 
+                                                       <span class="st">&quot;casw&quot;</span>, <span class="st">&quot;graph.connectivity&quot;</span>), 
+                                          <span class="dt">global =</span> <span class="st">&quot;pcr&quot;</span>)</code></pre></div>
+<pre><code>## Warning: Unknown levels in `f`: sw, casw</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(trade_sorted, <span class="kw">aes</span>(<span class="dt">x=</span>mean_limit, <span class="dt">y=</span>mean_correlation, <span class="dt">color=</span>metric)) +
+<span class="st">    </span><span class="kw">geom_pointrange</span>(<span class="kw">aes</span>(<span class="dt">ymin=</span>mean_correlation -<span class="st"> </span>correlation_sd, 
+                        <span class="dt">ymax=</span>mean_correlation +<span class="st"> </span>correlation_sd)) +
+<span class="st">    </span><span class="kw">geom_pointrange</span>(<span class="kw">aes</span>(<span class="dt">xmin=</span>mean_limit -<span class="st"> </span>batch_limit_sd, 
+                        <span class="dt">xmax=</span>mean_limit +<span class="st"> </span>batch_limit_sd)) +
+<span class="st">    </span><span class="kw">scale_colour_manual</span>(<span class="dt">values=</span>cols) +
+<span class="st">    </span><span class="kw">ggtitle</span>(<span class="st">&quot;Trade off: batch detection limit - correlation&quot;</span>) +
+<span class="st">    </span><span class="kw">theme_ipsum</span>()</code></pre></div>
+<p><img src="metric_scaling_simulations_files/figure-html/relationship-1.svg" width="672" /></p>
+</div>
+<div id="trade-off-top-metrics" class="section level4">
+<h4>Trade off top metrics</h4>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">trade_top &lt;-<span class="st"> </span>trade_sorted %&gt;%<span class="st"> </span><span class="kw">filter</span>(mean_limit &lt;<span class="st"> </span><span class="fl">0.25</span>, mean_correlation &gt;<span class="st"> </span><span class="fl">0.9</span>)
+
+<span class="kw">ggplot</span>(trade_top, <span class="kw">aes</span>(<span class="dt">x=</span>mean_limit, <span class="dt">y=</span>mean_correlation, <span class="dt">color=</span>metric)) +
+<span class="st">    </span><span class="kw">geom_pointrange</span>(<span class="kw">aes</span>(<span class="dt">ymin=</span>mean_correlation -<span class="st"> </span>correlation_sd, 
+                        <span class="dt">ymax=</span>mean_correlation +<span class="st"> </span>correlation_sd)) +
+<span class="st">    </span><span class="kw">geom_pointrange</span>(<span class="kw">aes</span>(<span class="dt">xmin=</span>mean_limit -<span class="st"> </span>batch_limit_sd, 
+                        <span class="dt">xmax=</span>mean_limit +<span class="st"> </span>batch_limit_sd)) +
+<span class="st">    </span><span class="kw">scale_colour_manual</span>(<span class="dt">values =</span> cols) +
+<span class="st">    </span><span class="kw">ggtitle</span>(<span class="st">&quot;Trade off: batch detection limit - correlation&quot;</span>) +
+<span class="st">    </span><span class="kw">theme_ipsum</span>()</code></pre></div>
+<p><img src="metric_scaling_simulations_files/figure-html/trade%20off%20top%20metrics-1.svg" width="672" /></p>
+</div>
+<div id="trade-off-mean_only" class="section level4">
+<h4>Trade-off mean_only</h4>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#join datasets</span>
+<span class="kw">ggplot</span>(trade_sorted, <span class="kw">aes</span>(<span class="dt">x=</span>mean_limit, <span class="dt">y=</span>mean_correlation, <span class="dt">color=</span>metric, <span class="dt">shape =</span> metric_level)) +
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="dt">size =</span> <span class="fl">4.5</span>, <span class="dt">color =</span> <span class="st">&quot;black&quot;</span>, ) +
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="dt">size =</span> <span class="dv">4</span>) +
+<span class="st">    </span><span class="kw">scale_colour_manual</span>(<span class="dt">values=</span>cols) +
+<span class="st">    </span><span class="kw">ggtitle</span>(<span class="st">&quot;Trade off: batch detection limit - correlation&quot;</span>) +
+<span class="st">    </span><span class="kw">theme_ipsum</span>()</code></pre></div>
+<p><img src="metric_scaling_simulations_files/figure-html/relationship%20points-1.svg" width="672" /></p>
+</div>
+</div>
+<div id="correlation-between-metrics" class="section level3">
+<h3>Correlation between metrics</h3>
+<p>Check mean correlation</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#scale means</span>
+scale_m &lt;-<span class="st"> </span><span class="kw">lapply</span>(<span class="kw">names</span>(mean_tab), function(dataset){
+    mean_res &lt;-<span class="st"> </span>mean_tab[[dataset]]
+    scale_res &lt;-<span class="st"> </span>mean_res %&gt;%<span class="st"> </span><span class="kw">select</span>(-batch) %&gt;%<span class="st"> </span><span class="kw">scale</span>() %&gt;%<span class="st"> </span><span class="kw">as.data.frame</span>()
+}) %&gt;%<span class="st"> </span><span class="kw">set_names</span>(<span class="kw">names</span>(mean_tab))
+
+cor_met &lt;-<span class="st"> </span><span class="kw">lapply</span>(<span class="kw">names</span>(scale_m), function(dataset){
+    scal_res &lt;-<span class="st"> </span>scale_m[[dataset]]
+    cor_scal &lt;-<span class="st"> </span><span class="kw">cor</span>(scal_res, <span class="dt">use =</span> <span class="st">&quot;complete.obs&quot;</span>, <span class="dt">method =</span> <span class="st">&quot;spearman&quot;</span>) 
+})
+
+cor_met_mean &lt;-<span class="st"> </span><span class="kw">Reduce</span>(<span class="st">`</span><span class="dt">+</span><span class="st">`</span>, cor_met)/<span class="kw">length</span>(cor_met)
+
+<span class="kw">corrplot</span>(cor_met_mean, 
+         <span class="dt">type=</span><span class="st">&quot;upper&quot;</span>, 
+         <span class="dt">order=</span><span class="st">&quot;original&quot;</span>,
+         <span class="dt">hclust.method =</span> <span class="st">&quot;complete&quot;</span>,
+         <span class="dt">col=</span><span class="kw">brewer.pal</span>(<span class="dt">n=</span><span class="dv">8</span>, <span class="dt">name=</span><span class="st">&quot;PuOr&quot;</span>),
+         <span class="dt">addgrid.col =</span> <span class="ot">NA</span>,
+         <span class="dt">addCoef.col =</span> <span class="st">&quot;black&quot;</span>,
+         <span class="dt">diag =</span> <span class="ot">FALSE</span>)</code></pre></div>
+<p><img src="metric_scaling_simulations_files/figure-html/cor-1.svg" width="864" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#save correlation</span>
+<span class="kw">saveRDS</span>(cor_met_mean, out_path_cor)
+<span class="kw">saveRDS</span>(trade_sorted, out_path_res)</code></pre></div>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("show" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

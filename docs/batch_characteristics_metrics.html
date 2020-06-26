@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Almut Lütge" />
+
+
+<title>Correlation metrics with batch characteristics</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/journal.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; background-color: #f8f8f8; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+pre, code { background-color: #f8f8f8; }
+code > span.kw { color: #204a87; font-weight: bold; } /* Keyword */
+code > span.dt { color: #204a87; } /* DataType */
+code > span.dv { color: #0000cf; } /* DecVal */
+code > span.bn { color: #0000cf; } /* BaseN */
+code > span.fl { color: #0000cf; } /* Float */
+code > span.ch { color: #4e9a06; } /* Char */
+code > span.st { color: #4e9a06; } /* String */
+code > span.co { color: #8f5902; font-style: italic; } /* Comment */
+code > span.ot { color: #8f5902; } /* Other */
+code > span.al { color: #ef2929; } /* Alert */
+code > span.fu { color: #000000; } /* Function */
+code > span.er { color: #a40000; font-weight: bold; } /* Error */
+code > span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #000000; } /* Constant */
+code > span.sc { color: #000000; } /* SpecialChar */
+code > span.vs { color: #4e9a06; } /* VerbatimString */
+code > span.ss { color: #4e9a06; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #000000; } /* Variable */
+code > span.cf { color: #204a87; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #ce5c00; font-weight: bold; } /* Operator */
+code > span.pp { color: #8f5902; font-style: italic; } /* Preprocessor */
+code > span.ex { } /* Extension */
+code > span.at { color: #c4a000; } /* Attribute */
+code > span.do { color: #8f5902; font-weight: bold; font-style: italic; } /* Documentation */
+code > span.an { color: #8f5902; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #8f5902; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #8f5902; font-weight: bold; font-style: italic; } /* Information */
+
+.sourceCode .row {
+  width: 100%;
+}
+.sourceCode {
+  overflow-x: auto;
+}
+.code-folding-btn {
+  margin-right: -30px;
+}
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 61px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 66px;
+  margin-top: -66px;
+}
+.section h2 {
+  padding-top: 66px;
+  margin-top: -66px;
+}
+.section h3 {
+  padding-top: 66px;
+  margin-top: -66px;
+}
+.section h4 {
+  padding-top: 66px;
+  margin-top: -66px;
+}
+.section h5 {
+  padding-top: 66px;
+  margin-top: -66px;
+}
+.section h6 {
+  padding-top: 66px;
+  margin-top: -66px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-inverse  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Batch metric benchmark</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index_benchmark_tasks.html">Benchmark tasks</a>
+</li>
+<li>
+  <a href="index_metrics.html">Metrics</a>
+</li>
+<li>
+  <a href="index_characterization.html">batch_characterization/simulation</a>
+</li>
+<li>
+  <a href="index_summary.html">Summary</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Correlation metrics with batch characteristics</h1>
+<h4 class="author">Almut Lütge</h4>
+<h4 class="date">25 June, 2020</h4>
+
+</div>
+
+
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">suppressPackageStartupMessages</span>({
+  <span class="kw">library</span>(CellMixS)
+  <span class="kw">library</span>(purrr)
+  <span class="kw">library</span>(tidyr)
+  <span class="kw">library</span>(plyr)
+  <span class="kw">library</span>(gridExtra)
+  <span class="kw">library</span>(scran)
+  <span class="kw">library</span>(cowplot)
+  <span class="kw">library</span>(jcolors)
+  <span class="kw">library</span>(ggpubr)
+  <span class="kw">library</span>(circlize)
+  <span class="kw">library</span>(viridis)
+  <span class="kw">library</span>(ComplexHeatmap)
+  <span class="kw">library</span>(scran)
+  <span class="kw">library</span>(magrittr)
+  <span class="kw">library</span>(colorspace)
+    <span class="kw">library</span>(corrplot)
+    <span class="kw">library</span>(RColorBrewer)
+    <span class="kw">library</span>(dplyr)
+})
+
+<span class="kw">options</span>(<span class="dt">bitmapType=</span><span class="st">&#39;cairo&#39;</span>)</code></pre></div>
+<div id="dataset-and-metrics" class="section level3">
+<h3>Dataset and metrics</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sce_name &lt;-<span class="st"> </span><span class="kw">unlist</span>(<span class="kw">c</span>(<span class="kw">strsplit</span>(params$sce_name, <span class="st">&quot;,&quot;</span>)))
+metrics &lt;-<span class="st"> </span><span class="kw">unlist</span>(<span class="kw">c</span>(<span class="kw">strsplit</span>(params$metrics, <span class="st">&quot;,&quot;</span>)))
+
+sce_vec &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="kw">paste0</span>(params$sce, sce_name, <span class="st">&quot;_&quot;</span>, params$last, <span class="st">&quot;_sce.rds&quot;</span>))
+<span class="kw">names</span>(sce_vec) &lt;-<span class="st"> </span>sce_name
+
+meta_vec &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="kw">paste0</span>(params$meta, sce_name, <span class="st">&quot;_meta.rds&quot;</span>))
+<span class="kw">names</span>(meta_vec) &lt;-<span class="st"> </span>sce_name
+
+sum_vec &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="kw">paste0</span>(params$summary, sce_name, <span class="st">&quot;.rds&quot;</span>))
+<span class="kw">names</span>(sum_vec) &lt;-<span class="st"> </span>sce_name
+
+de_vec &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="kw">paste0</span>(params$de, sce_name, <span class="st">&quot;.rds&quot;</span>))
+<span class="kw">names</span>(de_vec) &lt;-<span class="st"> </span>sce_name
+
+out_path_cor &lt;-<span class="st"> </span>params$out_cor
+
+cols_data &lt;-<span class="kw">c</span>(<span class="kw">c</span>(<span class="kw">jcolors</span>(<span class="st">&#39;pal6&#39;</span>),<span class="kw">jcolors</span>(<span class="st">&#39;pal8&#39;</span>))[<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">8</span>,<span class="dv">14</span>,<span class="dv">5</span>,<span class="dv">2</span>:<span class="dv">4</span>,<span class="dv">6</span>,<span class="dv">7</span>,<span class="dv">9</span>:<span class="dv">13</span>,<span class="dv">15</span>:<span class="dv">20</span>)],<span class="kw">jcolors</span>(<span class="st">&#39;pal4&#39;</span>))
+<span class="kw">names</span>(cols_data) &lt;-<span class="st"> </span><span class="kw">c</span>()
+
+cols &lt;-<span class="kw">c</span>(<span class="kw">c</span>(<span class="kw">jcolors</span>(<span class="st">&#39;pal6&#39;</span>),<span class="kw">jcolors</span>(<span class="st">&#39;pal8&#39;</span>), <span class="kw">jcolors</span>(<span class="st">&#39;pal7&#39;</span>))[<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">12</span>,<span class="dv">18</span>,<span class="dv">25</span>,<span class="dv">27</span>,<span class="dv">2</span>,<span class="dv">4</span>,<span class="dv">7</span>,<span class="dv">3</span>,<span class="dv">6</span>,<span class="dv">8</span>,<span class="dv">14</span>,<span class="dv">9</span>,<span class="dv">20</span>)],<span class="kw">jcolors</span>(<span class="st">&#39;pal4&#39;</span>))
+<span class="kw">names</span>(cols) &lt;-<span class="st"> </span><span class="kw">c</span>()</code></pre></div>
+</div>
+<div id="metric-scores-and-batch-characteristics" class="section level2">
+<h2>Metric scores and batch characteristics</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">metric_summary &lt;-<span class="st"> </span><span class="kw">lapply</span>(sce_name, function(sce_nam, <span class="dt">met =</span> metrics){
+  sce &lt;-<span class="st"> </span><span class="kw">readRDS</span>(sce_vec[sce_nam])
+  meta &lt;-<span class="st"> </span><span class="kw">readRDS</span>(meta_vec[sce_nam])
+  metric_vec &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&quot;_&quot;</span>, <span class="st">&quot;.&quot;</span>, met)
+  metric_vec &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&quot;default&quot;</span>, <span class="st">&quot;&quot;</span>, metric_vec)
+  metric_nam &lt;-<span class="st"> </span><span class="kw">unique</span> (<span class="kw">grep</span>(<span class="kw">paste</span>(metric_vec, <span class="dt">collapse=</span><span class="st">&quot;|&quot;</span>),
+                             <span class="kw">names</span>(<span class="kw">colData</span>(sce)), <span class="dt">value=</span><span class="ot">TRUE</span>))
+  metric_nam &lt;-<span class="st"> </span>metric_nam[-<span class="kw">grep</span>(<span class="st">&quot;smooth&quot;</span>, metric_nam)]
+  <span class="co">#exclude random batches</span>
+  if (<span class="kw">length</span>(meta[[<span class="st">&quot;batch&quot;</span>]]) &gt;<span class="st"> </span><span class="dv">1</span>) {
+      batch_str &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="st">&quot;batch&quot;</span>, <span class="kw">seq</span>(<span class="dv">10</span>, <span class="dv">100</span>, <span class="dv">10</span>), <span class="dt">collapse=</span><span class="st">&quot;|&quot;</span>)
+      metric_nam &lt;-<span class="st"> </span>metric_nam[-<span class="kw">grep</span>(batch_str, metric_nam)]
+  }
+  <span class="co"># mean score</span>
+  d &lt;-<span class="st"> </span><span class="kw">colMeans</span>(<span class="kw">as.matrix</span>(<span class="kw">colData</span>(sce)[, metric_nam]), <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)
+  <span class="kw">names</span>(d) &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="kw">paste0</span>(<span class="st">&#39;.&#39;</span>, meta[[<span class="st">&quot;batch&quot;</span>]][<span class="dv">1</span>]), <span class="st">&#39;&#39;</span>, metric_nam)
+  <span class="co"># score variance</span>
+  metric_var &lt;-<span class="st"> </span><span class="kw">as_tibble</span>(<span class="kw">colData</span>(sce)) %&gt;%
+<span class="st">      </span><span class="kw">group_by_at</span>(meta[[<span class="st">&quot;celltype&quot;</span>]]) %&gt;%
+<span class="st">      </span><span class="kw">summarize_at</span>(metric_nam, mean, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>) %&gt;%
+<span class="st">      </span><span class="kw">select</span>(-<span class="kw">one_of</span>(meta[[<span class="st">&quot;celltype&quot;</span>]])) %&gt;%
+<span class="st">      </span><span class="kw">as.matrix</span>() %&gt;%<span class="st"> </span><span class="kw">colVars</span>(.,<span class="dt">na.rm =</span> <span class="ot">TRUE</span>) %&gt;%
+<span class="st">      </span><span class="kw">set_names</span>(<span class="kw">paste0</span>(<span class="st">&quot;ct_var_&quot;</span>, <span class="kw">names</span>(d)))
+  d &lt;-<span class="st"> </span><span class="kw">c</span>(d, metric_var)
+}) %&gt;%<span class="st"> </span><span class="kw">set_names</span>(sce_name)
+
+metric_summary &lt;-<span class="st"> </span><span class="kw">bind_rows</span>(!!!metric_summary) %&gt;%<span class="st"> </span><span class="kw">set_rownames</span>(sce_name)
+
+#### ---------- Order by metric type ----------------------------------####### 
+<span class="co">#(manual needs to be adjusted if new metrics are added)</span>
+metric_fullnam &lt;-<span class="st"> </span><span class="kw">colnames</span>(metric_summary)[-<span class="kw">grep</span>( <span class="st">&quot;ct_&quot;</span>, <span class="kw">colnames</span>(metric_summary))]
+cms_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;cms&quot;</span>, metric_fullnam)
+lisi_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;isi&quot;</span>, metric_fullnam)
+ent_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;entropy&quot;</span>, metric_fullnam)
+mm_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;mm&quot;</span>, metric_fullnam)
+asw_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;^asw&quot;</span>, metric_fullnam)
+kbet_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;kbet&quot;</span>, metric_fullnam)
+graph_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;graph&quot;</span>, metric_fullnam)
+pcr_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;pcr&quot;</span>, metric_fullnam)
+metric_order &lt;-<span class="st"> </span>metric_fullnam[<span class="kw">c</span>(cms_ind, lisi_ind, ent_ind, mm_ind, 
+                                       kbet_ind, asw_ind, graph_ind, pcr_ind)]
+<span class="kw">names</span>(cols) &lt;-<span class="st"> </span>metric_fullnam
+cols &lt;-<span class="st"> </span>cols[metric_fullnam]
+####--------------------------------------------------------------------########</code></pre></div>
+<p>Per celltype metric scores and batch characteristics</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ct_summary &lt;-<span class="st"> </span><span class="kw">lapply</span>(sce_name, function(sce_nam, <span class="dt">met =</span> metrics){
+    <span class="kw">gc</span>()
+  sce &lt;-<span class="st"> </span><span class="kw">readRDS</span>(sce_vec[sce_nam])
+  meta &lt;-<span class="st"> </span><span class="kw">readRDS</span>(meta_vec[sce_nam])
+  de &lt;-<span class="st"> </span><span class="kw">readRDS</span>(de_vec[sce_nam])
+  metric_vec &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&quot;_&quot;</span>, <span class="st">&quot;.&quot;</span>, met)
+  metric_vec &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&quot;default&quot;</span>, <span class="st">&quot;&quot;</span>, metric_vec)
+  metric_nam &lt;-<span class="st"> </span><span class="kw">unique</span> (<span class="kw">grep</span>(<span class="kw">paste</span>(metric_vec, <span class="dt">collapse=</span><span class="st">&quot;|&quot;</span>),
+                             <span class="kw">names</span>(<span class="kw">colData</span>(sce)), <span class="dt">value=</span><span class="ot">TRUE</span>))
+  metric_nam &lt;-<span class="st"> </span>metric_nam[-<span class="kw">grep</span>(<span class="st">&quot;smooth&quot;</span>, metric_nam)]
+  <span class="co">#exclude random batches</span>
+  if (<span class="kw">length</span>(meta[[<span class="st">&quot;batch&quot;</span>]]) &gt;<span class="st"> </span><span class="dv">1</span>) {
+      batch_str &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="st">&quot;batch&quot;</span>, <span class="kw">seq</span>(<span class="dv">10</span>, <span class="dv">100</span>, <span class="dv">10</span>), <span class="dt">collapse=</span><span class="st">&quot;|&quot;</span>)
+      metric_nam &lt;-<span class="st"> </span>metric_nam[-<span class="kw">grep</span>(batch_str, metric_nam)]
+  }
+  nam_met &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="kw">paste0</span>(<span class="st">&#39;.&#39;</span>, meta[[<span class="st">&quot;batch&quot;</span>]][<span class="dv">1</span>]), <span class="st">&#39;&#39;</span>, metric_nam)
+
+  ct_mean &lt;-<span class="st"> </span><span class="kw">as_tibble</span>(<span class="kw">colData</span>(sce)) %&gt;%
+<span class="st">      </span><span class="kw">group_by_at</span>(meta[[<span class="st">&quot;celltype&quot;</span>]]) %&gt;%
+<span class="st">      </span><span class="kw">summarize_at</span>(metric_nam, mean, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)
+
+  n_de &lt;-<span class="st"> </span><span class="kw">lapply</span>(de[[<span class="st">&quot;table&quot;</span>]], function(y) <span class="kw">vapply</span>(y, function(x) <span class="kw">sum</span>(x$PValue &lt;<span class="st"> </span><span class="fl">0.05</span>), <span class="kw">numeric</span>(<span class="dv">1</span>)))
+  n_de_sum &lt;-<span class="st"> </span><span class="kw">bind_rows</span>(!!!n_de) %&gt;%<span class="st"> </span><span class="kw">colMeans</span>()
+
+  mean_lfc &lt;-<span class="st"> </span><span class="kw">lapply</span>(de[[<span class="st">&quot;table&quot;</span>]], function(y) <span class="kw">vapply</span>(y, function(x) <span class="kw">mean</span>(<span class="kw">abs</span>(x$logFC)), <span class="kw">numeric</span>(<span class="dv">1</span>)))
+  mean_lfc_sum &lt;-<span class="st"> </span><span class="kw">bind_rows</span>(!!!mean_lfc) %&gt;%<span class="st"> </span><span class="kw">colMeans</span>()
+
+  mean_lfc_de &lt;-<span class="st"> </span><span class="kw">lapply</span>(de[[<span class="st">&quot;table&quot;</span>]], function(y) <span class="kw">vapply</span>(y, function(x){
+      de &lt;-<span class="st"> </span><span class="kw">which</span>(x$PValue &lt;<span class="st"> </span><span class="fl">0.05</span>)
+      <span class="kw">mean</span>(<span class="kw">abs</span>(x[de, <span class="st">&quot;logFC&quot;</span>]))
+      }, <span class="kw">numeric</span>(<span class="dv">1</span>)))
+  mean_lfc_de_sum &lt;-<span class="st"> </span><span class="kw">bind_rows</span>(!!!mean_lfc_de) %&gt;%<span class="st"> </span><span class="kw">colMeans</span>()
+
+  ct_mean$n_de &lt;-<span class="st"> </span>n_de_sum
+  ct_mean$mean_lfc &lt;-<span class="st"> </span>mean_lfc_sum
+  ct_mean$mean_lfc_de &lt;-<span class="st"> </span>mean_lfc_de_sum
+  <span class="co"># add number of cells per celltype</span>
+  n_ct &lt;-<span class="st"> </span><span class="kw">table</span>(<span class="kw">colData</span>(sce)[, meta[[<span class="st">&quot;celltype&quot;</span>]]])
+  ct_mean$n_cells &lt;-<span class="st"> </span>n_ct[ct_mean[,meta[[<span class="st">&quot;celltype&quot;</span>]]][[<span class="dv">1</span>]]]
+  ct_mean
+}) %&gt;%<span class="st"> </span><span class="kw">set_names</span>(sce_name)</code></pre></div>
+<p>Summarized batch characteristics</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">batch_size &lt;-<span class="st"> </span><span class="kw">lapply</span>(sce_name, function(sce_nam){
+  sum &lt;-<span class="st"> </span><span class="kw">readRDS</span>(sum_vec[sce_nam])
+  d &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="st">&quot;mean_var_batch&quot;</span> =<span class="st"> </span>sum$mean_var_batch,
+                  <span class="st">&quot;mean_var_celltype&quot;</span> =<span class="st"> </span>sum$mean_var_celltype,
+                  <span class="st">&quot;mean_de_genes&quot;</span> =<span class="st"> </span>sum$mean_mean_n_de_genes)
+}) %&gt;%<span class="st"> </span><span class="kw">set_names</span>(sce_name) %&gt;%<span class="st"> </span><span class="kw">bind_rows</span>() %&gt;%<span class="st"> </span><span class="kw">set_rownames</span>(sce_name)
+
+
+size_metric &lt;-<span class="st"> </span><span class="kw">cbind</span>(batch_size, metric_summary)
+
+size_metric$batch_origin &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="ot">NA</span>, <span class="kw">nrow</span>(size_metric))
+size_metric[<span class="kw">c</span>(<span class="st">&quot;pbmc2_media&quot;</span>, <span class="st">&quot;pbmc_roche&quot;</span>, <span class="st">&quot;csf_media&quot;</span>), <span class="st">&quot;batch_origin&quot;</span>] &lt;-<span class="st"> &quot;media&quot;</span>
+size_metric[<span class="kw">c</span>(<span class="st">&quot;csf_patient&quot;</span>, <span class="st">&quot;kang&quot;</span>, <span class="st">&quot;pbmc2_pat&quot;</span>), <span class="st">&quot;batch_origin&quot;</span>] &lt;-<span class="st"> &quot;patient&quot;</span>
+size_metric[<span class="kw">c</span>(<span class="st">&quot;pancreas&quot;</span>, <span class="st">&quot;cellbench&quot;</span>, <span class="st">&quot;hca&quot;</span>), <span class="st">&quot;batch_origin&quot;</span>] &lt;-<span class="st"> &quot;protocol&quot;</span>
+size_metric$dataset &lt;-<span class="st"> </span><span class="kw">rownames</span>(size_metric)
+
+size_metric &lt;-<span class="st"> </span>size_metric %&gt;%<span class="st"> </span><span class="kw">arrange</span>(<span class="kw">desc</span>(mean_var_batch))
+<span class="kw">rownames</span>(size_metric) &lt;-<span class="st"> </span>size_metric$dataset
+
+<span class="co">#batch type</span>
+size_metric &lt;-<span class="st"> </span>size_metric %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="st">&quot;batch_type&quot;</span> =<span class="st"> </span><span class="kw">revalue</span>(dataset, <span class="kw">c</span>(<span class="st">&quot;cellbench&quot;</span> =<span class="st"> &quot;linear&quot;</span>,
+                                                        <span class="st">&quot;csf_media&quot;</span> =<span class="st"> &quot;additive&quot;</span>,
+                                                        <span class="st">&quot;csf_patient&quot;</span> =<span class="st"> &quot;additive&quot;</span>,
+                                                       <span class="st">&quot;hca&quot;</span> =<span class="st"> &quot;none&quot;</span>,
+                                                       <span class="st">&quot;kang&quot;</span> =<span class="st"> &quot;none&quot;</span>,
+                                                       <span class="st">&quot;pancreas&quot;</span> =<span class="st"> &quot;interacting&quot;</span>,
+                                                       <span class="st">&quot;pbmc_roche&quot;</span> =<span class="st"> &quot;interacting&quot;</span>,
+                                                       <span class="st">&quot;pbmc2_media&quot;</span> =<span class="st"> &quot;interacting&quot;</span>, 
+                                                       <span class="st">&quot;pbmc2_pat&quot;</span> =<span class="st"> &quot;none&quot;</span>)))</code></pre></div>
+<div id="batch-size-parameter" class="section level3">
+<h3>Batch size parameter</h3>
+<p>How does the metric scores changes along size characteristics</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#colors</span>
+q_size &lt;-<span class="st"> </span><span class="kw">sequential_hcl</span>(<span class="dv">5</span>, <span class="dt">palette =</span> <span class="st">&quot;Blues&quot;</span>)
+col_size &lt;-<span class="st"> </span><span class="kw">colorRamp2</span>(<span class="kw">c</span>(<span class="fl">0.2</span>, <span class="fl">0.1</span>, <span class="fl">0.03</span>, <span class="fl">0.01</span>, <span class="dv">0</span>), q_size)
+
+q_type &lt;-<span class="st"> </span><span class="kw">qualitative_hcl</span>(<span class="dv">4</span>, <span class="dt">palette =</span> <span class="st">&quot;Dark 3&quot;</span>)
+col_type &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;protocol&quot;</span> =<span class="st"> </span>q_type[<span class="dv">1</span>], <span class="st">&quot;media&quot;</span> =<span class="st"> </span>q_type[<span class="dv">3</span>], <span class="st">&quot;patient&quot;</span> =<span class="st"> </span>q_type[<span class="dv">4</span>])
+col_batch_type &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;linear&quot;</span> =<span class="st"> </span>cols_data[<span class="dv">1</span>], <span class="st">&quot;additive&quot;</span> =<span class="st"> </span>cols_data[<span class="dv">2</span>], 
+                    <span class="st">&quot;interacting&quot;</span> =<span class="st"> </span>cols_data[<span class="dv">3</span>], <span class="st">&quot;none&quot;</span> =<span class="st"> </span>cols_data[<span class="dv">4</span>])
+
+q_size2 &lt;-<span class="st"> </span><span class="kw">sequential_hcl</span>(<span class="dv">5</span>, <span class="dt">palette =</span> <span class="st">&quot;Mint&quot;</span>)
+col_size2 &lt;-<span class="st"> </span><span class="kw">colorRamp2</span>(<span class="kw">c</span>(<span class="fl">0.65</span>, <span class="fl">0.5</span>, <span class="fl">0.3</span>, <span class="fl">0.2</span>, <span class="fl">0.1</span>), q_size2)
+
+
+pal_metr &lt;-<span class="st"> &quot;Reds&quot;</span> 
+q_metr &lt;-<span class="st"> </span><span class="kw">sequential_hcl</span>(<span class="dv">5</span>, <span class="dt">palette =</span> pal_metr)
+
+col_vec &lt;-<span class="st"> </span>function(mean_tab){
+    min_col &lt;-<span class="st"> </span><span class="kw">min</span>(mean_tab, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)
+    max_col &lt;-<span class="st"> </span><span class="kw">max</span>(mean_tab, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)
+    mean_col &lt;-<span class="st"> </span><span class="kw">mean</span>(mean_tab, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)
+    q &lt;-<span class="st"> </span><span class="kw">quantile</span>(mean_tab, <span class="dt">probs =</span> <span class="kw">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>), <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)
+    col_v &lt;-<span class="st"> </span><span class="kw">c</span>(min_col, q[<span class="dv">1</span>], mean_col, q[<span class="dv">2</span>], max_col)
+}
+
+
+<span class="co">#annotation</span>
+ha_type =<span class="st"> </span><span class="kw">HeatmapAnnotation</span>(<span class="st">&quot;batch_origin&quot;</span> =<span class="st"> </span>size_metric$batch_origin,
+                            <span class="st">&quot;batch_type&quot;</span> =<span class="st"> </span>size_metric$batch_type,
+                            <span class="dt">simple_anno_size =</span> <span class="kw">unit</span>(<span class="dv">1</span>, <span class="st">&quot;cm&quot;</span>),
+                            <span class="dt">col =</span> <span class="kw">list</span>(<span class="st">&quot;batch_origin&quot;</span> =<span class="st"> </span>col_type,
+                                       <span class="st">&quot;batch_type&quot;</span> =<span class="st"> </span>col_batch_type), 
+                            <span class="dt">annotation_height =</span> <span class="kw">unit</span>(<span class="dv">1</span>, <span class="st">&quot;cm&quot;</span>),
+                            <span class="dt">annotation_name_side =</span> <span class="st">&quot;left&quot;</span>)
+
+ha_type_only =<span class="st"> </span><span class="kw">HeatmapAnnotation</span>(<span class="st">&quot;batch_type&quot;</span> =<span class="st"> </span>size_metric$batch_type,
+                            <span class="dt">simple_anno_size =</span> <span class="kw">unit</span>(<span class="fl">0.8</span>, <span class="st">&quot;cm&quot;</span>),
+                            <span class="dt">col =</span> <span class="kw">list</span>(<span class="st">&quot;batch_type&quot;</span> =<span class="st"> </span>col_batch_type), 
+                            <span class="dt">annotation_height =</span> <span class="kw">unit</span>(<span class="fl">0.8</span>, <span class="st">&quot;cm&quot;</span>),
+                            <span class="dt">annotation_name_side =</span> <span class="st">&quot;left&quot;</span>)
+
+### Heatmaps
+
+## Size Parameter
+
+<span class="co"># mean variance part</span>
+n_batches &lt;-<span class="st"> </span><span class="kw">t</span>(<span class="kw">as.matrix</span>(size_metric[,<span class="kw">c</span>(<span class="st">&quot;mean_var_batch&quot;</span>, <span class="st">&quot;mean_var_celltype&quot;</span>)])) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">set_colnames</span>(size_metric$dataset)
+<span class="kw">rownames</span>(n_batches) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;var_batch&quot;</span>, <span class="st">&quot;var_celltype&quot;</span>)
+
+h_size1 &lt;-<span class="st"> </span><span class="kw">Heatmap</span>(n_batches, 
+          <span class="dt">cluster_rows =</span> <span class="ot">FALSE</span>, 
+          <span class="dt">cluster_columns =</span> <span class="ot">FALSE</span>,
+          <span class="dt">name =</span> <span class="st">&quot;variance&quot;</span>,
+          <span class="dt">column_names_side =</span> <span class="st">&quot;bottom&quot;</span>,
+          <span class="dt">column_names_rot =</span> <span class="dv">0</span>,
+          <span class="dt">column_names_centered =</span> <span class="ot">TRUE</span>,
+          <span class="dt">column_names_gp =</span> <span class="kw">gpar</span>(<span class="dt">fontsize =</span> <span class="dv">8</span>),
+          <span class="dt">row_names_side =</span> <span class="st">&quot;left&quot;</span>, 
+          <span class="dt">col =</span> col_size,
+          <span class="dt">top_annotation =</span> ha_type_only,
+          <span class="dt">rect_gp =</span> <span class="kw">gpar</span>(<span class="dt">col=</span> <span class="st">&quot;white&quot;</span>))
+
+
+mean_de_genes &lt;-<span class="st"> </span><span class="kw">t</span>(<span class="kw">as.matrix</span>(size_metric$mean_de_genes))
+<span class="kw">colnames</span>(mean_de_genes) &lt;-<span class="st"> </span>size_metric$dataset
+<span class="kw">rownames</span>(mean_de_genes) &lt;-<span class="st"> &quot;de_genes&quot;</span>
+
+h_size2 &lt;-<span class="st"> </span><span class="kw">Heatmap</span>(mean_de_genes, 
+          <span class="dt">cluster_rows =</span> <span class="ot">FALSE</span>, 
+          <span class="dt">cluster_columns =</span> <span class="ot">FALSE</span>,
+          <span class="dt">name =</span> <span class="st">&quot;de genes [%]&quot;</span>,
+          <span class="dt">column_names_side =</span> <span class="st">&quot;bottom&quot;</span>,
+          <span class="dt">column_names_rot =</span> <span class="dv">0</span>,
+          <span class="dt">column_names_centered =</span> <span class="ot">TRUE</span>,
+          <span class="dt">column_names_gp =</span> <span class="kw">gpar</span>(<span class="dt">fontsize =</span> <span class="dv">8</span>),
+          <span class="dt">row_names_side =</span> <span class="st">&quot;left&quot;</span>, 
+          <span class="dt">col =</span> col_size2,
+          <span class="dt">rect_gp =</span> <span class="kw">gpar</span>(<span class="dt">col=</span> <span class="st">&quot;white&quot;</span>))
+
+<span class="co"># Metrics</span>
+
+<span class="co">#scaled matrix</span>
+mtr_adjust &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&quot;_&quot;</span>, <span class="st">&quot;.&quot;</span>, metrics)
+mtr_adjust &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&quot;.default&quot;</span>, <span class="st">&quot;&quot;</span>, mtr_adjust)
+metr_str &lt;-<span class="st"> </span><span class="kw">paste</span>(mtr_adjust, <span class="dt">collapse=</span><span class="st">&quot;|&quot;</span>)
+metr_columns &lt;-<span class="st"> </span><span class="kw">colnames</span>(size_metric)[<span class="kw">grep</span>(metr_str, <span class="kw">colnames</span>(size_metric))]
+metr_columns &lt;-<span class="st"> </span>metr_columns[-<span class="kw">grep</span>(<span class="st">&quot;ct_var&quot;</span>, metr_columns)]
+scal_mat &lt;-<span class="st"> </span><span class="kw">t</span>(<span class="kw">apply</span>(size_metric[,metr_columns], <span class="dv">2</span>, function(x){
+    scaled &lt;-<span class="st"> </span>(x -<span class="st"> </span><span class="kw">min</span>(x, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>))/(<span class="kw">max</span>(x, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>) -<span class="st"> </span><span class="kw">min</span>(x, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>))
+}))
+    
+col_scal =<span class="st"> </span><span class="kw">colorRamp2</span>(<span class="kw">col_vec</span>(scal_mat), q_metr)
+
+h_scal &lt;-<span class="st"> </span><span class="kw">Heatmap</span>(scal_mat, 
+          <span class="dt">cluster_rows =</span> <span class="ot">FALSE</span>, 
+          <span class="dt">cluster_columns =</span> <span class="ot">FALSE</span>,
+          <span class="dt">name =</span> <span class="st">&quot;metrics&quot;</span>,
+          <span class="dt">column_names_side =</span> <span class="st">&quot;bottom&quot;</span>,
+          <span class="dt">column_names_rot =</span> <span class="dv">45</span>,
+          <span class="dt">column_names_centered =</span> <span class="ot">TRUE</span>,
+          <span class="dt">column_names_gp =</span> <span class="kw">gpar</span>(<span class="dt">fontsize =</span> <span class="dv">8</span>),
+          <span class="dt">row_names_side =</span> <span class="st">&quot;left&quot;</span>, 
+          <span class="dt">col =</span> col_scal,
+          <span class="dt">show_heatmap_legend =</span> <span class="ot">TRUE</span>,
+          <span class="dt">rect_gp =</span> <span class="kw">gpar</span>(<span class="dt">col=</span> <span class="st">&quot;white&quot;</span>))
+
+
+
+<span class="co"># cms</span>
+cms_columns &lt;-<span class="st"> </span><span class="kw">colnames</span>(size_metric)[<span class="kw">grep</span>(<span class="st">&#39;cms&#39;</span>, <span class="kw">colnames</span>(size_metric))]
+cms_columns &lt;-<span class="st"> </span>cms_columns[-<span class="kw">grep</span>(<span class="st">&quot;ct_var&quot;</span>, cms_columns)]
+mean_cms &lt;-<span class="st"> </span><span class="kw">t</span>(<span class="kw">as.matrix</span>(size_metric[, cms_columns]))
+<span class="kw">colnames</span>(mean_cms) &lt;-<span class="st"> </span>size_metric$datasete
+
+col_cms =<span class="st"> </span><span class="kw">colorRamp2</span>(<span class="kw">col_vec</span>(mean_cms), q_metr)
+
+h_cms &lt;-<span class="st"> </span><span class="kw">Heatmap</span>(mean_cms, 
+          <span class="dt">cluster_rows =</span> <span class="ot">FALSE</span>, 
+          <span class="dt">cluster_columns =</span> <span class="ot">FALSE</span>,
+          <span class="dt">name =</span> <span class="st">&quot;cms&quot;</span>,
+          <span class="dt">column_names_side =</span> <span class="st">&quot;bottom&quot;</span>,
+          <span class="dt">column_names_rot =</span> <span class="dv">45</span>,
+          <span class="dt">column_names_centered =</span> <span class="ot">TRUE</span>,
+          <span class="dt">column_names_gp =</span> <span class="kw">gpar</span>(<span class="dt">fontsize =</span> <span class="dv">8</span>),
+          <span class="dt">row_names_side =</span> <span class="st">&quot;left&quot;</span>, 
+          <span class="dt">col =</span> col_cms,
+          <span class="dt">show_heatmap_legend =</span> <span class="ot">FALSE</span>,
+          <span class="dt">rect_gp =</span> <span class="kw">gpar</span>(<span class="dt">col=</span> <span class="st">&quot;white&quot;</span>))
+
+
+<span class="co"># isi&#39;s</span>
+isi_columns &lt;-<span class="st"> </span><span class="kw">colnames</span>(size_metric)[<span class="kw">grep</span>(<span class="st">&#39;isi&#39;</span>, <span class="kw">colnames</span>(size_metric))]
+isi_columns &lt;-<span class="st"> </span>isi_columns[-<span class="kw">grep</span>(<span class="st">&quot;ct_var&quot;</span>, isi_columns)]
+mean_isi &lt;-<span class="st"> </span><span class="kw">t</span>(<span class="kw">as.matrix</span>(size_metric[, isi_columns]))
+<span class="kw">colnames</span>(mean_isi) &lt;-<span class="st"> </span>size_metric$dataset
+
+col_isi =<span class="st"> </span><span class="kw">colorRamp2</span>(<span class="kw">col_vec</span>(mean_isi), q_metr)
+
+h_isi &lt;-<span class="st"> </span><span class="kw">Heatmap</span>(mean_isi, 
+          <span class="dt">cluster_rows =</span> <span class="ot">FALSE</span>, 
+          <span class="dt">cluster_columns =</span> <span class="ot">FALSE</span>,
+          <span class="dt">name =</span> <span class="st">&quot;isi&#39;s&quot;</span>,
+          <span class="dt">column_names_side =</span> <span class="st">&quot;bottom&quot;</span>,
+          <span class="dt">column_names_rot =</span> <span class="dv">45</span>,
+          <span class="dt">column_names_centered =</span> <span class="ot">TRUE</span>,
+          <span class="dt">column_names_gp =</span> <span class="kw">gpar</span>(<span class="dt">fontsize =</span> <span class="dv">8</span>),
+          <span class="dt">row_names_side =</span> <span class="st">&quot;left&quot;</span>, 
+          <span class="dt">col =</span> col_isi,
+          <span class="dt">show_heatmap_legend =</span> <span class="ot">FALSE</span>,
+          <span class="dt">rect_gp =</span> <span class="kw">gpar</span>(<span class="dt">col=</span> <span class="st">&quot;white&quot;</span>))
+
+<span class="co"># entropy</span>
+mean_entropy &lt;-<span class="st"> </span><span class="kw">t</span>(<span class="kw">as.matrix</span>(size_metric$entropy))
+<span class="kw">colnames</span>(mean_entropy) &lt;-<span class="st"> </span>size_metric$dataset
+<span class="kw">rownames</span>(mean_entropy) &lt;-<span class="st"> &quot;entropy&quot;</span>
+
+col_ent =<span class="st"> </span><span class="kw">colorRamp2</span>(<span class="kw">col_vec</span>(mean_entropy), q_metr)
+
+h_ent &lt;-<span class="st"> </span><span class="kw">Heatmap</span>(mean_entropy, 
+          <span class="dt">cluster_rows =</span> <span class="ot">FALSE</span>, 
+          <span class="dt">cluster_columns =</span> <span class="ot">FALSE</span>,
+          <span class="dt">name =</span> <span class="st">&quot;entropy&quot;</span>,
+          <span class="dt">column_names_side =</span> <span class="st">&quot;bottom&quot;</span>,
+          <span class="dt">column_names_rot =</span> <span class="dv">45</span>,
+          <span class="dt">column_names_centered =</span> <span class="ot">TRUE</span>,
+          <span class="dt">column_names_gp =</span> <span class="kw">gpar</span>(<span class="dt">fontsize =</span> <span class="dv">8</span>),
+          <span class="dt">row_names_side =</span> <span class="st">&quot;left&quot;</span>, 
+          <span class="dt">col =</span> col_ent,
+          <span class="dt">show_heatmap_legend =</span> <span class="ot">FALSE</span>,
+          <span class="dt">rect_gp =</span> <span class="kw">gpar</span>(<span class="dt">col=</span> <span class="st">&quot;white&quot;</span>))
+
+
+<span class="co"># mixingMetric</span>
+mean_mm &lt;-<span class="st"> </span><span class="kw">t</span>(<span class="kw">as.matrix</span>(size_metric$mm))
+<span class="kw">colnames</span>(mean_mm) &lt;-<span class="st"> </span>size_metric$dataset
+<span class="kw">rownames</span>(mean_mm) &lt;-<span class="st"> &quot;mixingMetric&quot;</span>
+
+col_mm =<span class="st"> </span><span class="kw">colorRamp2</span>(<span class="kw">col_vec</span>(mean_mm), <span class="kw">rev</span>(q_metr))
+
+h_mm &lt;-<span class="st"> </span><span class="kw">Heatmap</span>(mean_mm, 
+          <span class="dt">cluster_rows =</span> <span class="ot">FALSE</span>, 
+          <span class="dt">cluster_columns =</span> <span class="ot">FALSE</span>,
+          <span class="dt">name =</span> <span class="st">&quot;mixingMetric&quot;</span>,
+          <span class="dt">column_names_side =</span> <span class="st">&quot;bottom&quot;</span>,
+          <span class="dt">column_names_rot =</span> <span class="dv">45</span>,
+          <span class="dt">column_names_centered =</span> <span class="ot">TRUE</span>,
+          <span class="dt">column_names_gp =</span> <span class="kw">gpar</span>(<span class="dt">fontsize =</span> <span class="dv">8</span>),
+          <span class="dt">row_names_side =</span> <span class="st">&quot;left&quot;</span>, 
+          <span class="dt">col =</span> col_mm,
+          <span class="dt">show_heatmap_legend =</span> <span class="ot">FALSE</span>,
+          <span class="dt">rect_gp =</span> <span class="kw">gpar</span>(<span class="dt">col=</span> <span class="st">&quot;white&quot;</span>))
+
+
+<span class="co"># kBet</span>
+mean_kbet &lt;-<span class="st"> </span><span class="kw">t</span>(<span class="kw">as.matrix</span>(size_metric$kbet))
+<span class="kw">colnames</span>(mean_kbet) &lt;-<span class="st"> </span>size_metric$dataset
+<span class="kw">rownames</span>(mean_kbet) &lt;-<span class="st"> &quot;kbet&quot;</span>
+
+col_kbet =<span class="st"> </span><span class="kw">colorRamp2</span>(<span class="kw">col_vec</span>(mean_kbet), <span class="kw">rev</span>(q_metr))
+
+h_kbet &lt;-<span class="st"> </span><span class="kw">Heatmap</span>(mean_kbet, 
+          <span class="dt">cluster_rows =</span> <span class="ot">FALSE</span>, 
+          <span class="dt">cluster_columns =</span> <span class="ot">FALSE</span>,
+          <span class="dt">name =</span> <span class="st">&quot;kbet&quot;</span>,
+          <span class="dt">column_names_side =</span> <span class="st">&quot;bottom&quot;</span>,
+          <span class="dt">column_names_rot =</span> <span class="dv">45</span>,
+          <span class="dt">column_names_centered =</span> <span class="ot">TRUE</span>,
+          <span class="dt">column_names_gp =</span> <span class="kw">gpar</span>(<span class="dt">fontsize =</span> <span class="dv">8</span>),
+          <span class="dt">row_names_side =</span> <span class="st">&quot;left&quot;</span>, 
+          <span class="dt">col =</span> col_kbet,
+          <span class="dt">show_heatmap_legend =</span> <span class="ot">FALSE</span>,
+          <span class="dt">rect_gp =</span> <span class="kw">gpar</span>(<span class="dt">col=</span> <span class="st">&quot;white&quot;</span>))
+
+<span class="co"># pcr</span>
+mean_pcr &lt;-<span class="st"> </span><span class="kw">t</span>(<span class="kw">as.matrix</span>(size_metric$pcr))
+<span class="kw">colnames</span>(mean_pcr) &lt;-<span class="st"> </span>size_metric$dataset
+<span class="kw">rownames</span>(mean_pcr) &lt;-<span class="st"> &quot;pcr&quot;</span>
+
+col_pcr =<span class="st"> </span><span class="kw">colorRamp2</span>(<span class="kw">col_vec</span>(mean_pcr), <span class="kw">rev</span>(q_metr))
+
+h_pcr &lt;-<span class="st"> </span><span class="kw">Heatmap</span>(mean_pcr, 
+          <span class="dt">cluster_rows =</span> <span class="ot">FALSE</span>, 
+          <span class="dt">cluster_columns =</span> <span class="ot">FALSE</span>,
+          <span class="dt">name =</span> <span class="st">&quot;pcr&quot;</span>,
+          <span class="dt">column_names_side =</span> <span class="st">&quot;bottom&quot;</span>,
+          <span class="dt">column_names_rot =</span> <span class="dv">45</span>,
+          <span class="dt">column_names_centered =</span> <span class="ot">TRUE</span>,
+          <span class="dt">column_names_gp =</span> <span class="kw">gpar</span>(<span class="dt">fontsize =</span> <span class="dv">8</span>),
+          <span class="dt">row_names_side =</span> <span class="st">&quot;left&quot;</span>, 
+          <span class="dt">col =</span> col_pcr,
+          <span class="dt">show_heatmap_legend =</span> <span class="ot">FALSE</span>,
+          <span class="dt">rect_gp =</span> <span class="kw">gpar</span>(<span class="dt">col=</span> <span class="st">&quot;white&quot;</span>))
+
+<span class="co"># asw</span>
+mean_asw &lt;-<span class="st"> </span><span class="kw">t</span>(<span class="kw">as.matrix</span>(size_metric$asw))
+<span class="kw">colnames</span>(mean_asw) &lt;-<span class="st"> </span>size_metric$dataset
+<span class="kw">rownames</span>(mean_asw) &lt;-<span class="st"> &quot;asw&quot;</span>
+
+col_asw =<span class="st"> </span><span class="kw">colorRamp2</span>(<span class="kw">col_vec</span>(mean_asw), q_metr)
+
+h_asw &lt;-<span class="st"> </span><span class="kw">Heatmap</span>(mean_asw, 
+          <span class="dt">cluster_rows =</span> <span class="ot">FALSE</span>, 
+          <span class="dt">cluster_columns =</span> <span class="ot">FALSE</span>,
+          <span class="dt">name =</span> <span class="st">&quot;asw&quot;</span>,
+          <span class="dt">column_names_side =</span> <span class="st">&quot;bottom&quot;</span>,
+          <span class="dt">column_names_rot =</span> <span class="dv">45</span>,
+          <span class="dt">column_names_centered =</span> <span class="ot">TRUE</span>,
+          <span class="dt">column_names_gp =</span> <span class="kw">gpar</span>(<span class="dt">fontsize =</span> <span class="dv">8</span>),
+          <span class="dt">row_names_side =</span> <span class="st">&quot;left&quot;</span>, 
+          <span class="dt">col =</span> col_asw,
+          <span class="dt">show_heatmap_legend =</span> <span class="ot">FALSE</span>,
+          <span class="dt">rect_gp =</span> <span class="kw">gpar</span>(<span class="dt">col=</span> <span class="st">&quot;white&quot;</span>))
+
+
+<span class="co"># graph_connectivity</span>
+mean_gcon &lt;-<span class="st"> </span><span class="kw">t</span>(<span class="kw">as.matrix</span>(size_metric$graph_connectivity))
+<span class="kw">colnames</span>(mean_gcon) &lt;-<span class="st"> </span>size_metric$dataset
+<span class="kw">rownames</span>(mean_gcon) &lt;-<span class="st"> &quot;graph_connectivity&quot;</span>
+
+col_gcon =<span class="st"> </span><span class="kw">colorRamp2</span>(<span class="kw">col_vec</span>(mean_gcon), <span class="kw">rev</span>(q_metr))
+
+h_gcon &lt;-<span class="st"> </span><span class="kw">Heatmap</span>(mean_gcon, 
+          <span class="dt">cluster_rows =</span> <span class="ot">FALSE</span>, 
+          <span class="dt">cluster_columns =</span> <span class="ot">FALSE</span>,
+          <span class="dt">name =</span> <span class="st">&quot;graph_connectivity&quot;</span>,
+          <span class="dt">column_names_side =</span> <span class="st">&quot;bottom&quot;</span>,
+          <span class="dt">column_names_rot =</span> <span class="dv">45</span>,
+          <span class="dt">column_names_centered =</span> <span class="ot">TRUE</span>,
+          <span class="dt">column_names_gp =</span> <span class="kw">gpar</span>(<span class="dt">fontsize =</span> <span class="dv">8</span>),
+          <span class="dt">row_names_side =</span> <span class="st">&quot;left&quot;</span>, 
+          <span class="dt">col =</span> col_gcon,
+          <span class="dt">show_heatmap_legend =</span> <span class="ot">FALSE</span>,
+          <span class="dt">rect_gp =</span> <span class="kw">gpar</span>(<span class="dt">col=</span> <span class="st">&quot;white&quot;</span>))
+
+<span class="co">#LEGENDcols</span>
+col_fun =<span class="st"> </span><span class="kw">colorRamp2</span>(<span class="kw">c</span>(<span class="dv">0</span>, <span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="dv">1</span>), <span class="kw">rev</span>(q_metr))
+lgd =<span class="st"> </span><span class="kw">Legend</span>(<span class="dt">col_fun =</span> col_fun, <span class="dt">title =</span> <span class="st">&quot;relative batch size&quot;</span>, <span class="dt">at =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span>, <span class="dv">1</span>), 
+    <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&quot;low&quot;</span>, <span class="st">&quot;median&quot;</span>, <span class="st">&quot;high&quot;</span>))
+
+
+h_list &lt;-<span class="st">  </span>h_size1 %v%<span class="st"> </span>h_size2 %v%<span class="st"> </span>h_cms %v%<span class="st"> </span>h_isi %v%<span class="st"> </span>h_mm %v%<span class="st"> </span>h_ent %v%<span class="st"> </span>h_kbet %v%<span class="st"> </span>h_asw %v%<span class="st"> </span>h_gcon %v%<span class="st"> </span>h_pcr
+h_list2 &lt;-<span class="st"> </span>h_size1 %v%<span class="st"> </span>h_size2 %v%<span class="st"> </span>h_scal
+
+<span class="kw">draw</span>(h_list, <span class="dt">annotation_legend_list =</span> <span class="kw">list</span>(lgd))</code></pre></div>
+<p><img src="batch_characteristics_metrics_files/figure-html/size%20hm-1.svg" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">draw</span>(h_list2)</code></pre></div>
+<p><img src="batch_characteristics_metrics_files/figure-html/size%20hm-2.svg" width="672" /></p>
+<p>Correlation with batch size parameters</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">size_columns &lt;-<span class="st"> </span><span class="kw">colnames</span>(batch_size)[!<span class="kw">colnames</span>(batch_size) %in%<span class="st"> &quot;mean_var_celltype&quot;</span>]
+size_mat &lt;-<span class="st"> </span>size_metric[, <span class="kw">c</span>(metr_columns, size_columns)]
+size_cor &lt;-<span class="st"> </span><span class="kw">cor</span>(size_mat, <span class="dt">use =</span> <span class="st">&quot;complete.obs&quot;</span>, <span class="dt">method =</span> <span class="st">&quot;spearman&quot;</span>)
+
+###------------------ metric order -----------------------------------#########
+cms_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;cms&quot;</span>, <span class="kw">colnames</span>(size_cor))
+lisi_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;isi&quot;</span>, <span class="kw">colnames</span>(size_cor))
+ent_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;entropy&quot;</span>, <span class="kw">colnames</span>(size_cor))
+mm_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;mm&quot;</span>, <span class="kw">colnames</span>(size_cor))
+asw_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;^asw&quot;</span>, <span class="kw">colnames</span>(size_cor))
+kbet_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;kbet&quot;</span>,<span class="kw">colnames</span>(size_cor))
+graph_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;graph&quot;</span>, <span class="kw">colnames</span>(size_cor))
+pcr_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;pcr&quot;</span>, <span class="kw">colnames</span>(size_cor))
+size_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;mean_&quot;</span>, <span class="kw">colnames</span>(size_cor))
+metric_order &lt;-<span class="st"> </span><span class="kw">colnames</span>(size_cor)[<span class="kw">c</span>(size_ind, cms_ind, lisi_ind, ent_ind, mm_ind, 
+                                       kbet_ind, asw_ind, graph_ind, pcr_ind)]
+###------------------ metric reorder -----------------------------------#######
+size_cor &lt;-<span class="st"> </span>size_cor[metric_order, metric_order]
+
+
+<span class="kw">corrplot</span>(size_cor, 
+         <span class="dt">type=</span><span class="st">&quot;upper&quot;</span>, 
+         <span class="dt">order=</span><span class="st">&quot;original&quot;</span>,
+         <span class="dt">hclust.method =</span> <span class="st">&quot;complete&quot;</span>,
+         <span class="dt">col=</span><span class="kw">brewer.pal</span>(<span class="dt">n=</span><span class="dv">8</span>, <span class="dt">name=</span><span class="st">&quot;PuOr&quot;</span>),
+         <span class="dt">addgrid.col =</span> <span class="ot">NA</span>,
+         <span class="dt">addCoef.col =</span> <span class="st">&quot;black&quot;</span>,
+         <span class="dt">diag =</span> <span class="ot">FALSE</span>)</code></pre></div>
+<p><img src="batch_characteristics_metrics_files/figure-html/size%20cor-1.svg" width="960" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#save correlation</span>
+<span class="kw">saveRDS</span>(size_cor, out_path_cor)</code></pre></div>
+</div>
+</div>
+<div id="per-celltype-metric-score" class="section level2">
+<h2>Per celltype metric score</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">size_hm &lt;-<span class="st"> </span>function(dataset) {
+    ### Heatmaps
+    ct_mat &lt;-<span class="st"> </span>ct_summary[[dataset]]
+    ct_mat &lt;-<span class="st"> </span>ct_mat[<span class="kw">order</span>(ct_mat$mean_lfc_de),]
+    n_batches &lt;-<span class="st"> </span><span class="kw">t</span>(<span class="kw">as.matrix</span>(ct_mat[,<span class="kw">c</span>(<span class="st">&quot;mean_lfc&quot;</span>, <span class="st">&quot;mean_lfc_de&quot;</span>)])) 
+    col_size &lt;-<span class="st"> </span><span class="kw">colorRamp2</span>(<span class="kw">rev</span>(<span class="kw">col_vec</span>(n_batches)), q_size)
+    
+    h_size1 &lt;-<span class="st"> </span><span class="kw">Heatmap</span>(n_batches, 
+          <span class="dt">column_title =</span> dataset,
+          <span class="dt">cluster_rows =</span> <span class="ot">FALSE</span>, 
+          <span class="dt">cluster_columns =</span> <span class="ot">FALSE</span>,
+          <span class="dt">name =</span> <span class="st">&quot;mean_lfc&quot;</span>,
+          <span class="dt">column_names_side =</span> <span class="st">&quot;bottom&quot;</span>,
+          <span class="dt">column_names_rot =</span> <span class="dv">0</span>,
+          <span class="dt">column_names_centered =</span> <span class="ot">TRUE</span>,
+          <span class="dt">column_names_gp =</span> <span class="kw">gpar</span>(<span class="dt">fontsize =</span> <span class="dv">8</span>),
+          <span class="dt">row_names_side =</span> <span class="st">&quot;left&quot;</span>, 
+          <span class="dt">col =</span> col_size,
+          <span class="dt">rect_gp =</span> <span class="kw">gpar</span>(<span class="dt">col=</span> <span class="st">&quot;white&quot;</span>))
+
+    mean_de_genes &lt;-<span class="st"> </span><span class="kw">t</span>(<span class="kw">as.matrix</span>(ct_mat$n_de))
+    <span class="kw">rownames</span>(mean_de_genes) &lt;-<span class="st"> &quot;de_genes&quot;</span>
+    col_size2 &lt;-<span class="st"> </span><span class="kw">colorRamp2</span>(<span class="kw">rev</span>(<span class="kw">col_vec</span>(mean_de_genes)), q_size2)
+
+    h_size2 &lt;-<span class="st"> </span><span class="kw">Heatmap</span>(mean_de_genes, 
+          <span class="dt">cluster_rows =</span> <span class="ot">FALSE</span>, 
+          <span class="dt">cluster_columns =</span> <span class="ot">FALSE</span>,
+          <span class="dt">name =</span> <span class="st">&quot;#de genes&quot;</span>,
+          <span class="dt">column_names_side =</span> <span class="st">&quot;bottom&quot;</span>,
+          <span class="dt">column_names_rot =</span> <span class="dv">0</span>,
+          <span class="dt">column_names_centered =</span> <span class="ot">TRUE</span>,
+          <span class="dt">column_names_gp =</span> <span class="kw">gpar</span>(<span class="dt">fontsize =</span> <span class="dv">8</span>),
+          <span class="dt">row_names_side =</span> <span class="st">&quot;left&quot;</span>, 
+          <span class="dt">col =</span> col_size2,
+          <span class="dt">rect_gp =</span> <span class="kw">gpar</span>(<span class="dt">col=</span> <span class="st">&quot;white&quot;</span>))
+    
+    <span class="co"># n_genes</span>
+    n_cells &lt;-<span class="st"> </span><span class="kw">t</span>(<span class="kw">as.matrix</span>(ct_mat$n_cells))
+    <span class="kw">rownames</span>(n_cells) &lt;-<span class="st"> &quot;n_cells&quot;</span>
+    q_size3 &lt;-<span class="st"> </span><span class="kw">sequential_hcl</span>(<span class="dv">5</span>, <span class="dt">palette =</span> <span class="st">&quot;Purples&quot;</span>)
+    col_cells =<span class="st"> </span><span class="kw">colorRamp2</span>(<span class="kw">col_vec</span>(n_cells), <span class="kw">rev</span>(q_size3))
+    
+    h_size3 &lt;-<span class="st"> </span><span class="kw">Heatmap</span>(n_cells, 
+          <span class="dt">cluster_rows =</span> <span class="ot">FALSE</span>, 
+          <span class="dt">cluster_columns =</span> <span class="ot">FALSE</span>,
+          <span class="dt">name =</span> <span class="st">&quot;#cells&quot;</span>,
+          <span class="dt">column_names_side =</span> <span class="st">&quot;bottom&quot;</span>,
+          <span class="dt">column_names_rot =</span> <span class="dv">0</span>,
+          <span class="dt">column_names_centered =</span> <span class="ot">TRUE</span>,
+          <span class="dt">column_names_gp =</span> <span class="kw">gpar</span>(<span class="dt">fontsize =</span> <span class="dv">8</span>),
+          <span class="dt">row_names_side =</span> <span class="st">&quot;left&quot;</span>, 
+          <span class="dt">col =</span> col_cells,
+          <span class="dt">rect_gp =</span> <span class="kw">gpar</span>(<span class="dt">col=</span> <span class="st">&quot;white&quot;</span>))
+
+    <span class="co"># cms</span>
+    cms_columns &lt;-<span class="st"> </span><span class="kw">colnames</span>(ct_mat)[<span class="kw">grep</span>(<span class="st">&#39;cms&#39;</span>, <span class="kw">colnames</span>(ct_mat))]
+    mean_cms &lt;-<span class="st"> </span><span class="kw">t</span>(<span class="kw">as.matrix</span>(ct_mat[, cms_columns]))
+
+    col_cms =<span class="st"> </span><span class="kw">colorRamp2</span>(<span class="kw">col_vec</span>(mean_cms), q_metr)
+
+    h_cms &lt;-<span class="st"> </span><span class="kw">Heatmap</span>(mean_cms, 
+          <span class="dt">cluster_rows =</span> <span class="ot">FALSE</span>, 
+          <span class="dt">cluster_columns =</span> <span class="ot">FALSE</span>,
+          <span class="dt">name =</span> <span class="st">&quot;cms&quot;</span>,
+          <span class="dt">column_names_side =</span> <span class="st">&quot;bottom&quot;</span>,
+          <span class="dt">column_names_rot =</span> <span class="dv">45</span>,
+          <span class="dt">column_names_centered =</span> <span class="ot">TRUE</span>,
+          <span class="dt">column_names_gp =</span> <span class="kw">gpar</span>(<span class="dt">fontsize =</span> <span class="dv">8</span>),
+          <span class="dt">row_names_side =</span> <span class="st">&quot;left&quot;</span>, 
+          <span class="dt">col =</span> col_cms,
+          <span class="dt">show_heatmap_legend =</span> <span class="ot">FALSE</span>,
+          <span class="dt">rect_gp =</span> <span class="kw">gpar</span>(<span class="dt">col=</span> <span class="st">&quot;white&quot;</span>))
+
+    <span class="co"># isi&#39;s</span>
+    isi_columns &lt;-<span class="st"> </span><span class="kw">colnames</span>(ct_mat)[<span class="kw">grep</span>(<span class="st">&#39;isi&#39;</span>, <span class="kw">colnames</span>(ct_mat))]
+    mean_isi &lt;-<span class="st"> </span><span class="kw">t</span>(<span class="kw">as.matrix</span>(ct_mat[, isi_columns]))
+
+    col_isi =<span class="st"> </span><span class="kw">colorRamp2</span>(<span class="kw">col_vec</span>(mean_isi), q_metr)
+
+    h_isi &lt;-<span class="st"> </span><span class="kw">Heatmap</span>(mean_isi, 
+          <span class="dt">cluster_rows =</span> <span class="ot">FALSE</span>, 
+          <span class="dt">cluster_columns =</span> <span class="ot">FALSE</span>,
+          <span class="dt">name =</span> <span class="st">&quot;isi&#39;s&quot;</span>,
+          <span class="dt">column_names_side =</span> <span class="st">&quot;bottom&quot;</span>,
+          <span class="dt">column_names_rot =</span> <span class="dv">45</span>,
+          <span class="dt">column_names_centered =</span> <span class="ot">TRUE</span>,
+          <span class="dt">column_names_gp =</span> <span class="kw">gpar</span>(<span class="dt">fontsize =</span> <span class="dv">8</span>),
+          <span class="dt">row_names_side =</span> <span class="st">&quot;left&quot;</span>, 
+          <span class="dt">col =</span> col_isi,
+          <span class="dt">show_heatmap_legend =</span> <span class="ot">FALSE</span>,
+          <span class="dt">rect_gp =</span> <span class="kw">gpar</span>(<span class="dt">col=</span> <span class="st">&quot;white&quot;</span>))
+
+    <span class="co"># entropy</span>
+    ent_columns &lt;-<span class="st"> </span><span class="kw">colnames</span>(ct_mat)[<span class="kw">grep</span>(<span class="st">&#39;entropy&#39;</span>, <span class="kw">colnames</span>(ct_mat))]
+    mean_entropy &lt;-<span class="st"> </span><span class="kw">t</span>(<span class="kw">as.matrix</span>(ct_mat[, ent_columns]))
+    <span class="kw">rownames</span>(mean_entropy) &lt;-<span class="st"> &quot;entropy&quot;</span>
+
+    col_ent =<span class="st"> </span><span class="kw">colorRamp2</span>(<span class="kw">col_vec</span>(mean_entropy), q_metr)
+
+    h_ent &lt;-<span class="st"> </span><span class="kw">Heatmap</span>(mean_entropy, 
+          <span class="dt">cluster_rows =</span> <span class="ot">FALSE</span>, 
+          <span class="dt">cluster_columns =</span> <span class="ot">FALSE</span>,
+          <span class="dt">name =</span> <span class="st">&quot;entropy&quot;</span>,
+          <span class="dt">column_names_side =</span> <span class="st">&quot;bottom&quot;</span>,
+          <span class="dt">column_names_rot =</span> <span class="dv">45</span>,
+          <span class="dt">column_names_centered =</span> <span class="ot">TRUE</span>,
+          <span class="dt">column_names_gp =</span> <span class="kw">gpar</span>(<span class="dt">fontsize =</span> <span class="dv">8</span>),
+          <span class="dt">row_names_side =</span> <span class="st">&quot;left&quot;</span>, 
+          <span class="dt">col =</span> col_ent,
+          <span class="dt">show_heatmap_legend =</span> <span class="ot">FALSE</span>,
+          <span class="dt">rect_gp =</span> <span class="kw">gpar</span>(<span class="dt">col=</span> <span class="st">&quot;white&quot;</span>))
+
+    <span class="co"># mixingMetric</span>
+    mm_columns &lt;-<span class="st"> </span><span class="kw">colnames</span>(ct_mat)[<span class="kw">grep</span>(<span class="st">&#39;mm&#39;</span>, <span class="kw">colnames</span>(ct_mat))]
+    mean_mm &lt;-<span class="st"> </span><span class="kw">t</span>(<span class="kw">as.matrix</span>(ct_mat[, mm_columns]))
+    <span class="kw">rownames</span>(mean_mm) &lt;-<span class="st"> &quot;mixingMetric&quot;</span>
+
+    col_mm =<span class="st"> </span><span class="kw">colorRamp2</span>(<span class="kw">col_vec</span>(mean_mm), <span class="kw">rev</span>(q_metr))
+
+    h_mm &lt;-<span class="st"> </span><span class="kw">Heatmap</span>(mean_mm, 
+          <span class="dt">cluster_rows =</span> <span class="ot">FALSE</span>, 
+          <span class="dt">cluster_columns =</span> <span class="ot">FALSE</span>,
+          <span class="dt">name =</span> <span class="st">&quot;mixingMetric&quot;</span>,
+          <span class="dt">column_names_side =</span> <span class="st">&quot;bottom&quot;</span>,
+          <span class="dt">column_names_rot =</span> <span class="dv">45</span>,
+          <span class="dt">column_names_centered =</span> <span class="ot">TRUE</span>,
+          <span class="dt">column_names_gp =</span> <span class="kw">gpar</span>(<span class="dt">fontsize =</span> <span class="dv">8</span>),
+          <span class="dt">row_names_side =</span> <span class="st">&quot;left&quot;</span>, 
+          <span class="dt">col =</span> col_mm,
+          <span class="dt">show_heatmap_legend =</span> <span class="ot">FALSE</span>,
+          <span class="dt">rect_gp =</span> <span class="kw">gpar</span>(<span class="dt">col=</span> <span class="st">&quot;white&quot;</span>))
+
+    <span class="co"># kBet</span>
+    kbet_columns &lt;-<span class="st"> </span><span class="kw">colnames</span>(ct_mat)[<span class="kw">grep</span>(<span class="st">&#39;kbet&#39;</span>, <span class="kw">colnames</span>(ct_mat))]
+    mean_kbet &lt;-<span class="st"> </span><span class="kw">t</span>(<span class="kw">as.matrix</span>(ct_mat[, kbet_columns]))
+    <span class="kw">rownames</span>(mean_kbet) &lt;-<span class="st"> &quot;kbet&quot;</span>
+    
+    if (<span class="kw">min</span>(mean_kbet, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>) ==<span class="st"> </span><span class="kw">max</span>(mean_kbet, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)) {
+        col_kbet =<span class="st"> </span><span class="kw">colorRamp2</span>(<span class="kw">c</span>(<span class="dv">0</span>, <span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="dv">1</span>), <span class="kw">rev</span>(q_metr))
+    } else {
+        col_kbet =<span class="st"> </span><span class="kw">colorRamp2</span>(<span class="kw">col_vec</span>(mean_kbet), <span class="kw">rev</span>(q_metr))
+    }
+    
+
+    h_kbet &lt;-<span class="st"> </span><span class="kw">Heatmap</span>(mean_kbet, 
+          <span class="dt">cluster_rows =</span> <span class="ot">FALSE</span>, 
+          <span class="dt">cluster_columns =</span> <span class="ot">FALSE</span>,
+          <span class="dt">name =</span> <span class="st">&quot;kbet&quot;</span>,
+          <span class="dt">column_names_side =</span> <span class="st">&quot;bottom&quot;</span>,
+          <span class="dt">column_names_rot =</span> <span class="dv">45</span>,
+          <span class="dt">column_names_centered =</span> <span class="ot">TRUE</span>,
+          <span class="dt">column_names_gp =</span> <span class="kw">gpar</span>(<span class="dt">fontsize =</span> <span class="dv">8</span>),
+          <span class="dt">row_names_side =</span> <span class="st">&quot;left&quot;</span>, 
+          <span class="dt">col =</span> col_kbet,
+          <span class="dt">show_heatmap_legend =</span> <span class="ot">FALSE</span>,
+          <span class="dt">rect_gp =</span> <span class="kw">gpar</span>(<span class="dt">col=</span> <span class="st">&quot;white&quot;</span>))
+    
+    <span class="co"># asw</span>
+    asw_columns &lt;-<span class="st"> </span><span class="kw">colnames</span>(ct_mat)[<span class="kw">grep</span>(<span class="st">&#39;asw&#39;</span>, <span class="kw">colnames</span>(ct_mat))]
+    mean_asw &lt;-<span class="st"> </span><span class="kw">t</span>(<span class="kw">as.matrix</span>(ct_mat[, asw_columns]))
+
+    col_asw =<span class="st"> </span><span class="kw">colorRamp2</span>(<span class="kw">col_vec</span>(mean_asw), <span class="kw">rev</span>(q_metr))
+
+    h_asw &lt;-<span class="st"> </span><span class="kw">Heatmap</span>(mean_asw, 
+          <span class="dt">cluster_rows =</span> <span class="ot">FALSE</span>, 
+          <span class="dt">cluster_columns =</span> <span class="ot">FALSE</span>,
+          <span class="dt">name =</span> <span class="st">&quot;asw&quot;</span>,
+          <span class="dt">column_names_side =</span> <span class="st">&quot;bottom&quot;</span>,
+          <span class="dt">column_names_rot =</span> <span class="dv">45</span>,
+          <span class="dt">column_names_centered =</span> <span class="ot">TRUE</span>,
+          <span class="dt">column_names_gp =</span> <span class="kw">gpar</span>(<span class="dt">fontsize =</span> <span class="dv">8</span>),
+          <span class="dt">row_names_side =</span> <span class="st">&quot;left&quot;</span>, 
+          <span class="dt">col =</span> col_asw,
+          <span class="dt">show_heatmap_legend =</span> <span class="ot">FALSE</span>,
+          <span class="dt">rect_gp =</span> <span class="kw">gpar</span>(<span class="dt">col=</span> <span class="st">&quot;white&quot;</span>))
+    
+    <span class="co">#LEGEND</span>
+    col_fun =<span class="st"> </span><span class="kw">colorRamp2</span>(<span class="kw">c</span>(<span class="dv">0</span>, <span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="dv">1</span>), <span class="kw">rev</span>(q_metr))
+    lgd =<span class="st"> </span><span class="kw">Legend</span>(<span class="dt">col_fun =</span> col_fun, <span class="dt">title =</span> <span class="st">&quot;relative batch size&quot;</span>, <span class="dt">at =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span>, <span class="dv">1</span>), 
+    <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&quot;low&quot;</span>, <span class="st">&quot;median&quot;</span>, <span class="st">&quot;high&quot;</span>))
+
+    h_list &lt;-<span class="st">  </span>h_size1 %v%<span class="st"> </span>h_size2 %v%<span class="st"> </span>h_size3 %v%<span class="st"> </span>h_cms %v%<span class="st"> </span>h_isi %v%<span class="st"> </span>h_mm %v%<span class="st"> </span>h_ent %v%<span class="st"> </span>h_kbet %v%<span class="st"> </span>h_asw
+    <span class="kw">draw</span>(h_list, <span class="dt">annotation_legend_list =</span> <span class="kw">list</span>(lgd))
+}</code></pre></div>
+<div id="celltype-score-distributions" class="section level3 tabset">
+<h3>Celltype score distributions</h3>
+<p>How does the metric scores change across celltypes</p>
+<div id="pbmc2_media" class="section level4">
+<h4>pbmc2_media</h4>
+<p><img src="batch_characteristics_metrics_files/figure-html/hmpbmc2_media-1.svg" width="672" /></p>
+</div>
+<div id="csf_patient" class="section level4">
+<h4>csf_patient</h4>
+<p><img src="batch_characteristics_metrics_files/figure-html/hmcsf_patient-1.svg" width="672" /></p>
+</div>
+<div id="pancreas" class="section level4">
+<h4>pancreas</h4>
+<p><img src="batch_characteristics_metrics_files/figure-html/hmpancreas-1.svg" width="672" /></p>
+</div>
+<div id="csf_media" class="section level4">
+<h4>csf_media</h4>
+<p><img src="batch_characteristics_metrics_files/figure-html/hmcsf_media-1.svg" width="672" /></p>
+</div>
+<div id="pbmc2_pat" class="section level4">
+<h4>pbmc2_pat</h4>
+<p><img src="batch_characteristics_metrics_files/figure-html/hmpbmc2_pat-1.svg" width="672" /></p>
+</div>
+<div id="hca" class="section level4">
+<h4>hca</h4>
+<p><img src="batch_characteristics_metrics_files/figure-html/hmhca-1.svg" width="672" /></p>
+</div>
+<div id="pbmc_roche" class="section level4">
+<h4>pbmc_roche</h4>
+<p><img src="batch_characteristics_metrics_files/figure-html/hmpbmc_roche-1.svg" width="672" /></p>
+</div>
+<div id="kang" class="section level4">
+<h4>kang</h4>
+<p><img src="batch_characteristics_metrics_files/figure-html/hmkang-1.svg" width="672" /></p>
+</div>
+<div id="cellbench" class="section level4">
+<h4>cellbench</h4>
+<p><img src="batch_characteristics_metrics_files/figure-html/hmcellbench-1.svg" width="672" /></p>
+</div>
+</div>
+</div>
+<div id="celltype-metric-correlations" class="section level2">
+<h2>Celltype metric correlations</h2>
+<p>Correlation with batch size parameters</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cor_fun &lt;-<span class="st"> </span>function(dataset){
+    ct_mat &lt;-<span class="st"> </span>ct_summary[[dataset]]
+    <span class="co"># unify metric names</span>
+    met &lt;-<span class="st"> </span><span class="kw">colnames</span>(ct_mat)
+    metric_nam &lt;-<span class="st"> </span>met[<span class="kw">grep</span>(metr_str, met)]
+    ind_kmin &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;kmin&quot;</span>, metric_nam)
+    ind_bmin &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;bmin&quot;</span>, metric_nam)
+    metric_nam &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&quot;_.*&quot;</span>, <span class="st">&quot;&quot;</span>, metric_nam)
+    metric_nam &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&quot;</span><span class="ch">\\</span><span class="st">..*&quot;</span>, <span class="st">&quot;&quot;</span>, metric_nam)
+    metric_nam[ind_bmin] &lt;-<span class="st"> &quot;cms.bmin80&quot;</span>
+    metric_nam[ind_kmin] &lt;-<span class="st"> &quot;cms.kmin80&quot;</span>
+    <span class="kw">colnames</span>(ct_mat)[<span class="kw">grep</span>(metr_str, met)] &lt;-<span class="st"> </span>metric_nam
+    <span class="co"># get correlations</span>
+    ct_mat &lt;-<span class="st"> </span>ct_mat[<span class="kw">order</span>(ct_mat$mean_lfc),]
+    ct_mat &lt;-<span class="st"> </span>ct_mat %&gt;%<span class="st"> </span><span class="kw">filter</span>(n_cells &gt;<span class="st"> </span><span class="dv">100</span>) %&gt;%<span class="st"> </span><span class="kw">select_if</span>(is.numeric) %&gt;%
+<span class="st">        </span><span class="kw">select</span>(-n_cells)
+    size_cor &lt;-<span class="st"> </span><span class="kw">cor</span>(ct_mat, <span class="dt">use =</span> <span class="st">&quot;complete.obs&quot;</span>, <span class="dt">method =</span> <span class="st">&quot;spearman&quot;</span>)
+}
+
+cor_list &lt;-<span class="st"> </span><span class="kw">lapply</span>(sce_name, cor_fun) %&gt;%<span class="st"> </span><span class="kw">set_names</span>(sce_name)</code></pre></div>
+<pre><code>## Warning in cor(ct_mat, use = &quot;complete.obs&quot;, method = &quot;spearman&quot;): the standard
+## deviation is zero
+
+## Warning in cor(ct_mat, use = &quot;complete.obs&quot;, method = &quot;spearman&quot;): the standard
+## deviation is zero
+
+## Warning in cor(ct_mat, use = &quot;complete.obs&quot;, method = &quot;spearman&quot;): the standard
+## deviation is zero
+
+## Warning in cor(ct_mat, use = &quot;complete.obs&quot;, method = &quot;spearman&quot;): the standard
+## deviation is zero
+
+## Warning in cor(ct_mat, use = &quot;complete.obs&quot;, method = &quot;spearman&quot;): the standard
+## deviation is zero
+
+## Warning in cor(ct_mat, use = &quot;complete.obs&quot;, method = &quot;spearman&quot;): the standard
+## deviation is zero
+
+## Warning in cor(ct_mat, use = &quot;complete.obs&quot;, method = &quot;spearman&quot;): the standard
+## deviation is zero
+
+## Warning in cor(ct_mat, use = &quot;complete.obs&quot;, method = &quot;spearman&quot;): the standard
+## deviation is zero
+
+## Warning in cor(ct_mat, use = &quot;complete.obs&quot;, method = &quot;spearman&quot;): the standard
+## deviation is zero</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cor_combine &lt;-<span class="st"> </span><span class="kw">do.call</span>(rbind, cor_list) 
+cor_all &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(cor_combine) %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">mutate</span>(<span class="st">&quot;dataset&quot;</span> =<span class="st"> </span><span class="kw">rep</span>(<span class="kw">names</span>(cor_list), <span class="dt">each =</span> <span class="kw">nrow</span>(cor_list[[<span class="dv">1</span>]])), 
+           <span class="st">&quot;metric&quot;</span> =<span class="st">  </span><span class="kw">rownames</span>(cor_combine)) %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">filter</span>(!metric %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;mean_lfc&quot;</span>, <span class="st">&quot;mean_lfc_de&quot;</span>, <span class="st">&quot;n_de&quot;</span>))
+
+<span class="co">#add batch type</span>
+cor_all$dataset &lt;-<span class="st"> </span><span class="kw">as.factor</span>(cor_all$dataset)
+cor_all &lt;-<span class="st"> </span>cor_all %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="st">&quot;batch_type&quot;</span> =<span class="st"> </span><span class="kw">revalue</span>(dataset, <span class="kw">c</span>(<span class="st">&quot;cellbench&quot;</span> =<span class="st"> &quot;linear&quot;</span>,
+                                                        <span class="st">&quot;csf_media&quot;</span> =<span class="st"> &quot;additive&quot;</span>,
+                                                        <span class="st">&quot;csf_patient&quot;</span> =<span class="st"> &quot;additive&quot;</span>,
+                                                       <span class="st">&quot;hca&quot;</span> =<span class="st"> &quot;none&quot;</span>,
+                                                       <span class="st">&quot;kang&quot;</span> =<span class="st"> &quot;none&quot;</span>,
+                                                       <span class="st">&quot;pancreas&quot;</span> =<span class="st"> &quot;interacting&quot;</span>,
+                                                       <span class="st">&quot;pbmc_roche&quot;</span> =<span class="st"> &quot;interacting&quot;</span>,
+                                                       <span class="st">&quot;pbmc2_media&quot;</span> =<span class="st"> &quot;interacting&quot;</span>, 
+                                                       <span class="st">&quot;pbmc2_pat&quot;</span> =<span class="st"> &quot;none&quot;</span>)))
+
+cor_all[<span class="kw">is.na</span>(cor_all)] &lt;-<span class="st"> </span><span class="dv">0</span>
+
+<span class="kw">ggplot</span>(cor_all, <span class="kw">aes</span>(<span class="dt">x =</span> metric , <span class="dt">y =</span> mean_lfc_de, <span class="dt">fill =</span> batch_type)) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_boxplot</span>(<span class="dt">fill =</span> cols[<span class="dv">1</span>:<span class="kw">length</span>(<span class="kw">levels</span>(<span class="kw">as.factor</span>(cor_all$metric)))], <span class="dt">alpha =</span> <span class="fl">0.5</span>) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_dotplot</span>(<span class="dt">binaxis=</span><span class="st">&#39;y&#39;</span>, <span class="dt">stackdir=</span><span class="st">&#39;center&#39;</span>, <span class="dt">dotsize=</span><span class="fl">0.5</span>) +
+<span class="st">    </span><span class="kw">scale_fill_manual</span>(<span class="dt">values=</span>cols_data) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">theme_bw</span>() +
+<span class="st">    </span><span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">face=</span><span class="st">&quot;bold&quot;</span>, <span class="dt">size=</span><span class="dv">10</span>, <span class="dt">angle=</span><span class="dv">45</span>))</code></pre></div>
+<pre><code>## `stat_bindot()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<p><img src="batch_characteristics_metrics_files/figure-html/size%20cor%20ct-1.svg" width="576" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(cor_all, <span class="kw">aes</span>(<span class="dt">x =</span> metric , <span class="dt">y =</span> mean_lfc, <span class="dt">fill =</span> batch_type)) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_boxplot</span>(<span class="dt">fill =</span> cols[<span class="dv">1</span>:<span class="kw">length</span>(<span class="kw">levels</span>(<span class="kw">as.factor</span>(cor_all$metric)))], <span class="dt">alpha =</span> <span class="fl">0.5</span>) +
+<span class="st">    </span><span class="kw">geom_dotplot</span>(<span class="dt">binaxis=</span><span class="st">&#39;y&#39;</span>, <span class="dt">stackdir=</span><span class="st">&#39;center&#39;</span>, <span class="dt">dotsize=</span><span class="fl">0.5</span>) +
+<span class="st">    </span><span class="kw">scale_fill_manual</span>(<span class="dt">values=</span>cols_data) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">theme_bw</span>() +
+<span class="st">    </span><span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">face=</span><span class="st">&quot;bold&quot;</span>, <span class="dt">size=</span><span class="dv">10</span>, <span class="dt">angle=</span><span class="dv">45</span>))</code></pre></div>
+<pre><code>## `stat_bindot()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<p><img src="batch_characteristics_metrics_files/figure-html/size%20cor%20ct-2.svg" width="576" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(cor_all, <span class="kw">aes</span>(<span class="dt">x =</span> metric , <span class="dt">y =</span> n_de, <span class="dt">fill =</span> batch_type)) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_boxplot</span>(<span class="dt">fill =</span> cols[<span class="dv">1</span>:<span class="kw">length</span>(<span class="kw">levels</span>(<span class="kw">as.factor</span>(cor_all$metric)))], <span class="dt">alpha =</span> <span class="fl">0.5</span>) +
+<span class="st">    </span><span class="kw">geom_dotplot</span>(<span class="dt">binaxis=</span><span class="st">&#39;y&#39;</span>, <span class="dt">stackdir=</span><span class="st">&#39;center&#39;</span>, <span class="dt">dotsize=</span><span class="fl">0.5</span>) +
+<span class="st">    </span><span class="kw">scale_fill_manual</span>(<span class="dt">values=</span>cols_data) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">theme_bw</span>() +
+<span class="st">    </span><span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">face=</span><span class="st">&quot;bold&quot;</span>, <span class="dt">size=</span><span class="dv">10</span>, <span class="dt">angle=</span><span class="dv">45</span>))</code></pre></div>
+<pre><code>## `stat_bindot()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<p><img src="batch_characteristics_metrics_files/figure-html/size%20cor%20ct-3.svg" width="576" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">plot_cor &lt;-<span class="st"> </span>function(dataset){
+    cor_tab &lt;-<span class="st"> </span>cor_list[[dataset]]
+    cor_tab[<span class="kw">is.na</span>(cor_tab)] &lt;-<span class="st"> </span><span class="dv">0</span>
+    <span class="kw">corrplot</span>(cor_tab, 
+         <span class="dt">type=</span><span class="st">&quot;upper&quot;</span>, 
+         <span class="dt">order=</span><span class="st">&quot;hclust&quot;</span>,
+         <span class="dt">hclust.method =</span> <span class="st">&quot;complete&quot;</span>,
+         <span class="dt">col=</span><span class="kw">brewer.pal</span>(<span class="dt">n=</span><span class="dv">8</span>, <span class="dt">name=</span><span class="st">&quot;PuOr&quot;</span>),
+         <span class="dt">addgrid.col =</span> <span class="ot">NA</span>,
+         <span class="dt">addCoef.col =</span> <span class="st">&quot;black&quot;</span>)
+}</code></pre></div>
+<div id="celltype-score-correlations" class="section level3 tabset">
+<h3>Celltype score correlations</h3>
+<p>How does the metric scores correlate across celltypes</p>
+<div id="pbmc2_media-1" class="section level4">
+<h4>pbmc2_media</h4>
+<p><img src="batch_characteristics_metrics_files/figure-html/corpbmc2_media-1.svg" width="864" /></p>
+</div>
+<div id="csf_patient-1" class="section level4">
+<h4>csf_patient</h4>
+<p><img src="batch_characteristics_metrics_files/figure-html/corcsf_patient-1.svg" width="864" /></p>
+</div>
+<div id="pancreas-1" class="section level4">
+<h4>pancreas</h4>
+<p><img src="batch_characteristics_metrics_files/figure-html/corpancreas-1.svg" width="864" /></p>
+</div>
+<div id="csf_media-1" class="section level4">
+<h4>csf_media</h4>
+<p><img src="batch_characteristics_metrics_files/figure-html/corcsf_media-1.svg" width="864" /></p>
+</div>
+<div id="pbmc2_pat-1" class="section level4">
+<h4>pbmc2_pat</h4>
+<p><img src="batch_characteristics_metrics_files/figure-html/corpbmc2_pat-1.svg" width="864" /></p>
+</div>
+<div id="hca-1" class="section level4">
+<h4>hca</h4>
+<p><img src="batch_characteristics_metrics_files/figure-html/corhca-1.svg" width="864" /></p>
+</div>
+<div id="pbmc_roche-1" class="section level4">
+<h4>pbmc_roche</h4>
+<p><img src="batch_characteristics_metrics_files/figure-html/corpbmc_roche-1.svg" width="864" /></p>
+</div>
+<div id="kang-1" class="section level4">
+<h4>kang</h4>
+<p><img src="batch_characteristics_metrics_files/figure-html/corkang-1.svg" width="864" /></p>
+</div>
+<div id="cellbench-1" class="section level4">
+<h4>cellbench</h4>
+<p><img src="batch_characteristics_metrics_files/figure-html/corcellbench-1.svg" width="864" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sessionInfo</span>()</code></pre></div>
+<pre><code>## R version 3.6.1 (2019-07-05)
+## Platform: x86_64-pc-linux-gnu (64-bit)
+## Running under: Ubuntu 16.04.6 LTS
+## 
+## Matrix products: default
+## BLAS:   /home/aluetg/R/lib/R/lib/libRblas.so
+## LAPACK: /home/aluetg/R/lib/R/lib/libRlapack.so
+## 
+## locale:
+##  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+##  [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+##  [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+##  [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+##  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+## [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+## 
+## attached base packages:
+##  [1] grid      parallel  stats4    stats     graphics  grDevices datasets 
+##  [8] utils     methods   base     
+## 
+## other attached packages:
+##  [1] dplyr_0.8.5                 RColorBrewer_1.1-2         
+##  [3] corrplot_0.84               colorspace_1.4-1           
+##  [5] ComplexHeatmap_2.2.0        viridis_0.5.1              
+##  [7] viridisLite_0.3.0           circlize_0.4.9             
+##  [9] ggpubr_0.2.5                magrittr_1.5               
+## [11] ggplot2_3.3.0               jcolors_0.0.4              
+## [13] cowplot_1.0.0               scran_1.14.6               
+## [15] SingleCellExperiment_1.8.0  SummarizedExperiment_1.16.1
+## [17] DelayedArray_0.12.2         BiocParallel_1.20.1        
+## [19] matrixStats_0.55.0          Biobase_2.46.0             
+## [21] GenomicRanges_1.38.0        GenomeInfoDb_1.22.0        
+## [23] IRanges_2.20.2              S4Vectors_0.24.3           
+## [25] BiocGenerics_0.32.0         gridExtra_2.3              
+## [27] plyr_1.8.6                  tidyr_1.0.2                
+## [29] purrr_0.3.3                 CellMixS_1.3.4             
+## [31] kSamples_1.2-9              SuppDists_1.1-9.5          
+## 
+## loaded via a namespace (and not attached):
+##  [1] bitops_1.0-6             tools_3.6.1              R6_2.4.1                
+##  [4] irlba_2.3.3              vipor_0.4.5              GetoptLong_0.1.8        
+##  [7] withr_2.1.2              listarrays_0.3.1         tidyselect_1.0.0        
+## [10] compiler_3.6.1           BiocNeighbors_1.4.2      labeling_0.3            
+## [13] scales_1.1.0             ggridges_0.5.2           stringr_1.4.0           
+## [16] digest_0.6.25            rmarkdown_2.1            XVector_0.26.0          
+## [19] scater_1.14.6            pkgconfig_2.0.3          htmltools_0.4.0         
+## [22] limma_3.42.2             rlang_0.4.5              GlobalOptions_0.1.1     
+## [25] DelayedMatrixStats_1.8.0 farver_2.0.3             shape_1.4.4             
+## [28] RCurl_1.98-1.1           BiocSingular_1.2.2       GenomeInfoDbData_1.2.2  
+## [31] Matrix_1.2-18            Rcpp_1.0.3               ggbeeswarm_0.6.0        
+## [34] munsell_0.5.0            lifecycle_0.2.0          stringi_1.4.6           
+## [37] yaml_2.2.1               edgeR_3.28.1             zlibbioc_1.32.0         
+## [40] dqrng_0.2.1              crayon_1.3.4             lattice_0.20-40         
+## [43] locfit_1.5-9.1           knitr_1.28               pillar_1.4.3            
+## [46] igraph_1.2.4.2           rjson_0.2.20             ggsignif_0.6.0          
+## [49] glue_1.3.1               evaluate_0.14            renv_0.9.3-44           
+## [52] vctrs_0.2.3              png_0.1-7                gtable_0.3.0            
+## [55] clue_0.3-57              assertthat_0.2.1         xfun_0.12               
+## [58] rsvd_1.0.3               tibble_2.1.3             beeswarm_0.2.3          
+## [61] cluster_2.1.0            statmod_1.4.34</code></pre>
+</div>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

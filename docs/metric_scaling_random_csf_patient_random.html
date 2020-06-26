@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Almut Lütge" />
+
+
+<title>Metrics Scaling random</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/journal.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; background-color: #f8f8f8; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+pre, code { background-color: #f8f8f8; }
+code > span.kw { color: #204a87; font-weight: bold; } /* Keyword */
+code > span.dt { color: #204a87; } /* DataType */
+code > span.dv { color: #0000cf; } /* DecVal */
+code > span.bn { color: #0000cf; } /* BaseN */
+code > span.fl { color: #0000cf; } /* Float */
+code > span.ch { color: #4e9a06; } /* Char */
+code > span.st { color: #4e9a06; } /* String */
+code > span.co { color: #8f5902; font-style: italic; } /* Comment */
+code > span.ot { color: #8f5902; } /* Other */
+code > span.al { color: #ef2929; } /* Alert */
+code > span.fu { color: #000000; } /* Function */
+code > span.er { color: #a40000; font-weight: bold; } /* Error */
+code > span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #000000; } /* Constant */
+code > span.sc { color: #000000; } /* SpecialChar */
+code > span.vs { color: #4e9a06; } /* VerbatimString */
+code > span.ss { color: #4e9a06; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #000000; } /* Variable */
+code > span.cf { color: #204a87; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #ce5c00; font-weight: bold; } /* Operator */
+code > span.pp { color: #8f5902; font-style: italic; } /* Preprocessor */
+code > span.ex { } /* Extension */
+code > span.at { color: #c4a000; } /* Attribute */
+code > span.do { color: #8f5902; font-weight: bold; font-style: italic; } /* Documentation */
+code > span.an { color: #8f5902; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #8f5902; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #8f5902; font-weight: bold; font-style: italic; } /* Information */
+
+.sourceCode .row {
+  width: 100%;
+}
+.sourceCode {
+  overflow-x: auto;
+}
+.code-folding-btn {
+  margin-right: -30px;
+}
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 61px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 66px;
+  margin-top: -66px;
+}
+.section h2 {
+  padding-top: 66px;
+  margin-top: -66px;
+}
+.section h3 {
+  padding-top: 66px;
+  margin-top: -66px;
+}
+.section h4 {
+  padding-top: 66px;
+  margin-top: -66px;
+}
+.section h5 {
+  padding-top: 66px;
+  margin-top: -66px;
+}
+.section h6 {
+  padding-top: 66px;
+  margin-top: -66px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-inverse  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Batch metric benchmark</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index_benchmark_tasks.html">Benchmark tasks</a>
+</li>
+<li>
+  <a href="index_metrics.html">Metrics</a>
+</li>
+<li>
+  <a href="index_characterization.html">batch_characterization/simulation</a>
+</li>
+<li>
+  <a href="index_summary.html">Summary</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Metrics Scaling random</h1>
+<h4 class="author">Almut Lütge</h4>
+<h4 class="date">25 June, 2020</h4>
+
+</div>
+
+
+<div id="csf_patient_random" class="section level2">
+<h2>csf_patient_random</h2>
+<p><a href="index.html">Back to home</a></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">suppressPackageStartupMessages</span>({
+  <span class="kw">library</span>(scater)
+  <span class="kw">library</span>(CellMixS)
+  <span class="kw">library</span>(purrr)
+  <span class="kw">library</span>(tidyr)
+  <span class="kw">library</span>(dplyr)
+  <span class="kw">library</span>(gridExtra)
+  <span class="kw">library</span>(scran)
+  <span class="kw">library</span>(cowplot)
+  <span class="kw">library</span>(jcolors)
+  <span class="kw">library</span>(ggpubr)
+  <span class="kw">library</span>(hrbrthemes)
+  <span class="kw">library</span>(magrittr)
+  <span class="kw">library</span>(viridis)
+  <span class="kw">library</span>(scales)
+  <span class="kw">library</span>(corrplot)
+  <span class="kw">library</span>(RColorBrewer)
+})
+
+<span class="kw">options</span>(<span class="dt">bitmapType=</span><span class="st">&#39;cairo&#39;</span>)</code></pre></div>
+<div id="dataset-and-metrics" class="section level3">
+<h3>Dataset and metrics</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sce &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$data)
+metrics &lt;-<span class="st"> </span>params$metrics
+metrics</code></pre></div>
+<pre><code>## [1] &quot;cms_kmin,mm,asw,graph_connectivity,entropy,pcr,cms_bmin,kbet,wisi,cms_default,lisi,isi&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">out_path_cor &lt;-<span class="st"> </span>params$out_cor
+
+dim_red_nam &lt;-<span class="st"> </span><span class="kw">ifelse</span>(<span class="st">&quot;TSNE&quot;</span> %in%<span class="st"> </span><span class="kw">reducedDimNames</span>(sce), <span class="st">&quot;TSNE&quot;</span>, <span class="st">&quot;tsne&quot;</span>)
+
+cols_data &lt;-<span class="kw">c</span>(<span class="kw">c</span>(<span class="kw">jcolors</span>(<span class="st">&#39;pal6&#39;</span>),<span class="kw">jcolors</span>(<span class="st">&#39;pal8&#39;</span>))[<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">8</span>,<span class="dv">14</span>,<span class="dv">5</span>,<span class="dv">2</span>:<span class="dv">4</span>,<span class="dv">6</span>,<span class="dv">7</span>,<span class="dv">9</span>:<span class="dv">13</span>,<span class="dv">15</span>:<span class="dv">20</span>)],<span class="kw">jcolors</span>(<span class="st">&#39;pal4&#39;</span>))
+<span class="kw">names</span>(cols_data) &lt;-<span class="st"> </span><span class="kw">c</span>()
+
+cols &lt;-<span class="kw">c</span>(<span class="kw">c</span>(<span class="kw">jcolors</span>(<span class="st">&#39;pal6&#39;</span>),<span class="kw">jcolors</span>(<span class="st">&#39;pal8&#39;</span>), <span class="kw">jcolors</span>(<span class="st">&#39;pal7&#39;</span>))[<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">12</span>,<span class="dv">18</span>,<span class="dv">25</span>,<span class="dv">27</span>,<span class="dv">2</span>,<span class="dv">4</span>,<span class="dv">7</span>,<span class="dv">3</span>,<span class="dv">6</span>,<span class="dv">8</span>,<span class="dv">14</span>,<span class="dv">9</span>,<span class="dv">20</span>)],<span class="kw">jcolors</span>(<span class="st">&#39;pal4&#39;</span>))</code></pre></div>
+</div>
+</div>
+<div id="visualize-metric-scores" class="section level2">
+<h2>Visualize metric scores</h2>
+<div id="effects-on-score-distribution---histograms" class="section level3 tabset">
+<h3>Effects on score distribution - histograms</h3>
+<p>How does the metric scores change across batches</p>
+<div id="cms.kmin80" class="section level4">
+<h4>cms.kmin80</h4>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/histcms.kmin80-1.svg" width="672" /></p>
+</div>
+<div id="cms.bmin80" class="section level4">
+<h4>cms.bmin80</h4>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/histcms.bmin80-1.svg" width="672" /></p>
+</div>
+<div id="mm" class="section level4">
+<h4>mm</h4>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/histmm-1.svg" width="672" /></p>
+</div>
+<div id="wisi" class="section level4">
+<h4>wisi</h4>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/histwisi-1.svg" width="672" /></p>
+</div>
+<div id="isi" class="section level4">
+<h4>isi</h4>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/histisi-1.svg" width="672" /></p>
+</div>
+<div id="entropy" class="section level4">
+<h4>entropy</h4>
+<pre><code>## Warning: Removed 1291 rows containing non-finite values (stat_bin).</code></pre>
+<pre><code>## Warning: Removed 498 rows containing non-finite values (stat_bin).</code></pre>
+<pre><code>## Warning: Removed 514 rows containing non-finite values (stat_bin).</code></pre>
+<pre><code>## Warning: Removed 528 rows containing non-finite values (stat_bin).</code></pre>
+<pre><code>## Warning: Removed 529 rows containing non-finite values (stat_bin).</code></pre>
+<pre><code>## Warning: Removed 542 rows containing non-finite values (stat_bin).</code></pre>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/histentropy-1.svg" width="672" /></p>
+</div>
+<div id="cms.batch" class="section level4">
+<h4>cms.batch</h4>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/histcms.batch-1.svg" width="672" /></p>
+</div>
+<div id="lisi" class="section level4">
+<h4>lisi</h4>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/histlisi-1.svg" width="672" /></p>
+</div>
+<div id="kbet" class="section level4">
+<h4>kbet</h4>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/histkbet-1.svg" width="672" /></p>
+</div>
+<div id="pcr" class="section level4">
+<h4>pcr</h4>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/histpcr-1.svg" width="672" /></p>
+</div>
+<div id="graph_connectivity" class="section level4">
+<h4>graph_connectivity</h4>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/histgraph_connectivity-1.svg" width="672" /></p>
+</div>
+<div id="asw" class="section level4">
+<h4>asw</h4>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/histasw-1.svg" width="672" /></p>
+</div>
+<div id="sw" class="section level4">
+<h4>sw</h4>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/histsw-1.svg" width="672" /></p>
+</div>
+<div id="casw" class="section level4">
+<h4>casw</h4>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/histcasw-1.svg" width="672" /></p>
+</div>
+</div>
+<div id="effects-on-score-distribution---range-plots" class="section level3 tabset">
+<h3>Effects on score distribution - Range plots</h3>
+<p>How does the metric scores change across batches</p>
+<div id="cms.kmin80-1" class="section level4">
+<h4>cms.kmin80</h4>
+<pre><code>## Picking joint bandwidth of 0.0535</code></pre>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/rangecms.kmin80-1.svg" width="672" /></p>
+</div>
+<div id="cms.bmin80-1" class="section level4">
+<h4>cms.bmin80</h4>
+<pre><code>## Picking joint bandwidth of 0.0485</code></pre>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/rangecms.bmin80-1.svg" width="672" /></p>
+</div>
+<div id="mm-1" class="section level4">
+<h4>mm</h4>
+<pre><code>## Picking joint bandwidth of 6.35</code></pre>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/rangemm-1.svg" width="672" /></p>
+</div>
+<div id="wisi-1" class="section level4">
+<h4>wisi</h4>
+<pre><code>## Picking joint bandwidth of 0.0693</code></pre>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/rangewisi-1.svg" width="672" /></p>
+</div>
+<div id="isi-1" class="section level4">
+<h4>isi</h4>
+<pre><code>## Picking joint bandwidth of 0.0437</code></pre>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/rangeisi-1.svg" width="672" /></p>
+</div>
+<div id="entropy-1" class="section level4">
+<h4>entropy</h4>
+<pre><code>## Picking joint bandwidth of 0.0323</code></pre>
+<pre><code>## Warning: Removed 3902 rows containing non-finite values (stat_density_ridges).</code></pre>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/rangeentropy-1.svg" width="672" /></p>
+</div>
+<div id="cms.batch-1" class="section level4">
+<h4>cms.batch</h4>
+<pre><code>## Picking joint bandwidth of 0.0518</code></pre>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/rangecms.batch-1.svg" width="672" /></p>
+</div>
+<div id="lisi-1" class="section level4">
+<h4>lisi</h4>
+<pre><code>## Picking joint bandwidth of 0.0477</code></pre>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/rangelisi-1.svg" width="672" /></p>
+</div>
+<div id="kbet-1" class="section level4">
+<h4>kbet</h4>
+<pre><code>## Picking joint bandwidth of 0.0185</code></pre>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/rangekbet-1.svg" width="672" /></p>
+</div>
+<div id="pcr-1" class="section level4">
+<h4>pcr</h4>
+<pre><code>## Picking joint bandwidth of 0.00626</code></pre>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/rangepcr-1.svg" width="672" /></p>
+</div>
+<div id="graph_connectivity-1" class="section level4">
+<h4>graph_connectivity</h4>
+<pre><code>## Picking joint bandwidth of 3.51e-05</code></pre>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/rangegraph_connectivity-1.svg" width="672" /></p>
+</div>
+<div id="asw-1" class="section level4">
+<h4>asw</h4>
+<pre><code>## Picking joint bandwidth of 0.176</code></pre>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/rangeasw-1.svg" width="672" /></p>
+</div>
+<div id="sw-1" class="section level4">
+<h4>sw</h4>
+<pre><code>## Picking joint bandwidth of 0.0142</code></pre>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/rangesw-1.svg" width="672" /></p>
+</div>
+<div id="casw-1" class="section level4">
+<h4>casw</h4>
+<pre><code>## Picking joint bandwidth of 0.0109</code></pre>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/rangecasw-1.svg" width="672" /></p>
+</div>
+</div>
+<div id="cellspecific-score" class="section level3 tabset">
+<h3>Cellspecific score</h3>
+<p>How does the metric scores change across batches</p>
+<div id="cms_smooth.kmin80" class="section level4">
+<h4>cms_smooth.kmin80</h4>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/tsnecms_smooth.kmin80-1.svg" width="960" /></p>
+</div>
+<div id="cms.kmin80-2" class="section level4">
+<h4>cms.kmin80</h4>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/tsnecms.kmin80-1.svg" width="960" /></p>
+</div>
+<div id="cms_smooth.bmin80" class="section level4">
+<h4>cms_smooth.bmin80</h4>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/tsnecms_smooth.bmin80-1.svg" width="960" /></p>
+</div>
+<div id="cms.bmin80-2" class="section level4">
+<h4>cms.bmin80</h4>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/tsnecms.bmin80-1.svg" width="960" /></p>
+</div>
+<div id="mm-2" class="section level4">
+<h4>mm</h4>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/tsnemm-1.svg" width="960" /></p>
+</div>
+<div id="wisi-2" class="section level4">
+<h4>wisi</h4>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/tsnewisi-1.svg" width="960" /></p>
+</div>
+<div id="isi-2" class="section level4">
+<h4>isi</h4>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/tsneisi-1.svg" width="960" /></p>
+</div>
+<div id="entropy-2" class="section level4">
+<h4>entropy</h4>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/tsneentropy-1.svg" width="960" /></p>
+</div>
+<div id="cms_smooth" class="section level4">
+<h4>cms_smooth</h4>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/tsnecms_smooth-1.svg" width="960" /></p>
+</div>
+<div id="cms.batch-2" class="section level4">
+<h4>cms.batch</h4>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/tsnecms.batch-1.svg" width="960" /></p>
+</div>
+<div id="lisi-2" class="section level4">
+<h4>lisi</h4>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/tsnelisi-1.svg" width="960" /></p>
+</div>
+<div id="kbet-2" class="section level4">
+<h4>kbet</h4>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/tsnekbet-1.svg" width="960" /></p>
+</div>
+<div id="pcr-2" class="section level4">
+<h4>pcr</h4>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/tsnepcr-1.svg" width="960" /></p>
+</div>
+<div id="graph_connectivity-2" class="section level4">
+<h4>graph_connectivity</h4>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/tsnegraph_connectivity-1.svg" width="960" /></p>
+</div>
+<div id="asw-2" class="section level4">
+<h4>asw</h4>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/tsneasw-1.svg" width="960" /></p>
+</div>
+<div id="sw-2" class="section level4">
+<h4>sw</h4>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/tsnesw-1.svg" width="960" /></p>
+</div>
+<div id="casw-2" class="section level4">
+<h4>casw</h4>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/tsnecasw-1.svg" width="960" /></p>
+</div>
+</div>
+</div>
+<div id="mean-score-trend" class="section level2 tabset">
+<h2>Mean score trend</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mean_score &lt;-<span class="st"> </span>function(score){
+  score_all_b &lt;-<span class="st"> </span><span class="kw">as_tibble</span>(<span class="kw">colData</span>(sce)) %&gt;%<span class="st"> </span><span class="kw">select</span>(<span class="kw">starts_with</span>(score)) %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">colMeans</span>(<span class="dt">na.rm =</span> <span class="ot">TRUE</span>)
+  mean_tab &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">score =</span> score_all_b,
+                         <span class="st">&quot;randomness&quot;</span> =<span class="st"> </span><span class="kw">seq.int</span>(<span class="dt">from =</span> <span class="dv">0</span>, <span class="dt">to =</span> <span class="dv">100</span>, <span class="dt">by =</span> <span class="dv">10</span>))
+  <span class="co">#get colour index</span>
+  col_ind &lt;-<span class="st"> </span><span class="kw">which</span>(metrics_raw %in%<span class="st"> </span>score)
+  p &lt;-<span class="st"> </span><span class="kw">ggplot</span>(mean_tab, <span class="kw">aes</span>(<span class="dt">x=</span>randomness, <span class="dt">y=</span>score)) +
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="dt">size=</span><span class="dv">4</span>, <span class="dt">color=</span>cols[score]) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> lm, <span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">color =</span> <span class="st">&quot;black&quot;</span>) +
+<span class="st">    </span><span class="kw">labs</span>(<span class="dt">title=</span>score, <span class="dt">x=</span><span class="st">&quot;percent mixed label&quot;</span>, <span class="dt">y =</span> <span class="kw">paste0</span>(<span class="st">&quot;average &quot;</span>, score)) +
+<span class="st">    </span><span class="kw">scale_color_manual</span>(<span class="dt">values=</span>cols) +<span class="st"> </span><span class="kw">theme_classic</span>() +<span class="st"> </span><span class="kw">stat_cor</span>(<span class="dt">method =</span> <span class="st">&quot;pearson&quot;</span>)
+  <span class="kw">plot</span>(p)
+}
+
+template_cor &lt;-<span class="st"> </span><span class="kw">c</span>(
+    <span class="st">&quot;### {{nm}}</span><span class="ch">\n</span><span class="st">&quot;</span>,
+    <span class="st">&quot;```{r cor{{nm}}, echo = FALSE}</span><span class="ch">\n</span><span class="st">&quot;</span>,
+    <span class="st">&quot;mean_score(&#39;{{nm}}&#39;)</span><span class="ch">\n</span><span class="st">&quot;</span>,
+    <span class="st">&quot;```</span><span class="ch">\n</span><span class="st">&quot;</span>,
+    <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>
+  )
+
+plots_cor &lt;-<span class="st"> </span><span class="kw">lapply</span>(metrics_raw, 
+  function(nm) knitr::<span class="kw">knit_expand</span>(<span class="dt">text =</span> template_cor)
+)</code></pre></div>
+<div id="cms.kmin80-3" class="section level3">
+<h3>cms.kmin80</h3>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/corcms.kmin80-1.svg" width="672" /></p>
+</div>
+<div id="cms.bmin80-3" class="section level3">
+<h3>cms.bmin80</h3>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/corcms.bmin80-1.svg" width="672" /></p>
+</div>
+<div id="mm-3" class="section level3">
+<h3>mm</h3>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/cormm-1.svg" width="672" /></p>
+</div>
+<div id="wisi-3" class="section level3">
+<h3>wisi</h3>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/corwisi-1.svg" width="672" /></p>
+</div>
+<div id="isi-3" class="section level3">
+<h3>isi</h3>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/corisi-1.svg" width="672" /></p>
+</div>
+<div id="entropy-3" class="section level3">
+<h3>entropy</h3>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/corentropy-1.svg" width="672" /></p>
+</div>
+<div id="cms.batch-3" class="section level3">
+<h3>cms.batch</h3>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/corcms.batch-1.svg" width="672" /></p>
+</div>
+<div id="lisi-3" class="section level3">
+<h3>lisi</h3>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/corlisi-1.svg" width="672" /></p>
+</div>
+<div id="kbet-3" class="section level3">
+<h3>kbet</h3>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/corkbet-1.svg" width="672" /></p>
+</div>
+<div id="pcr-3" class="section level3">
+<h3>pcr</h3>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/corpcr-1.svg" width="672" /></p>
+</div>
+<div id="graph_connectivity-3" class="section level3">
+<h3>graph_connectivity</h3>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/corgraph_connectivity-1.svg" width="672" /></p>
+</div>
+<div id="asw-3" class="section level3">
+<h3>asw</h3>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/corasw-1.svg" width="672" /></p>
+</div>
+<div id="sw-3" class="section level3">
+<h3>sw</h3>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/corsw-1.svg" width="672" /></p>
+</div>
+<div id="casw-3" class="section level3">
+<h3>casw</h3>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/corcasw-1.svg" width="672" /></p>
+</div>
+</div>
+<div id="summarycomparison" class="section level2">
+<h2>Summary/Comparison</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#correlation coeff</span>
+scaling_sum &lt;-<span class="st"> </span><span class="kw">lapply</span>(metrics_raw, function(score){
+  score_all_b &lt;-<span class="st"> </span><span class="kw">as_tibble</span>(<span class="kw">colData</span>(sce)) %&gt;%<span class="st"> </span><span class="kw">select</span>(<span class="kw">starts_with</span>(score)) %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">colMeans</span>(<span class="dt">na.rm =</span> <span class="ot">TRUE</span>)
+  mean_tab &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">score =</span> score_all_b,
+                         <span class="st">&quot;randomness&quot;</span> =<span class="st"> </span><span class="kw">seq.int</span>(<span class="dt">from =</span> <span class="dv">0</span>, <span class="dt">to =</span> <span class="dv">100</span>, <span class="dt">by =</span> <span class="dv">10</span>))
+  r &lt;-<span class="st"> </span><span class="kw">cor</span>(mean_tab$score, mean_tab$randomness, <span class="dt">method =</span> <span class="st">&quot;spearman&quot;</span>)
+  }) %&gt;%<span class="st"> </span><span class="kw">set_names</span>(metrics_raw) %&gt;%<span class="st"> </span><span class="kw">bind_cols</span>() %&gt;%<span class="st"> </span><span class="kw">t</span>() %&gt;%
+<span class="st">  </span><span class="kw">set_colnames</span>(<span class="st">&quot;R&quot;</span>) %&gt;%<span class="st"> </span><span class="kw">as_tibble</span>(.) %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="st">&quot;metric&quot;</span> =<span class="st"> </span>metrics_raw)</code></pre></div>
+<pre><code>## Warning in cor(mean_tab$score, mean_tab$randomness, method = &quot;spearman&quot;): the
+## standard deviation is zero</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#&quot;effect size&quot;</span>
+effect_sum &lt;-<span class="st"> </span><span class="kw">lapply</span>(metrics_raw, function(score){
+  score_all_b &lt;-<span class="st"> </span><span class="kw">as_tibble</span>(<span class="kw">colData</span>(sce)) %&gt;%<span class="st"> </span><span class="kw">select</span>(<span class="kw">starts_with</span>(score)) %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">colMeans</span>(<span class="dt">na.rm =</span> <span class="ot">TRUE</span>)
+  effect_tab &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">score =</span> score_all_b,
+                         <span class="st">&quot;percent_score&quot;</span> =<span class="st"> </span>score_all_b/score_all_b[<span class="dv">11</span>])
+  effect_tab_sum &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="st">&quot;min&quot;</span> =<span class="st"> </span><span class="kw">ifelse</span>(score_all_b[<span class="dv">1</span>] &lt;<span class="st"> </span>score_all_b[<span class="dv">11</span>], 
+                                              effect_tab[<span class="dv">1</span>, <span class="st">&quot;percent_score&quot;</span>],
+                                               <span class="dv">1</span>/score_all_b[<span class="dv">1</span>]), 
+                               <span class="st">&quot;range&quot;</span> =<span class="st"> </span>effect_tab[<span class="dv">11</span>,<span class="st">&quot;score&quot;</span>] -<span class="st"> </span>effect_tab[<span class="dv">1</span>,<span class="st">&quot;score&quot;</span>])
+  }) %&gt;%<span class="st"> </span><span class="kw">set_names</span>(metrics_raw) %&gt;%<span class="st"> </span><span class="kw">bind_rows</span>() 
+
+scaling_sum &lt;-<span class="st"> </span><span class="kw">cbind</span>(scaling_sum, effect_sum)</code></pre></div>
+</div>
+<div id="combined-results" class="section level1">
+<h1>Combined results</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#scale means</span>
+mean_res &lt;-<span class="st"> </span><span class="kw">lapply</span>(metrics_raw, function(score){
+  score_all_b &lt;-<span class="st"> </span><span class="kw">as_tibble</span>(<span class="kw">colData</span>(sce)) %&gt;%<span class="st"> </span><span class="kw">select</span>(<span class="kw">starts_with</span>(score)) %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">colMeans</span>(<span class="dt">na.rm =</span> <span class="ot">TRUE</span>)
+}) %&gt;%<span class="st"> </span><span class="kw">set_names</span>(metrics_raw) %&gt;%<span class="st"> </span><span class="kw">bind_cols</span>() %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">randomness =</span> <span class="kw">seq.int</span>(<span class="dt">from =</span> <span class="dv">0</span>, <span class="dt">to =</span> <span class="dv">100</span>, <span class="dt">by =</span> <span class="dv">10</span>))
+
+<span class="co">#correlation</span>
+cor_metrics &lt;-<span class="st"> </span><span class="kw">cor</span>(mean_res, <span class="dt">method =</span> <span class="st">&quot;spearman&quot;</span>)</code></pre></div>
+<pre><code>## Warning in cor(mean_res, method = &quot;spearman&quot;): the standard deviation is zero</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dir_ind &lt;-<span class="st"> </span><span class="kw">which</span>(!<span class="kw">colnames</span>(mean_res) %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;randomness&quot;</span>, <span class="st">&quot;mm&quot;</span>, <span class="st">&quot;kbet&quot;</span>, <span class="st">&quot;pcr&quot;</span>))
+mean_res[, dir_ind] &lt;-<span class="st"> </span>mean_res[, dir_ind] *<span class="st"> </span>-<span class="dv">1</span>
+scale_res &lt;-<span class="st">  </span>mean_res %&gt;%<span class="st"> </span><span class="kw">select</span>(-randomness) %&gt;%<span class="st"> </span><span class="kw">scale</span>() %&gt;%<span class="st"> </span><span class="kw">as.data.frame</span>()
+scale_res$randomness &lt;-<span class="st"> </span>mean_res$randomness
+
+mean_long &lt;-<span class="st"> </span>scale_res %&gt;%<span class="st"> </span><span class="kw">pivot_longer</span>(-randomness, <span class="dt">names_to =</span> <span class="st">&quot;metric&quot;</span>,
+                                           <span class="dt">values_to =</span> <span class="st">&quot;scaled_result&quot;</span>)
+
+mean_long$metric &lt;-<span class="st"> </span><span class="kw">factor</span>(mean_long$metric,<span class="dt">levels =</span> metric_order)
+
+<span class="kw">ggplot</span>(mean_long, <span class="kw">aes</span>(<span class="dt">x =</span> randomness, <span class="dt">y =</span> scaled_result)) +
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">color =</span> metric)) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">color =</span> metric)) +
+<span class="st">    </span><span class="kw">theme_bw</span>() +
+<span class="st">    </span><span class="kw">scale_color_manual</span>(<span class="dt">values =</span> cols[<span class="kw">levels</span>(<span class="kw">as.factor</span>(mean_long$metric))]) </code></pre></div>
+<pre><code>## Warning: Removed 11 row(s) containing missing values (geom_path).</code></pre>
+<pre><code>## Warning: Removed 11 rows containing missing values (geom_point).</code></pre>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/unnamed-chunk-1-1.svg" width="672" /></p>
+<div id="separated-plots" class="section level2">
+<h2>Separated plots</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">scale_long &lt;-<span class="st"> </span>scale_res %&gt;%<span class="st"> </span><span class="kw">pivot_longer</span>(-randomness, <span class="dt">names_to =</span> <span class="st">&quot;metric&quot;</span>,
+                                           <span class="dt">values_to =</span> <span class="st">&quot;scaled_score&quot;</span>)
+
+scale_long$metric &lt;-<span class="st"> </span><span class="kw">factor</span>(scale_long$metric,<span class="dt">levels =</span> metric_order)
+
+scale_long &lt;-<span class="st"> </span>scale_long %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">metric2 =</span> metric)
+cols_rep &lt;-<span class="st"> </span><span class="kw">rep</span>(cols[<span class="kw">levels</span>(<span class="kw">as.factor</span>(scale_long$metric))], <span class="dt">each =</span> <span class="kw">nrow</span>(mean_res))
+p &lt;-<span class="st"> </span><span class="kw">ggplot</span>(scale_long, <span class="kw">aes</span>(<span class="dt">x =</span> randomness, <span class="dt">y =</span> scaled_score)) +
+<span class="st">      </span><span class="kw">geom_line</span>(<span class="dt">data=</span>scale_long %&gt;%<span class="st"> </span>dplyr::<span class="kw">select</span>(-metric), <span class="kw">aes</span>(<span class="dt">group=</span>metric2),
+                 <span class="dt">color=</span><span class="st">&quot;grey&quot;</span>, <span class="dt">size=</span><span class="fl">0.5</span>, <span class="dt">alpha=</span><span class="fl">0.5</span>) +<span class="st"> </span>
+<span class="st">      </span><span class="kw">geom_line</span>( <span class="kw">aes</span>(<span class="dt">color=</span>metric), <span class="dt">color=</span>cols_rep, <span class="dt">size=</span><span class="fl">1.2</span> ) +<span class="st"> </span>
+<span class="st">      </span><span class="kw">scale_color_viridis</span>(<span class="dt">discrete =</span> <span class="ot">TRUE</span>) +
+<span class="st">      </span><span class="kw">theme_ipsum</span>() +
+<span class="st">      </span><span class="kw">theme</span>(
+        <span class="dt">legend.position=</span><span class="st">&quot;none&quot;</span>,
+        <span class="dt">plot.title =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">14</span>),
+        <span class="dt">panel.grid.minor =</span> <span class="kw">element_blank</span>()
+      ) +
+<span class="st">      </span><span class="kw">ggtitle</span>(<span class="st">&quot;Gradual increased randomness - starting with a strong batch effect&quot;</span>) +
+<span class="st">      </span><span class="kw">facet_wrap</span>(~metric) 
+p</code></pre></div>
+<pre><code>## Warning: Removed 154 row(s) containing missing values (geom_path).</code></pre>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/spagetti%20separated-1.svg" width="768" /></p>
+</div>
+</div>
+<div id="correlation-of-metrices" class="section level1">
+<h1>Correlation of metrices</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">corrplot</span>(cor_metrics, 
+         <span class="dt">type=</span><span class="st">&quot;upper&quot;</span>, 
+         <span class="dt">order=</span><span class="st">&quot;original&quot;</span>,
+         <span class="dt">hclust.method =</span> <span class="st">&quot;complete&quot;</span>,
+         <span class="dt">col=</span><span class="kw">brewer.pal</span>(<span class="dt">n=</span><span class="dv">8</span>, <span class="dt">name=</span><span class="st">&quot;PuOr&quot;</span>),
+         <span class="dt">addgrid.col =</span> <span class="ot">NA</span>,
+         <span class="dt">addCoef.col =</span> <span class="st">&quot;black&quot;</span>,
+         <span class="dt">diag =</span> <span class="ot">FALSE</span>)</code></pre></div>
+<p><img src="metric_scaling_random_csf_patient_random_files/figure-html/correlation-1.svg" width="864" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#save correlation</span>
+<span class="kw">saveRDS</span>(cor_metrics, out_path_cor)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sessionInfo</span>()</code></pre></div>
+<pre><code>## R version 3.6.1 (2019-07-05)
+## Platform: x86_64-pc-linux-gnu (64-bit)
+## Running under: Ubuntu 16.04.6 LTS
+## 
+## Matrix products: default
+## BLAS:   /home/aluetg/R/lib/R/lib/libRblas.so
+## LAPACK: /home/aluetg/R/lib/R/lib/libRlapack.so
+## 
+## locale:
+##  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+##  [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+##  [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+##  [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+##  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+## [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+## 
+## attached base packages:
+## [1] parallel  stats4    stats     graphics  grDevices datasets  utils    
+## [8] methods   base     
+## 
+## other attached packages:
+##  [1] RColorBrewer_1.1-2          corrplot_0.84              
+##  [3] scales_1.1.0                viridis_0.5.1              
+##  [5] viridisLite_0.3.0           hrbrthemes_0.8.0           
+##  [7] ggpubr_0.2.5                magrittr_1.5               
+##  [9] jcolors_0.0.4               cowplot_1.0.0              
+## [11] scran_1.14.6                gridExtra_2.3              
+## [13] dplyr_0.8.5                 tidyr_1.0.2                
+## [15] purrr_0.3.3                 CellMixS_1.3.4             
+## [17] kSamples_1.2-9              SuppDists_1.1-9.5          
+## [19] scater_1.14.6               ggplot2_3.3.0              
+## [21] SingleCellExperiment_1.8.0  SummarizedExperiment_1.16.1
+## [23] DelayedArray_0.12.2         BiocParallel_1.20.1        
+## [25] matrixStats_0.55.0          Biobase_2.46.0             
+## [27] GenomicRanges_1.38.0        GenomeInfoDb_1.22.0        
+## [29] IRanges_2.20.2              S4Vectors_0.24.3           
+## [31] BiocGenerics_0.32.0        
+## 
+## loaded via a namespace (and not attached):
+##  [1] nlme_3.1-145             bitops_1.0-6             tools_3.6.1             
+##  [4] R6_2.4.1                 irlba_2.3.3              vipor_0.4.5             
+##  [7] mgcv_1.8-31              colorspace_1.4-1         withr_2.1.2             
+## [10] listarrays_0.3.1         tidyselect_1.0.0         compiler_3.6.1          
+## [13] extrafontdb_1.0          BiocNeighbors_1.4.2      labeling_0.3            
+## [16] ggridges_0.5.2           systemfonts_0.2.2        stringr_1.4.0           
+## [19] digest_0.6.25            rmarkdown_2.1            XVector_0.26.0          
+## [22] pkgconfig_2.0.3          htmltools_0.4.0          extrafont_0.17          
+## [25] limma_3.42.2             rlang_0.4.5              DelayedMatrixStats_1.8.0
+## [28] farver_2.0.3             RCurl_1.98-1.1           BiocSingular_1.2.2      
+## [31] GenomeInfoDbData_1.2.2   Matrix_1.2-18            Rcpp_1.0.3              
+## [34] ggbeeswarm_0.6.0         munsell_0.5.0            gdtools_0.2.2           
+## [37] lifecycle_0.2.0          stringi_1.4.6            yaml_2.2.1              
+## [40] edgeR_3.28.1             zlibbioc_1.32.0          plyr_1.8.6              
+## [43] grid_3.6.1               dqrng_0.2.1              crayon_1.3.4            
+## [46] lattice_0.20-40          splines_3.6.1            locfit_1.5-9.1          
+## [49] knitr_1.28               pillar_1.4.3             igraph_1.2.4.2          
+## [52] ggsignif_0.6.0           glue_1.3.1               evaluate_0.14           
+## [55] renv_0.9.3-44            vctrs_0.2.3              Rttf2pt1_1.3.8          
+## [58] gtable_0.3.0             assertthat_0.2.1         xfun_0.12               
+## [61] rsvd_1.0.3               tibble_2.1.3             beeswarm_0.2.3          
+## [64] statmod_1.4.34           ellipsis_0.3.0</code></pre>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("show" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

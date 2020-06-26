@@ -1,0 +1,46 @@
+---
+title: "Metrics"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Metrics to quatify (batch-) mixing 
+
+A variety of metrics have been proposed to quantify how well scRNAseq data are mixed regarding a certain cell label e.g. a batch.
+Here we summarize a list of metrics included into our metric benchmark classified by the level/degree of annotation.
+
+### Cellspecific metrics
+Cellspecific metrics are run on each cell independently by determining the mixing score within it's neighbourhood of cells.
+They are independent from previous clustering or prior generated celltype label. Each cell get an individual score.
+
++ Cellspecific Mixing Score (cms)
+  
++ Local Inverse Simpson Index (lisi)  
+  
++ Mixing Metric (mm)  
+
++ Shannon's entrophy  
+  
+### Celltype specific metrics 
+Celltype specific metrics are using prior generated celltype label to determine the mixing within each celltype separately. Some can also be run globally, but couldn't account for celltypespecificity with batch effects in that case. Each celltype gets a single score.
+
++ k-nearest neighbour Batch Effect Test (kBet)  
+  
++ Average silhouette width (aws)
+
++ Graph connectivity
+
+### Global metrics  
+Global metrics are independent from celltype label and instead use a global representation of the data to determine mixing in.
+Althought local differences can be considered, the information on them is not maintained in the final score.
+
++ Principal component regression
+
+
+  
+  
+  
