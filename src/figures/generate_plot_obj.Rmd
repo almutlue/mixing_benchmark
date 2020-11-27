@@ -1,0 +1,304 @@
+---
+title: "Figures benchmark"
+author: "Almut Lütge"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+params:
+  ex_data:
+  sce_name:
+  out_path:
+  data_path:
+  un_name:
+  sce_type:
+output:
+  html_document:
+    self_contained: no
+    lib_dir: '../../docs/site_libs'
+    code_folding: show
+    theme: journal
+    highlight: tango
+    number_sections: no
+    toc: yes
+    toc_depth: 3
+    toc_float: true
+    collapsed: no
+    smooth_scroll: yes
+---
+
+## Generate plot objects related to the mixing metric benchmark
+
+
+```{r libs}
+suppressPackageStartupMessages({
+  library(scater)
+  library(CellMixS)
+  library(purrr)
+  library(tidyr)
+  library(dplyr)
+  library(gridExtra)
+  library(scran)
+  library(cowplot)
+  library(jcolors)
+  library(ggpubr)
+  library(hrbrthemes)
+  library(magrittr)
+  library(viridis)
+  library(scales)
+  library(corrplot)
+  library(RColorBrewer)
+  library(limma)
+})
+```
+
+Data
+```{r data}
+## Scaling simulation
+ex_data <- unlist(c(strsplit(params$ex_data, ",")))
+#Single cell experiment objects from simulations
+sce_whole_name <- unlist(c(strsplit(params$sce_name, ","))) %>% 
+    grep(paste(ex_data, collapse="|"), ., value = TRUE)
+
+#levels to plot
+lev <- c("0", "0.3", "0.5", "0.6", "0.7", 
+         "0.8", "0.9", "1", "1.2", "1.5", "2", "4")
+lev_ <- paste0("_", lev, "__")
+sce_whole_name <- grep(paste(lev_, collapse="|"), sce_whole_name, value = TRUE)
+
+sce_name <- gsub("^sim_", "", sce_whole_name) %>% 
+    gsub("_[0-9].*", "", .) %>% unique()
+
+sce_sim_list <- lapply(sce_name, function(dataset){
+    sim_vec <- sce_whole_name[grepl(dataset, sce_whole_name)]
+}) %>% set_names(sce_name)
+
+
+sce_list <- lapply(sce_name, function(dataset){
+  sim_vec <- paste0(params$data_path, sce_sim_list[[dataset]], ".rds") %>%
+             set_names(sce_sim_list[[dataset]])
+}) %>% set_names(sce_name)
+
+
+## Unbalanced
+un_whole_name <- unlist(c(strsplit(params$un_name, ","))) %>% 
+    grep("_0.7__1_sce$", ., value = TRUE)
+
+
+un_name <- gsub("^un_[0-9].*_sim_", "", un_whole_name) %>% 
+    gsub("__[0-9]_sce.*", "", .) %>% unique()
+
+un_sim_list <- lapply(un_name, function(dataset){
+    sim_vec <- un_whole_name[grepl(paste0(dataset, "_"), un_whole_name)]
+}) %>% set_names(un_name)
+
+un_list <- lapply(un_name, function(dataset){
+    sim_vec <- un_whole_name[grepl(dataset, un_whole_name)]
+    sim_vec <- gsub("^un_", "", sim_vec) %>% gsub("_sim.*", "", .) %>% 
+        as.numeric()
+}) %>% set_names(un_name)
+
+
+un_sim <- lapply(un_name, function(dataset){
+  sim_vec <- paste0(params$data_path, un_sim_list[[dataset]], ".rds") %>%
+             set_names(un_sim_list[[dataset]])
+}) %>% set_names(un_name)
+
+# batch type
+sce_type <- readRDS(params$sce_type)
+
+out_path <- params$out_path
+
+cols_data <-c(c(jcolors('pal6'),jcolors('pal8'))[c(1,8,14,5,2:4,6,7,9:13,15:20)],jcolors('pal4'))
+names(cols_data) <- c()
+
+cols <-c(c(jcolors('pal6'),jcolors('pal8'), jcolors('pal7'))[c(1,12,18,25,27,2,4,7,3,6,8,14,9,20)],jcolors('pal4'))
+names(cols) <- c()
+```
+
+### Generate fig objects scaling simulation
+```{r fig_obj scaling, fig.width = 6, fig.height = 14}
+
+plot_data <- function(dataset){
+    tsne_long <- lapply(sce_sim_list[[dataset]], function(sim_name){
+        sim_start <- gsub('__[0-9]_sce','', sim_name)
+        sim <- gsub('[A-z_]', '', sim_start)
+        sce <- readRDS(sce_list[[dataset]][[sim_name]])
+        sce <- runTSNE(sce, exprs_values = "counts")
+        tab <- data.frame("tsne1" = reducedDims(sce)[["TSNE"]][,1],
+                          "tsne2" = reducedDims(sce)[["TSNE"]][,2],
+                          "batch" = as.factor(sce$batch_id),
+                          "batch_size" = sim)
+    }) %>% bind_rows()
+        
+    cols_batch <- cols_data[1:length(levels(as.factor(tsne_long$batch)))] %>% 
+        set_names(levels(as.factor(tsne_long$batch)))
+
+
+    p <- ggplot(tsne_long, aes(x = tsne1, y = tsne2, color = batch)) +
+        geom_point(size = 0.3) +
+        scale_color_manual(values = cols_batch) +
+        theme_ipsum(base_family = 'Helvetica',
+                    strip_text_face = "bold") +
+        theme(
+            legend.position="top",
+            plot.title = element_text(size=14),
+            panel.grid.major = element_blank(),
+            axis.text.x = element_blank(),
+            axis.text.y = element_blank(),
+            panel.spacing = unit(1, "lines")
+        ) +
+        ggtitle("Increasing batch strength") +
+        facet_wrap(~batch_size, ncol = 2)
+    saveRDS(p, paste0(out_path, "sim_scaling_", dataset, ".rds"))
+    p
+}
+
+lapply(sce_name, plot_data)
+
+```
+
+
+### Generate fig objects scaling simulation
+```{r fig_obj unbalanced, fig.width = 11, fig.height = 9}
+
+plot_un <- function(dataset){
+    tsne_long <- lapply(un_sim_list[[dataset]], function(sim_name){
+        un_start <- gsub('_sim.*','', sim_name)
+        un <- gsub('un_', '', un_start)
+        sce <- readRDS(un_sim[[dataset]][[sim_name]])
+        sce <- runTSNE(sce, exprs_values = "counts")
+        tab <- data.frame("tsne1" = reducedDims(sce)[["TSNE"]][,1],
+                          "tsne2" = reducedDims(sce)[["TSNE"]][,2],
+                          "batch" = as.factor(sce$batch_id),
+                          "celltype" = as.factor(sce$cluster_id),
+                          "unbalanced" = un)
+    }) %>% bind_rows()
+        
+    cols_batch <- cols_data[1:length(levels(as.factor(tsne_long$batch)))] %>% 
+        set_names(levels(as.factor(tsne_long$batch)))
+
+
+    p <- ggplot(tsne_long, aes(x = tsne1, y = tsne2, color = batch)) +
+        geom_point(size = 0.3) +
+        scale_color_manual(values = cols_batch) +
+        theme_ipsum(base_family = 'Helvetica',
+                    strip_text_face = "bold") +
+        theme(
+            legend.position="right",
+            plot.title = element_text(size=14),
+            panel.grid.major = element_blank(),
+            axis.text.x = element_blank(),
+            axis.text.y = element_blank(),
+            panel.spacing = unit(1, "lines")
+        ) +
+        ggtitle("Unbalanced batch effects") +
+        facet_wrap(~unbalanced)
+    saveRDS(p, paste0(out_path, "unbalanced_", dataset, ".rds"))
+    p
+}
+
+lapply(un_name, plot_un)
+
+```
+
+
+## Generate plot to visualize batch types
+```{r batch types}
+### ------------ Batch types -------------------------###
+## This function will remove the batch effect if it is constant for all cell
+## types, and the cell type composition is the same across batches. It will not
+## work if the cell type compositions differ, since it is basically just
+## equalizing the overall means across the batches
+adj1 <- function(X, bt, ct) {
+  mm <- model.matrix(~ bt)
+  fit <- lmFit(X, mm)
+  beta <- fit$coefficients
+  beta[, 1] <- 0
+  X - beta %*% t(mm)
+}
+
+## This function will remove the batch effect if it is constant for all cell
+## types, even if the cell type composition is not the same across batches. It
+## will not work for cell type-specific batch effects, since we don't include an
+## interaction effect between batch and cell type
+adj2 <- function(X, bt, ct) {
+  mm <- model.matrix(~ ct + bt)
+  fit <- lmFit(X, mm)
+  beta <- fit$coefficients
+  beta[, grep("^bt", colnames(beta), invert = TRUE)] <- 0
+  X - beta %*% t(mm)
+}
+
+## This function will remove the batch effect even if it is cell type specific
+adj3 <- function(X, bt, ct) {
+  mm <- model.matrix(~ ct / bt)
+  fit <- lmFit(X, mm)
+  beta <- fit$coefficients
+  beta[, union(grep("^ct", colnames(beta), invert = TRUE),
+               grep(":bt", colnames(beta), invert = TRUE))] <- 0
+  X - beta %*% t(mm)
+}
+
+# Run models
+Xadj1 <- adj1(logcounts(sce_type), colData(sce_type)[, "tech"], colData(sce_type)[, "celltype"])
+Xadj2 <- adj2(logcounts(sce_type), colData(sce_type)[, "tech"], colData(sce_type)[, "celltype"])
+Xadj3 <- adj3(logcounts(sce_type), colData(sce_type)[, "tech"], colData(sce_type)[, "celltype"])
+
+#calculate red dimensions
+add_dim_adj <- function(X, name_X){
+  #pca <- prcomp(t(X), rank. = 10)
+  #reducedDims(sce_type)[[paste0("PCA_", name_X)]] <- pca$x
+  assays(sce_type)$removed_batch <- X
+  sce_type <- runTSNE(sce_type, ntop = 1000, exprs_values = "removed_batch",
+                 name = paste0("TSNE_", name_X))
+  sce_type
+}
+
+sce_type <- add_dim_adj(Xadj1, "Xadj1")
+sce_type <- add_dim_adj(Xadj2, "Xadj2")
+sce_type <- add_dim_adj(Xadj3, "Xadj3")
+
+adjust_list <- c("linear", "additive", "interacting", "none")
+adjust_order <- c("none", "linear", "additive", "interacting")
+
+tsne_type_long <- lapply(1:3, function(adj_num){
+       tab <- data.frame("tsne1" = reducedDims(sce_type)[[paste0("TSNE_Xadj", adj_num)]][,1],
+                          "tsne2" = reducedDims(sce_type)[[paste0("TSNE_Xadj", adj_num)]][,2],
+                          "batch" = as.factor(sce_type$tech),
+                          "celltype" = as.factor(sce_type$celltype),
+                          "adjustment" = adjust_list[adj_num])
+    }) %>% bind_rows()
+
+tsne_none <- data.frame("tsne1" = reducedDims(sce_type)[["TSNE"]][,1],
+                        "tsne2" = reducedDims(sce_type)[["TSNE"]][,2],
+                        "batch" = as.factor(sce_type$tech),
+                        "celltype" = as.factor(sce_type$celltype),
+                        "adjustment" = "none")
+
+tsne_type <- rbind(tsne_type_long, tsne_none)
+
+tsne_type$adjustment <- factor(tsne_type$adjustment, levels = adjust_order)
+
+cols_batch <- cols_data[1:length(levels(as.factor(tsne_type$batch)))] %>% 
+        set_names(levels(as.factor(tsne_type$batch)))
+
+
+p <- ggplot(tsne_type, aes(x = tsne1, y = tsne2, color = batch)) +
+        geom_point(size = 0.3) +
+        scale_color_manual(values = cols_batch) +
+        theme_ipsum(base_family = 'Helvetica',
+                    strip_text_face = "bold") +
+        theme(
+            legend.position="right",
+            plot.title = element_text(size=14),
+            panel.grid.major = element_blank(),
+            axis.text.x = element_blank(),
+            axis.text.y = element_blank(),
+            panel.spacing = unit(1, "lines")
+        ) +
+        ggtitle("Effects of batch type adjustments") +
+        facet_wrap(~adjustment)
+p
+saveRDS(p, paste0(out_path, "batch_type_adjustment.rds"))
+
+
+```
+

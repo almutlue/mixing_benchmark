@@ -25,6 +25,8 @@ suppressPackageStartupMessages({
   library(cluster)
   library(magrittr)
   library(tibble)
+  library(scater)
+  library(scran)
 })
 
 # Read in data
@@ -49,7 +51,7 @@ tic.clearlog()
 for( batch_var in batch ){
   tic(batch_var)
   print(batch_var)
-  sce <- runPCA(sce, ncomponents = 10, exprs_values = assay_nam)
+  #sce <- runPCA(sce, ncomponents = 10, exprs_values = assay_nam)
   dist_sce <- dist(reducedDim(sce, "PCA"))
   clust_sce <- as.numeric(as.factor(colData(sce)[, batch_var]))
   sil <- silhouette(clust_sce, dist = dist_sce)

@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Almut Lütge" />
+
+
+<title>Generate benchmark computations datasets</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/journal.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; background-color: #f8f8f8; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+pre, code { background-color: #f8f8f8; }
+code > span.kw { color: #204a87; font-weight: bold; } /* Keyword */
+code > span.dt { color: #204a87; } /* DataType */
+code > span.dv { color: #0000cf; } /* DecVal */
+code > span.bn { color: #0000cf; } /* BaseN */
+code > span.fl { color: #0000cf; } /* Float */
+code > span.ch { color: #4e9a06; } /* Char */
+code > span.st { color: #4e9a06; } /* String */
+code > span.co { color: #8f5902; font-style: italic; } /* Comment */
+code > span.ot { color: #8f5902; } /* Other */
+code > span.al { color: #ef2929; } /* Alert */
+code > span.fu { color: #000000; } /* Function */
+code > span.er { color: #a40000; font-weight: bold; } /* Error */
+code > span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #000000; } /* Constant */
+code > span.sc { color: #000000; } /* SpecialChar */
+code > span.vs { color: #4e9a06; } /* VerbatimString */
+code > span.ss { color: #4e9a06; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #000000; } /* Variable */
+code > span.cf { color: #204a87; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #ce5c00; font-weight: bold; } /* Operator */
+code > span.pp { color: #8f5902; font-style: italic; } /* Preprocessor */
+code > span.ex { } /* Extension */
+code > span.at { color: #c4a000; } /* Attribute */
+code > span.do { color: #8f5902; font-weight: bold; font-style: italic; } /* Documentation */
+code > span.an { color: #8f5902; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #8f5902; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #8f5902; font-weight: bold; font-style: italic; } /* Information */
+
+.sourceCode .row {
+  width: 100%;
+}
+.sourceCode {
+  overflow-x: auto;
+}
+.code-folding-btn {
+  margin-right: -30px;
+}
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="fluid-row" id="header">
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Generate benchmark computations datasets</h1>
+<h4 class="author">Almut Lütge</h4>
+<h4 class="date">29 October, 2020</h4>
+
+</div>
+
+
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">suppressPackageStartupMessages</span>({
+  <span class="kw">library</span>(scater)
+  <span class="kw">library</span>(purrr)
+  <span class="kw">library</span>(tidyr)
+  <span class="kw">library</span>(dplyr)
+  <span class="kw">library</span>(scran)
+  <span class="kw">library</span>(magrittr)
+  <span class="kw">library</span>(PCAtools)
+})
+
+<span class="kw">options</span>(<span class="dt">bitmapType=</span><span class="st">&#39;cairo&#39;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#Read datsets into list </span>
+data_path &lt;-<span class="st"> </span>params$data_path
+meta_path &lt;-<span class="st"> </span>params$meta
+
+sce_nam &lt;-<span class="st"> </span><span class="kw">unlist</span>(<span class="kw">c</span>(<span class="kw">strsplit</span>(params$data, <span class="st">&quot;,&quot;</span>)))
+
+sce_name &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&quot;^sim_&quot;</span>, <span class="st">&quot;&quot;</span>, sce_nam) %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">gsub</span>(<span class="st">&quot;_[0-9].*&quot;</span>, <span class="st">&quot;&quot;</span>, .) %&gt;%<span class="st"> </span><span class="kw">unique</span>()
+
+combine_sce &lt;-<span class="st"> </span>function(sce_n, sce_all){
+    num &lt;-<span class="st"> </span><span class="kw">grep</span>(sce_n, sce_all)
+    sce &lt;-<span class="st"> </span><span class="kw">readRDS</span>(<span class="kw">paste0</span>(data_path, sce_n, <span class="st">&quot;.rds&quot;</span>))
+    meta &lt;-<span class="st"> </span><span class="kw">readRDS</span>(<span class="kw">paste0</span>(meta_path, sce_n, <span class="st">&quot;_meta.rds&quot;</span>))
+    batch &lt;-<span class="st"> </span>meta[[<span class="st">&quot;batch&quot;</span>]]
+    <span class="kw">colData</span>(sce)[, batch] &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="kw">colData</span>(sce)[, batch], <span class="st">&quot;_&quot;</span>, num)
+    <span class="kw">colnames</span>(sce) &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="kw">colnames</span>(sce) , <span class="st">&quot;_&quot;</span>, num)
+    sce
+}
+
+sce_list &lt;-<span class="st"> </span><span class="kw">lapply</span>(sce_name, function(dataset){
+    ind &lt;-<span class="st"> </span><span class="kw">grep</span>(dataset, sce_nam)
+    sce_all &lt;-<span class="st"> </span>sce_nam[ind]
+    sce_com &lt;-<span class="st"> </span>sce_all %&gt;%<span class="st"> </span><span class="kw">map</span>(combine_sce, <span class="dt">sce_all =</span> sce_all) %&gt;%<span class="st"> </span><span class="kw">do.call</span>(SingleCellExperiment::cbind, .)
+}) %&gt;%<span class="st"> </span><span class="kw">set_names</span>(sce_name)
+
+
+out_path &lt;-<span class="st"> </span>params$out</code></pre></div>
+<div id="generate-subsets-time" class="section level1">
+<h1>Generate subsets time</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">norm_pca &lt;-<span class="st"> </span>function(sce){
+  clusters &lt;-<span class="st"> </span><span class="kw">quickCluster</span>(sce, <span class="dt">use.ranks=</span><span class="ot">FALSE</span>)
+  sce &lt;-<span class="st"> </span><span class="kw">computeSumFactors</span>(sce, <span class="dt">min.mean=</span><span class="fl">0.1</span>, <span class="dt">cluster=</span>clusters)
+  sce &lt;-<span class="st">  </span><span class="kw">logNormCounts</span>(sce)
+  sce &lt;-<span class="st"> </span><span class="kw">runPCA</span>(sce, <span class="dt">ncomponents =</span> <span class="dv">10</span>, <span class="dt">ntop =</span> <span class="dv">1000</span>)
+  sce
+}
+
+sce_list &lt;-<span class="st"> </span>sce_list %&gt;%<span class="st"> </span><span class="kw">map</span>(norm_pca) %&gt;%<span class="st"> </span><span class="kw">set_names</span>(sce_name)</code></pre></div>
+<pre><code>## Warning in (function (to_check, X, clust_centers, clust_info, dtype, nn, :
+## detected tied distances to neighbors, see ?&#39;BiocNeighbors-ties&#39;</code></pre>
+<pre><code>## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates
+
+## Warning in FUN(...): encountered negative size factor estimates</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#subsets</span>
+sub &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="fl">0.2</span>, <span class="dv">1</span>, <span class="dt">by =</span> <span class="fl">0.2</span>)
+
+sub_sce &lt;-<span class="st"> </span>function(sub_v, sce, <span class="dt">sce_n =</span> sce_n){
+  sce &lt;-<span class="st"> </span>sce[, <span class="kw">sample</span>(<span class="kw">seq_len</span>(<span class="kw">ncol</span>(sce)), (sub_v *<span class="st"> </span><span class="kw">ncol</span>(sce)))]
+  <span class="kw">saveRDS</span>(sce, <span class="kw">paste0</span>(out_path, sce_n, <span class="st">&quot;_&quot;</span>, sub_v, <span class="st">&quot;.rds&quot;</span>))
+  <span class="kw">dim</span>(sce)
+}
+
+sce_size &lt;-<span class="st"> </span><span class="kw">lapply</span>(sce_name, function(sce_n){
+  sce &lt;-<span class="st"> </span>sce_list[[sce_n]]
+  sub_size &lt;-<span class="st"> </span>sub %&gt;%<span class="st"> </span><span class="kw">map</span>(sub_sce, <span class="dt">sce =</span> sce, <span class="dt">sce_n =</span> sce_n) %&gt;%<span class="st"> </span><span class="kw">set_names</span>(sub)
+}) %&gt;%<span class="st"> </span><span class="kw">set_names</span>(sce_name)
+
+
+<span class="kw">saveRDS</span>(sce_size, <span class="kw">paste0</span>(out_path, <span class="st">&quot;summary_size.rds&quot;</span>))</code></pre></div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("show" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

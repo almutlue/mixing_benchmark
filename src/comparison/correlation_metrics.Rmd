@@ -6,6 +6,7 @@ params:
   chars:
   metrics:
   cor_path:
+  fig_res:
 output:
   html_document:
     self_contained: no
@@ -84,17 +85,20 @@ cor_list <- cor_list %>% map(metric_com)
 rand_char <- chars[grep("random", chars)]
 cor_list[["random"]] <- t(apply(simplify2array(cor_list[rand_char]), 1:2, 
                                     mean, na.rm = TRUE))
+
 cor_list <- cor_list[!names(cor_list) %in% rand_char]
 
 # Get mean for all tasks
 cor_mean <- Reduce("+", cor_list)/length(cor_list)
 
+#Colors and path variables 
 cols <-c(c(jcolors('pal6'),jcolors('pal8'), jcolors('pal7'))[c(1,12,18,25,27,2,4,7,3,6,8,14,9,20)],jcolors('pal4'))
 names(cols) <- c()
 
-
 cols_data <-c(c(jcolors('pal6'),jcolors('pal8'))[c(1,8,14,5,2:4,6,7,9:13,15:20)],jcolors('pal4'))
 names(cols_data) <- c()
+
+out_path_fig <- params$fig_res
 ```
 
 
@@ -132,6 +136,8 @@ corrplot(cor_mean,
 
 #Order by hclust (take absolute values as the direction of correlation is irrelevant)
 cor_mean_abs <- abs(cor_mean)
+graph_ind <- which(colnames(cor_mean_abs) %in% "graph")
+cor_mean_abs <- cor_mean_abs[-graph_ind, -graph_ind]
 corrplot(cor_mean_abs, 
          type="upper", 
          order="hclust",
@@ -173,9 +179,8 @@ g1 <- ggplot(cor_bin_long, aes(x="", y=correlation_part, fill=benchmark_task)) +
     plot.title = element_text(size=14),
     panel.grid.minor = element_blank()
       )
-  
 
-
+g1
 
 ```
 
@@ -199,8 +204,8 @@ p.list = mapply(FUN=function(m1, m2) {
       ylab(cor_bin$metric2) +
       theme_minimal() + 
       theme(
-        axis.title.x = element_text(size = 10, face = "bold"),
-        axis.title.y = element_text(size = 10, face = "bold"),
+        axis.title.x = element_text(size = 10),
+        axis.title.y = element_text(size = 10),
         panel.border = element_blank(),
         panel.grid=element_blank(),
         axis.ticks = element_blank(),
@@ -249,7 +254,7 @@ p.list = mapply(FUN=function(m1, m2) {
 
 
 #get legend
-g_legend<-function(a.gplot){
+g_legend <- function(a.gplot){
   tmp <- ggplot_gtable(ggplot_build(a.gplot))
   leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
   legend <- tmp$grobs[[leg]]
@@ -264,6 +269,10 @@ grid.arrange(top = textGrob("Metrics correlation", gp=gpar(fontsize=15,font=8, f
                 do.call(arrangeGrob, c(p.list, 
                                        ncol=length(levels(cor_bin_long$metric)))), widths=c(0.05,0.95)),
     textGrob(""), heights=c(0.95,0.05)), mylegend, ncol=2,widths=c(10, 2.2))
+
+
+saveRDS(p.list, paste0(out_path_fig, "_all.rds"))
+saveRDS(mylegend, paste0(out_path_fig, "_legend.rds"))
 
 ```
 

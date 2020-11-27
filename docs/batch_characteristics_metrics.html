@@ -443,7 +443,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">Correlation metrics with batch characteristics</h1>
 <h4 class="author">Almut Lütge</h4>
-<h4 class="date">25 June, 2020</h4>
+<h4 class="date">19 November, 2020</h4>
 
 </div>
 
@@ -467,6 +467,7 @@ div.tocify {
     <span class="kw">library</span>(corrplot)
     <span class="kw">library</span>(RColorBrewer)
     <span class="kw">library</span>(dplyr)
+  <span class="kw">library</span>(hrbrthemes)
 })
 
 <span class="kw">options</span>(<span class="dt">bitmapType=</span><span class="st">&#39;cairo&#39;</span>)</code></pre></div>
@@ -488,6 +489,7 @@ de_vec &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="kw">
 <span class="kw">names</span>(de_vec) &lt;-<span class="st"> </span>sce_name
 
 out_path_cor &lt;-<span class="st"> </span>params$out_cor
+out_path_fig &lt;-<span class="st"> </span>params$fig_res
 
 cols_data &lt;-<span class="kw">c</span>(<span class="kw">c</span>(<span class="kw">jcolors</span>(<span class="st">&#39;pal6&#39;</span>),<span class="kw">jcolors</span>(<span class="st">&#39;pal8&#39;</span>))[<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">8</span>,<span class="dv">14</span>,<span class="dv">5</span>,<span class="dv">2</span>:<span class="dv">4</span>,<span class="dv">6</span>,<span class="dv">7</span>,<span class="dv">9</span>:<span class="dv">13</span>,<span class="dv">15</span>:<span class="dv">20</span>)],<span class="kw">jcolors</span>(<span class="st">&#39;pal4&#39;</span>))
 <span class="kw">names</span>(cols_data) &lt;-<span class="st"> </span><span class="kw">c</span>()
@@ -505,6 +507,7 @@ cols &lt;-<span class="kw">c</span>(<span class="kw">c</span>(<span class="kw">j
   metric_nam &lt;-<span class="st"> </span><span class="kw">unique</span> (<span class="kw">grep</span>(<span class="kw">paste</span>(metric_vec, <span class="dt">collapse=</span><span class="st">&quot;|&quot;</span>),
                              <span class="kw">names</span>(<span class="kw">colData</span>(sce)), <span class="dt">value=</span><span class="ot">TRUE</span>))
   metric_nam &lt;-<span class="st"> </span>metric_nam[-<span class="kw">grep</span>(<span class="st">&quot;smooth&quot;</span>, metric_nam)]
+  metric_nam &lt;-<span class="st"> </span>metric_nam[-<span class="kw">grep</span>(<span class="st">&quot;casw&quot;</span>, metric_nam)]
   <span class="co">#exclude random batches</span>
   if (<span class="kw">length</span>(meta[[<span class="st">&quot;batch&quot;</span>]]) &gt;<span class="st"> </span><span class="dv">1</span>) {
       batch_str &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="st">&quot;batch&quot;</span>, <span class="kw">seq</span>(<span class="dv">10</span>, <span class="dv">100</span>, <span class="dv">10</span>), <span class="dt">collapse=</span><span class="st">&quot;|&quot;</span>)
@@ -521,6 +524,10 @@ cols &lt;-<span class="kw">c</span>(<span class="kw">c</span>(<span class="kw">j
 <span class="st">      </span><span class="kw">as.matrix</span>() %&gt;%<span class="st"> </span><span class="kw">colVars</span>(.,<span class="dt">na.rm =</span> <span class="ot">TRUE</span>) %&gt;%
 <span class="st">      </span><span class="kw">set_names</span>(<span class="kw">paste0</span>(<span class="st">&quot;ct_var_&quot;</span>, <span class="kw">names</span>(d)))
   d &lt;-<span class="st"> </span><span class="kw">c</span>(d, metric_var)
+  d$n_cells &lt;-<span class="st"> </span><span class="kw">ncol</span>(sce)
+  d$n_batches &lt;-<span class="st"> </span><span class="kw">length</span>(<span class="kw">levels</span>(<span class="kw">as.factor</span>(<span class="kw">colData</span>(sce)[,meta$batch[<span class="dv">1</span>]])))
+  d$n_ct &lt;-<span class="st"> </span><span class="kw">length</span>(<span class="kw">levels</span>(<span class="kw">as.factor</span>(<span class="kw">colData</span>(sce)[,meta$celltype])))
+  d
 }) %&gt;%<span class="st"> </span><span class="kw">set_names</span>(sce_name)
 
 metric_summary &lt;-<span class="st"> </span><span class="kw">bind_rows</span>(!!!metric_summary) %&gt;%<span class="st"> </span><span class="kw">set_rownames</span>(sce_name)
@@ -528,6 +535,7 @@ metric_summary &lt;-<span class="st"> </span><span class="kw">bind_rows</span>(!
 #### ---------- Order by metric type ----------------------------------####### 
 <span class="co">#(manual needs to be adjusted if new metrics are added)</span>
 metric_fullnam &lt;-<span class="st"> </span><span class="kw">colnames</span>(metric_summary)[-<span class="kw">grep</span>( <span class="st">&quot;ct_&quot;</span>, <span class="kw">colnames</span>(metric_summary))]
+metric_fullnam &lt;-<span class="st"> </span>metric_fullnam[!<span class="st"> </span>metric_fullnam %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;n_cells&quot;</span>, <span class="st">&quot;n_batches&quot;</span>, <span class="st">&quot;n_ct&quot;</span>)]
 cms_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;cms&quot;</span>, metric_fullnam)
 lisi_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;isi&quot;</span>, metric_fullnam)
 ent_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;entropy&quot;</span>, metric_fullnam)
@@ -536,7 +544,7 @@ asw_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="
 kbet_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;kbet&quot;</span>, metric_fullnam)
 graph_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;graph&quot;</span>, metric_fullnam)
 pcr_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;pcr&quot;</span>, metric_fullnam)
-metric_order &lt;-<span class="st"> </span>metric_fullnam[<span class="kw">c</span>(cms_ind, lisi_ind, ent_ind, mm_ind, 
+metric_order &lt;-<span class="st"> </span>metric_fullnam[<span class="kw">c</span>(cms_ind[<span class="kw">c</span>(<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">1</span>)], lisi_ind[<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">3</span>,<span class="dv">2</span>)], ent_ind, mm_ind, 
                                        kbet_ind, asw_ind, graph_ind, pcr_ind)]
 <span class="kw">names</span>(cols) &lt;-<span class="st"> </span>metric_fullnam
 cols &lt;-<span class="st"> </span>cols[metric_fullnam]
@@ -552,6 +560,7 @@ cols &lt;-<span class="st"> </span>cols[metric_fullnam]
   metric_nam &lt;-<span class="st"> </span><span class="kw">unique</span> (<span class="kw">grep</span>(<span class="kw">paste</span>(metric_vec, <span class="dt">collapse=</span><span class="st">&quot;|&quot;</span>),
                              <span class="kw">names</span>(<span class="kw">colData</span>(sce)), <span class="dt">value=</span><span class="ot">TRUE</span>))
   metric_nam &lt;-<span class="st"> </span>metric_nam[-<span class="kw">grep</span>(<span class="st">&quot;smooth&quot;</span>, metric_nam)]
+  metric_nam &lt;-<span class="st"> </span>metric_nam[-<span class="kw">grep</span>(<span class="st">&quot;casw&quot;</span>, metric_nam)]
   <span class="co">#exclude random batches</span>
   if (<span class="kw">length</span>(meta[[<span class="st">&quot;batch&quot;</span>]]) &gt;<span class="st"> </span><span class="dv">1</span>) {
       batch_str &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="st">&quot;batch&quot;</span>, <span class="kw">seq</span>(<span class="dv">10</span>, <span class="dv">100</span>, <span class="dv">10</span>), <span class="dt">collapse=</span><span class="st">&quot;|&quot;</span>)
@@ -588,7 +597,8 @@ cols &lt;-<span class="st"> </span>cols[metric_fullnam]
   sum &lt;-<span class="st"> </span><span class="kw">readRDS</span>(sum_vec[sce_nam])
   d &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="st">&quot;mean_var_batch&quot;</span> =<span class="st"> </span>sum$mean_var_batch,
                   <span class="st">&quot;mean_var_celltype&quot;</span> =<span class="st"> </span>sum$mean_var_celltype,
-                  <span class="st">&quot;mean_de_genes&quot;</span> =<span class="st"> </span>sum$mean_mean_n_de_genes)
+                  <span class="st">&quot;mean_de_genes&quot;</span> =<span class="st"> </span>sum$mean_mean_n_de_genes,
+                  <span class="st">&quot;n_genes&quot;</span> =<span class="st"> </span>sum$n_genes_total)
 }) %&gt;%<span class="st"> </span><span class="kw">set_names</span>(sce_name) %&gt;%<span class="st"> </span><span class="kw">bind_rows</span>() %&gt;%<span class="st"> </span><span class="kw">set_rownames</span>(sce_name)
 
 
@@ -607,12 +617,12 @@ size_metric &lt;-<span class="st"> </span>size_metric %&gt;%<span class="st"> </
 size_metric &lt;-<span class="st"> </span>size_metric %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="st">&quot;batch_type&quot;</span> =<span class="st"> </span><span class="kw">revalue</span>(dataset, <span class="kw">c</span>(<span class="st">&quot;cellbench&quot;</span> =<span class="st"> &quot;linear&quot;</span>,
                                                         <span class="st">&quot;csf_media&quot;</span> =<span class="st"> &quot;additive&quot;</span>,
                                                         <span class="st">&quot;csf_patient&quot;</span> =<span class="st"> &quot;additive&quot;</span>,
-                                                       <span class="st">&quot;hca&quot;</span> =<span class="st"> &quot;none&quot;</span>,
-                                                       <span class="st">&quot;kang&quot;</span> =<span class="st"> &quot;none&quot;</span>,
+                                                       <span class="st">&quot;hca&quot;</span> =<span class="st"> &quot;other&quot;</span>,
+                                                       <span class="st">&quot;kang&quot;</span> =<span class="st"> &quot;other&quot;</span>,
                                                        <span class="st">&quot;pancreas&quot;</span> =<span class="st"> &quot;interacting&quot;</span>,
                                                        <span class="st">&quot;pbmc_roche&quot;</span> =<span class="st"> &quot;interacting&quot;</span>,
                                                        <span class="st">&quot;pbmc2_media&quot;</span> =<span class="st"> &quot;interacting&quot;</span>, 
-                                                       <span class="st">&quot;pbmc2_pat&quot;</span> =<span class="st"> &quot;none&quot;</span>)))</code></pre></div>
+                                                       <span class="st">&quot;pbmc2_pat&quot;</span> =<span class="st"> &quot;other&quot;</span>)))</code></pre></div>
 <div id="batch-size-parameter" class="section level3">
 <h3>Batch size parameter</h3>
 <p>How does the metric scores changes along size characteristics</p>
@@ -623,7 +633,7 @@ col_size &lt;-<span class="st"> </span><span class="kw">colorRamp2</span>(<span 
 q_type &lt;-<span class="st"> </span><span class="kw">qualitative_hcl</span>(<span class="dv">4</span>, <span class="dt">palette =</span> <span class="st">&quot;Dark 3&quot;</span>)
 col_type &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;protocol&quot;</span> =<span class="st"> </span>q_type[<span class="dv">1</span>], <span class="st">&quot;media&quot;</span> =<span class="st"> </span>q_type[<span class="dv">3</span>], <span class="st">&quot;patient&quot;</span> =<span class="st"> </span>q_type[<span class="dv">4</span>])
 col_batch_type &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;linear&quot;</span> =<span class="st"> </span>cols_data[<span class="dv">1</span>], <span class="st">&quot;additive&quot;</span> =<span class="st"> </span>cols_data[<span class="dv">2</span>], 
-                    <span class="st">&quot;interacting&quot;</span> =<span class="st"> </span>cols_data[<span class="dv">3</span>], <span class="st">&quot;none&quot;</span> =<span class="st"> </span>cols_data[<span class="dv">4</span>])
+                    <span class="st">&quot;interacting&quot;</span> =<span class="st"> </span>cols_data[<span class="dv">3</span>], <span class="st">&quot;other&quot;</span> =<span class="st"> </span>cols_data[<span class="dv">4</span>])
 
 q_size2 &lt;-<span class="st"> </span><span class="kw">sequential_hcl</span>(<span class="dv">5</span>, <span class="dt">palette =</span> <span class="st">&quot;Mint&quot;</span>)
 col_size2 &lt;-<span class="st"> </span><span class="kw">colorRamp2</span>(<span class="kw">c</span>(<span class="fl">0.65</span>, <span class="fl">0.5</span>, <span class="fl">0.3</span>, <span class="fl">0.2</span>, <span class="fl">0.1</span>), q_size2)
@@ -854,7 +864,7 @@ mean_asw &lt;-<span class="st"> </span><span class="kw">t</span>(<span class="kw
 <span class="kw">colnames</span>(mean_asw) &lt;-<span class="st"> </span>size_metric$dataset
 <span class="kw">rownames</span>(mean_asw) &lt;-<span class="st"> &quot;asw&quot;</span>
 
-col_asw =<span class="st"> </span><span class="kw">colorRamp2</span>(<span class="kw">col_vec</span>(mean_asw), q_metr)
+col_asw =<span class="st"> </span><span class="kw">colorRamp2</span>(<span class="kw">col_vec</span>(mean_asw), <span class="kw">rev</span>(q_metr))
 
 h_asw &lt;-<span class="st"> </span><span class="kw">Heatmap</span>(mean_asw, 
           <span class="dt">cluster_rows =</span> <span class="ot">FALSE</span>, 
@@ -875,7 +885,7 @@ mean_gcon &lt;-<span class="st"> </span><span class="kw">t</span>(<span class="k
 <span class="kw">colnames</span>(mean_gcon) &lt;-<span class="st"> </span>size_metric$dataset
 <span class="kw">rownames</span>(mean_gcon) &lt;-<span class="st"> &quot;graph_connectivity&quot;</span>
 
-col_gcon =<span class="st"> </span><span class="kw">colorRamp2</span>(<span class="kw">col_vec</span>(mean_gcon), <span class="kw">rev</span>(q_metr))
+col_gcon =<span class="st"> </span><span class="kw">colorRamp2</span>(<span class="kw">col_vec</span>(mean_gcon), q_metr)
 
 h_gcon &lt;-<span class="st"> </span><span class="kw">Heatmap</span>(mean_gcon, 
           <span class="dt">cluster_rows =</span> <span class="ot">FALSE</span>, 
@@ -903,6 +913,8 @@ h_list2 &lt;-<span class="st"> </span>h_size1 %v%<span class="st"> </span>h_size
 <p><img src="batch_characteristics_metrics_files/figure-html/size%20hm-1.svg" width="672" /></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">draw</span>(h_list2)</code></pre></div>
 <p><img src="batch_characteristics_metrics_files/figure-html/size%20hm-2.svg" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">saveRDS</span>(h_list, <span class="kw">paste0</span>(out_path_fig, <span class="st">&quot;_summary_all.rds&quot;</span>))
+<span class="kw">saveRDS</span>(lgd, <span class="kw">paste0</span>(out_path_fig, <span class="st">&quot;_summary_lgd.rds&quot;</span>))</code></pre></div>
 <p>Correlation with batch size parameters</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">size_columns &lt;-<span class="st"> </span><span class="kw">colnames</span>(batch_size)[!<span class="kw">colnames</span>(batch_size) %in%<span class="st"> &quot;mean_var_celltype&quot;</span>]
 size_mat &lt;-<span class="st"> </span>size_metric[, <span class="kw">c</span>(metr_columns, size_columns)]
@@ -918,7 +930,7 @@ kbet_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class=
 graph_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;graph&quot;</span>, <span class="kw">colnames</span>(size_cor))
 pcr_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;pcr&quot;</span>, <span class="kw">colnames</span>(size_cor))
 size_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;mean_&quot;</span>, <span class="kw">colnames</span>(size_cor))
-metric_order &lt;-<span class="st"> </span><span class="kw">colnames</span>(size_cor)[<span class="kw">c</span>(size_ind, cms_ind, lisi_ind, ent_ind, mm_ind, 
+metric_order &lt;-<span class="st"> </span><span class="kw">colnames</span>(size_cor)[<span class="kw">c</span>(size_ind, cms_ind[<span class="kw">c</span>(<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">1</span>)], lisi_ind[<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">3</span>,<span class="dv">2</span>)], ent_ind, mm_ind, 
                                        kbet_ind, asw_ind, graph_ind, pcr_ind)]
 ###------------------ metric reorder -----------------------------------#######
 size_cor &lt;-<span class="st"> </span>size_cor[metric_order, metric_order]
@@ -936,6 +948,594 @@ size_cor &lt;-<span class="st"> </span>size_cor[metric_order, metric_order]
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#save correlation</span>
 <span class="kw">saveRDS</span>(size_cor, out_path_cor)</code></pre></div>
 </div>
+<div id="score-by-features" class="section level3 tabset">
+<h3>Score by features</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">size_met &lt;-<span class="st"> </span>size_metric %&gt;%<span class="st"> </span><span class="kw">select</span>(!<span class="kw">starts_with</span>(<span class="st">&quot;ct_&quot;</span>))
+size_met &lt;-<span class="st"> </span>size_met %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="st">&quot;colour&quot;</span> =<span class="st"> </span>cols_data[<span class="kw">as.numeric</span>(<span class="kw">as.factor</span>(batch_type))]) 
+
+<span class="co"># get scaled scores</span>
+dir_ind &lt;-<span class="st"> </span><span class="kw">which</span>(!<span class="kw">rownames</span>(scal_mat) %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;mm&quot;</span>, <span class="st">&quot;kbet&quot;</span>, <span class="st">&quot;pcr&quot;</span>))
+scal_mat_dir &lt;-<span class="st"> </span>scal_mat
+scal_mat_dir[dir_ind,] &lt;-<span class="st"> </span><span class="dv">1</span> -<span class="st"> </span>scal_mat[dir_ind,]
+size_met_scal &lt;-<span class="st"> </span>size_met
+size_met_scal[, <span class="kw">rownames</span>(scal_mat_dir)] &lt;-<span class="st"> </span><span class="kw">t</span>(scal_mat_dir)
+
+feature_vars &lt;-<span class="st"> </span><span class="kw">colnames</span>(size_met_scal)[!<span class="kw">colnames</span>(size_met_scal) %in%<span class="st"> </span>metric_fullnam]
+size_long &lt;-<span class="st"> </span>size_met_scal %&gt;%<span class="st"> </span><span class="kw">pivot_longer</span>(-<span class="kw">all_of</span>(feature_vars), <span class="dt">names_to =</span> <span class="st">&quot;metric&quot;</span>,
+                                           <span class="dt">values_to =</span> <span class="st">&quot;scaled_score&quot;</span>)
+size_long$metric &lt;-<span class="st"> </span><span class="kw">as.factor</span>(size_long$metric)
+
+sep_plots &lt;-<span class="st"> </span>function(feature){
+  size_long &lt;-<span class="st"> </span>size_long %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">metric2 =</span> metric)
+  cols_rep &lt;-<span class="st"> </span><span class="kw">rep</span>(cols[<span class="dv">1</span>:<span class="st"> </span><span class="kw">length</span>(<span class="kw">levels</span>(size_long$metric))], 
+                  <span class="dt">each =</span> <span class="kw">length</span>(<span class="kw">levels</span>(<span class="kw">as.factor</span>(size_long$dataset))))
+  cols_data_rep &lt;-<span class="st"> </span>size_long$colour
+  size_long$metric &lt;-<span class="st"> </span><span class="kw">factor</span>(size_long$metric, <span class="dt">levels =</span> metric_order)
+  p &lt;-<span class="st"> </span><span class="kw">ggplot</span>(size_long, <span class="kw">aes_string</span>(<span class="dt">x =</span> feature, <span class="dt">y =</span> <span class="kw">quote</span>(scaled_score))) +
+<span class="st">        </span><span class="kw">geom_line</span>(<span class="dt">data=</span>size_long %&gt;%<span class="st"> </span>dplyr::<span class="kw">select</span>(-metric), <span class="kw">aes</span>(<span class="dt">group=</span>metric2),
+                   <span class="dt">color=</span><span class="st">&quot;grey&quot;</span>, <span class="dt">size=</span><span class="fl">0.5</span>, <span class="dt">alpha=</span><span class="fl">0.5</span>) +<span class="st"> </span>
+<span class="st">        </span><span class="kw">geom_line</span>( <span class="kw">aes</span>(<span class="dt">color=</span>metric), <span class="dt">color=</span>cols_rep, <span class="dt">size=</span><span class="fl">1.2</span> ) +<span class="st"> </span>
+<span class="st">        </span><span class="co"># geom_point( aes(color=batch_type), size=1.4 , color = cols_data_rep) + </span>
+<span class="st">        </span><span class="kw">theme_ipsum</span>(<span class="dt">base_family =</span> <span class="st">&#39;Helvetica&#39;</span>) +
+<span class="st">        </span><span class="kw">theme</span>(
+        <span class="dt">legend.position=</span><span class="st">&quot;none&quot;</span>,
+        <span class="dt">plot.title =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">14</span>),
+        <span class="dt">panel.grid =</span> <span class="kw">element_blank</span>()
+      ) +
+<span class="st">      </span><span class="kw">ggtitle</span>(feature) +
+<span class="st">      </span><span class="kw">facet_wrap</span>(~metric)
+  p
+}
+
+feature_plot &lt;-<span class="st"> </span>feature_vars[!feature_vars %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;batch_origin&quot;</span>, <span class="st">&quot;batch_type&quot;</span>, <span class="st">&quot;dataset&quot;</span>, <span class="st">&quot;colour&quot;</span>)]  
+template_sep &lt;-<span class="st"> </span><span class="kw">c</span>(
+    <span class="st">&quot;#### {{nm}}</span><span class="ch">\n</span><span class="st">&quot;</span>,
+    <span class="st">&quot;```{r scaling sep {{nm}}, echo = FALSE, fig.width = 8, fig.height = 7}</span><span class="ch">\n</span><span class="st">&quot;</span>,
+    <span class="st">&quot;p &lt;- sep_plots(&#39;{{nm}}&#39;)</span><span class="ch">\n</span><span class="st">&quot;</span>,
+    <span class="st">&quot;p&quot;</span>,
+    <span class="st">&quot;saveRDS(p, paste0(out_path_fig, &#39;_{{nm}}.rds&#39;))&quot;</span>,
+    <span class="st">&quot;```</span><span class="ch">\n</span><span class="st">&quot;</span>,
+    <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>
+  )
+
+plots_sep &lt;-<span class="st"> </span><span class="kw">lapply</span>(feature_plot, 
+  function(nm) knitr::<span class="kw">knit_expand</span>(<span class="dt">text =</span> template_sep)
+)</code></pre></div>
+<div id="mean_var_batch" class="section level4">
+<h4>mean_var_batch</h4>
+<p><img src="batch_characteristics_metrics_files/figure-html/scaling%20sep%20mean_var_batch-1.svg" width="768" /></p>
+</div>
+<div id="mean_var_celltype" class="section level4">
+<h4>mean_var_celltype</h4>
+<p><img src="batch_characteristics_metrics_files/figure-html/scaling%20sep%20mean_var_celltype-1.svg" width="768" /></p>
+</div>
+<div id="mean_de_genes" class="section level4">
+<h4>mean_de_genes</h4>
+<p><img src="batch_characteristics_metrics_files/figure-html/scaling%20sep%20mean_de_genes-1.svg" width="768" /></p>
+</div>
+<div id="n_genes" class="section level4">
+<h4>n_genes</h4>
+<p><img src="batch_characteristics_metrics_files/figure-html/scaling%20sep%20n_genes-1.svg" width="768" /></p>
+</div>
+<div id="n_cells" class="section level4">
+<h4>n_cells</h4>
+<p><img src="batch_characteristics_metrics_files/figure-html/scaling%20sep%20n_cells-1.svg" width="768" /></p>
+</div>
+<div id="n_batches" class="section level4">
+<h4>n_batches</h4>
+<p><img src="batch_characteristics_metrics_files/figure-html/scaling%20sep%20n_batches-1.svg" width="768" /></p>
+</div>
+<div id="n_ct" class="section level4">
+<h4>n_ct</h4>
+<p><img src="batch_characteristics_metrics_files/figure-html/scaling%20sep%20n_ct-1.svg" width="768" /></p>
+</div>
+</div>
+<div id="relation-de-and-pveb-with-score" class="section level3">
+<h3>Relation DE and PVEB with score</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">size_long$metric &lt;-<span class="st"> </span><span class="kw">factor</span>(size_long$metric, <span class="dt">levels =</span> metric_order)
+size_cor_sum &lt;-<span class="st"> </span>size_cor[metric_order,<span class="kw">c</span>(<span class="st">&quot;mean_var_batch&quot;</span>, <span class="st">&quot;mean_de_genes&quot;</span>)]
+size_cor_sum &lt;-<span class="st"> </span>size_cor_sum[!<span class="kw">rownames</span>(size_cor_sum) %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;mean_var_batch&quot;</span>, <span class="st">&quot;mean_de_genes&quot;</span>),]
+
+size_long$metric &lt;-<span class="st"> </span><span class="kw">recode</span>(size_long$metric, <span class="dt">cms.kmin80 =</span> <span class="st">&quot;cms_kmin&quot;</span>, <span class="dt">cms.bmin80 =</span> <span class="st">&quot;cms_bmin&quot;</span>,
+       <span class="dt">cms =</span> <span class="st">&quot;cms_default&quot;</span>, <span class="dt">graph_connectivity =</span> <span class="st">&quot;graph&quot;</span>, <span class="dt">kbet =</span> <span class="st">&quot;kBet&quot;</span>)
+size_long &lt;-<span class="st"> </span>size_long %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">metric2 =</span> metric)
+<span class="co">#transform DE genes to plot both in the same coord system</span>
+y1 &lt;-<span class="st"> </span><span class="kw">min</span>(size_long$mean_var_batch, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)
+y2 &lt;-<span class="st"> </span><span class="kw">max</span>(size_long$mean_var_batch, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)
+x1 &lt;-<span class="st"> </span><span class="kw">min</span>(size_long$mean_de_genes, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)
+x2 &lt;-<span class="st"> </span><span class="kw">max</span>(size_long$mean_de_genes, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)
+b &lt;-<span class="st"> </span>(y2 -<span class="st"> </span>y1) /<span class="st"> </span>(x2 -<span class="st"> </span>x1)
+a &lt;-<span class="st"> </span>y1 -<span class="st"> </span>b *<span class="st"> </span>x1
+size_long &lt;-<span class="st"> </span>size_long %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">de_trans =</span> a +<span class="st"> </span>b *<span class="st"> </span>mean_de_genes)
+
+
+keep &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;mean_var_celltype&quot;</span>, <span class="st">&quot;mean_de_genes&quot;</span>,<span class="st">&quot;n_genes&quot;</span>,<span class="st">&quot;n_cells&quot;</span>,<span class="st">&quot;n_batches&quot;</span>,<span class="st">&quot;n_ct&quot;</span>,<span class="st">&quot;batch_origin&quot;</span>,<span class="st">&quot;dataset&quot;</span>,<span class="st">&quot;batch_type&quot;</span>, <span class="st">&quot;colour&quot;</span>,<span class="st">&quot;metric&quot;</span>,<span class="st">&quot;scaled_score&quot;</span>,<span class="st">&quot;metric2&quot;</span>)
+size_long_long &lt;-<span class="st"> </span>size_long %&gt;%<span class="st"> </span><span class="kw">pivot_longer</span>(-<span class="kw">all_of</span>(keep), <span class="dt">names_to =</span> <span class="st">&quot;characteristics&quot;</span>,
+                                           <span class="dt">values_to =</span> <span class="st">&quot;variance&quot;</span>)
+
+cols_rep &lt;-<span class="st"> </span><span class="kw">rep</span>(cols[<span class="dv">1</span>:(<span class="kw">length</span>(<span class="kw">levels</span>(size_long_long$metric))-<span class="dv">2</span>)], 
+                  <span class="dt">each =</span> (<span class="dv">2</span>*<span class="kw">length</span>(<span class="kw">levels</span>(<span class="kw">as.factor</span>(size_long_long$dataset)))))
+cols_data_rep &lt;-<span class="st"> </span>size_long_long$colour
+
+
+label &lt;-<span class="st"> </span><span class="kw">data.frame</span>(
+  <span class="dt">scaled_score =</span> <span class="kw">c</span>(<span class="kw">rep</span>(<span class="fl">0.25</span>, <span class="dv">10</span>), <span class="kw">rep</span>(<span class="fl">0.75</span>, <span class="dv">2</span>)), 
+  <span class="dt">variance =</span> <span class="kw">c</span>(<span class="kw">rep</span>(<span class="fl">0.08</span>, <span class="dv">10</span>), <span class="kw">rep</span>(<span class="fl">0.06</span>, <span class="dv">2</span>)), 
+  <span class="dt">metric =</span> <span class="kw">levels</span>(size_long$metric)[-<span class="kw">c</span>(<span class="dv">1</span>:<span class="dv">2</span>)],
+  <span class="dt">label =</span> <span class="kw">c</span>(<span class="kw">paste0</span>(<span class="st">&quot;R_PVE-Batch = &quot;</span>, <span class="kw">signif</span>(<span class="kw">abs</span>(size_cor_sum[,<span class="st">&quot;mean_var_batch&quot;</span>]), <span class="dt">digits =</span> <span class="dv">2</span>),
+                   <span class="st">&quot;</span><span class="ch">\n</span><span class="st">R_DE = &quot;</span>, <span class="kw">signif</span>(<span class="kw">abs</span>(size_cor_sum[,<span class="st">&quot;mean_de_genes&quot;</span>]), <span class="dt">digits =</span> <span class="dv">2</span>)))
+)
+
+<span class="co"># Plot</span>
+p &lt;-<span class="st"> </span><span class="kw">ggplot</span>(size_long_long, <span class="kw">aes</span>(<span class="dt">x =</span> variance, <span class="dt">y =</span> scaled_score)) +
+<span class="st">        </span><span class="co"># geom_line(data=size_long_long %&gt;% dplyr::select(-metric), </span>
+<span class="st">        </span><span class="co">#           aes(group=metric2), color=&quot;grey&quot;, </span>
+<span class="st">        </span><span class="co">#           size=0.5, alpha=0.5) + </span>
+<span class="st">        </span><span class="kw">geom_line</span>( <span class="kw">aes</span>(<span class="dt">color=</span>metric, <span class="dt">linetype=</span>characteristics), 
+                   <span class="dt">color=</span>cols_rep, <span class="dt">size=</span><span class="fl">1.2</span>) +
+<span class="st">        </span><span class="kw">scale_x_continuous</span>(<span class="dt">sec.axis =</span> <span class="kw">sec_axis</span>(<span class="kw">as.formula</span>(<span class="kw">paste0</span>(<span class="st">&quot;~ (. - &quot;</span>, a, <span class="st">&quot;/&quot;</span>, b, <span class="st">&quot;)&quot;</span>)),
+                                               <span class="dt">name =</span> <span class="st">&#39;DE genes&#39;</span>)) +
+<span class="st">        </span><span class="kw">theme_ipsum</span>(<span class="dt">base_family =</span> <span class="st">&#39;Helvetica&#39;</span>) +
+<span class="st">        </span><span class="kw">theme</span>(
+        <span class="dt">plot.title =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">14</span>),
+        <span class="dt">panel.grid =</span> <span class="kw">element_blank</span>()
+      ) +
+<span class="st">      </span><span class="kw">ggtitle</span>(<span class="st">&quot;Metric performance across datasets&quot;</span>) +
+<span class="st">      </span><span class="kw">geom_label</span>(<span class="dt">data =</span> label, <span class="kw">aes</span>(<span class="dt">label =</span> label), <span class="dt">size =</span> <span class="dv">6</span>) +<span class="st"> </span>
+<span class="st">      </span><span class="kw">facet_wrap</span>(~metric)
+p</code></pre></div>
+<p><img src="batch_characteristics_metrics_files/figure-html/rel%20DE%20score-1.svg" width="1344" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">saveRDS</span>(p, <span class="kw">paste0</span>(out_path_fig, <span class="st">&#39;_task1.rds&#39;</span>))</code></pre></div>
+</div>
+<div id="fit-a-multiple-linear-regression-with-batch-characteristics-and-scores" class="section level3 tabset">
+<h3>Fit a multiple linear regression with batch characteristics and scores</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">size_num &lt;-<span class="st"> </span>size_met %&gt;%<span class="st"> </span><span class="kw">select_if</span>(is.numeric)
+size_vars &lt;-<span class="st"> </span><span class="kw">colnames</span>(size_num)[!<span class="kw">colnames</span>(size_num) %in%<span class="st"> </span>metric_fullnam]
+
+<span class="kw">library</span>(jtools)
+
+mlr_fun &lt;-<span class="st"> </span>function(met){
+  size_tab &lt;-<span class="st"> </span>size_num %&gt;%<span class="st"> </span>dplyr::<span class="kw">select</span>(<span class="kw">all_of</span>(<span class="kw">c</span>(size_vars, met)))
+  f &lt;-<span class="st"> </span><span class="kw">as.formula</span>(<span class="kw">paste</span>(met, 
+        <span class="kw">paste</span>(size_vars, <span class="dt">collapse =</span> <span class="st">&quot; + &quot;</span>), 
+        <span class="dt">sep =</span> <span class="st">&quot; ~ &quot;</span>))
+  fit &lt;-<span class="st"> </span><span class="kw">lm</span>(f, <span class="dt">data =</span> size_tab)
+  <span class="kw">summ</span>(fit, <span class="dt">scale =</span> <span class="ot">TRUE</span>)
+}
+
+
+template_sep &lt;-<span class="st"> </span><span class="kw">c</span>(
+    <span class="st">&quot;#### {{nm}}</span><span class="ch">\n</span><span class="st">&quot;</span>,
+    <span class="st">&quot;```{r mlr fit {{nm}}, echo = FALSE, fig.width = 8, fig.height = 7}</span><span class="ch">\n</span><span class="st">&quot;</span>,
+    <span class="st">&quot;mlr_fun(&#39;{{nm}}&#39;)</span><span class="ch">\n</span><span class="st">&quot;</span>,
+    <span class="st">&quot;```</span><span class="ch">\n</span><span class="st">&quot;</span>,
+    <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>
+  )
+
+plots_sep &lt;-<span class="st"> </span><span class="kw">lapply</span>(metric_fullnam, 
+  function(nm) knitr::<span class="kw">knit_expand</span>(<span class="dt">text =</span> template_sep)
+)</code></pre></div>
+<div id="cms" class="section level4">
+<h4>cms</h4>
+<pre><code>## MODEL INFO:
+## Observations: 9
+## Dependent Variable: cms
+## Type: OLS linear regression 
+## 
+## MODEL FIT:
+## F(7,1) = 26.65, p = 0.15
+## R² = 0.99
+## Adj. R² = 0.96 
+## 
+## Standard errors: OLS
+## ------------------------------------------------------
+##                            Est.   S.E.   t val.      p
+## ----------------------- ------- ------ -------- ------
+## (Intercept)                0.10   0.01    11.62   0.05
+## mean_var_batch             0.29   0.07     3.99   0.16
+## mean_var_celltype         -0.18   0.08    -2.19   0.27
+## mean_de_genes             -0.05   0.09    -0.62   0.65
+## n_genes                   -0.33   0.09    -3.65   0.17
+## n_cells                   -0.30   0.11    -2.58   0.24
+## n_batches                  0.14   0.07     2.01   0.29
+## n_ct                       0.46   0.16     2.83   0.22
+## ------------------------------------------------------
+## 
+## Continuous predictors are mean-centered and scaled by 1 s.d.</code></pre>
+</div>
+<div id="cms.kmin80" class="section level4">
+<h4>cms.kmin80</h4>
+<pre><code>## MODEL INFO:
+## Observations: 9
+## Dependent Variable: cms.kmin80
+## Type: OLS linear regression 
+## 
+## MODEL FIT:
+## F(7,1) = 25.46, p = 0.15
+## R² = 0.99
+## Adj. R² = 0.96 
+## 
+## Standard errors: OLS
+## ------------------------------------------------------
+##                            Est.   S.E.   t val.      p
+## ----------------------- ------- ------ -------- ------
+## (Intercept)                0.11   0.01    11.34   0.06
+## mean_var_batch             0.28   0.08     3.71   0.17
+## mean_var_celltype         -0.17   0.09    -1.93   0.30
+## mean_de_genes             -0.05   0.09    -0.58   0.66
+## n_genes                   -0.33   0.09    -3.48   0.18
+## n_cells                   -0.29   0.12    -2.39   0.25
+## n_batches                  0.15   0.07     2.06   0.29
+## n_ct                       0.44   0.17     2.65   0.23
+## ------------------------------------------------------
+## 
+## Continuous predictors are mean-centered and scaled by 1 s.d.</code></pre>
+</div>
+<div id="cms.bmin80" class="section level4">
+<h4>cms.bmin80</h4>
+<pre><code>## MODEL INFO:
+## Observations: 9
+## Dependent Variable: cms.bmin80
+## Type: OLS linear regression 
+## 
+## MODEL FIT:
+## F(7,1) = 0.41, p = 0.84
+## R² = 0.74
+## Adj. R² = -1.06 
+## 
+## Standard errors: OLS
+## ------------------------------------------------------
+##                            Est.   S.E.   t val.      p
+## ----------------------- ------- ------ -------- ------
+## (Intercept)                0.02   0.02     1.16   0.45
+## mean_var_batch             0.01   0.13     0.07   0.95
+## mean_var_celltype         -0.03   0.14    -0.20   0.88
+## mean_de_genes              0.06   0.15     0.38   0.77
+## n_genes                   -0.06   0.16    -0.39   0.76
+## n_cells                   -0.05   0.20    -0.23   0.85
+## n_batches                  0.01   0.12     0.04   0.97
+## n_ct                       0.11   0.28     0.38   0.77
+## ------------------------------------------------------
+## 
+## Continuous predictors are mean-centered and scaled by 1 s.d.</code></pre>
+</div>
+<div id="mm" class="section level4">
+<h4>mm</h4>
+<pre><code>## MODEL INFO:
+## Observations: 9
+## Dependent Variable: mm
+## Type: OLS linear regression 
+## 
+## MODEL FIT:
+## F(7,1) = 6.05, p = 0.30
+## R² = 0.98
+## Adj. R² = 0.82 
+## 
+## Standard errors: OLS
+## ---------------------------------------------------------
+##                             Est.     S.E.   t val.      p
+## ----------------------- -------- -------- -------- ------
+## (Intercept)               153.60    12.71    12.08   0.05
+## mean_var_batch             33.46   104.60     0.32   0.80
+## mean_var_celltype         -58.83   118.37    -0.50   0.71
+## mean_de_genes             -42.76   123.68    -0.35   0.79
+## n_genes                   119.77   129.10     0.93   0.52
+## n_cells                     1.89   162.82     0.01   0.99
+## n_batches                 -65.76    96.64    -0.68   0.62
+## n_ct                      -52.96   229.21    -0.23   0.86
+## ---------------------------------------------------------
+## 
+## Continuous predictors are mean-centered and scaled by 1 s.d.</code></pre>
+</div>
+<div id="wisi" class="section level4">
+<h4>wisi</h4>
+<pre><code>## MODEL INFO:
+## Observations: 9
+## Dependent Variable: wisi
+## Type: OLS linear regression 
+## 
+## MODEL FIT:
+## F(7,1) = 3.38, p = 0.40
+## R² = 0.96
+## Adj. R² = 0.68 
+## 
+## Standard errors: OLS
+## ------------------------------------------------------
+##                            Est.   S.E.   t val.      p
+## ----------------------- ------- ------ -------- ------
+## (Intercept)                1.12   0.26     4.26   0.15
+## mean_var_batch             2.38   2.15     1.11   0.47
+## mean_var_celltype         -1.27   2.44    -0.52   0.70
+## mean_de_genes              0.42   2.55     0.16   0.90
+## n_genes                   -4.13   2.66    -1.55   0.36
+## n_cells                   -3.91   3.35    -1.17   0.45
+## n_batches                  2.43   1.99     1.22   0.44
+## n_ct                       5.49   4.72     1.16   0.45
+## ------------------------------------------------------
+## 
+## Continuous predictors are mean-centered and scaled by 1 s.d.</code></pre>
+</div>
+<div id="isi" class="section level4">
+<h4>isi</h4>
+<pre><code>## MODEL INFO:
+## Observations: 9
+## Dependent Variable: isi
+## Type: OLS linear regression 
+## 
+## MODEL FIT:
+## F(7,1) = 10.30, p = 0.24
+## R² = 0.99
+## Adj. R² = 0.89 
+## 
+## Standard errors: OLS
+## ------------------------------------------------------
+##                            Est.   S.E.   t val.      p
+## ----------------------- ------- ------ -------- ------
+## (Intercept)                1.72   0.12    13.77   0.05
+## mean_var_batch             2.33   1.03     2.27   0.26
+## mean_var_celltype         -1.27   1.16    -1.09   0.47
+## mean_de_genes             -0.03   1.21    -0.03   0.98
+## n_genes                   -3.20   1.27    -2.52   0.24
+## n_cells                   -3.19   1.60    -2.00   0.30
+## n_batches                  1.93   0.95     2.03   0.29
+## n_ct                       4.36   2.25     1.94   0.30
+## ------------------------------------------------------
+## 
+## Continuous predictors are mean-centered and scaled by 1 s.d.</code></pre>
+</div>
+<div id="entropy" class="section level4">
+<h4>entropy</h4>
+<pre><code>## MODEL INFO:
+## Observations: 9
+## Dependent Variable: entropy
+## Type: OLS linear regression 
+## 
+## MODEL FIT:
+## F(7,1) = 3.90, p = 0.37
+## R² = 0.96
+## Adj. R² = 0.72 
+## 
+## Standard errors: OLS
+## ------------------------------------------------------
+##                            Est.   S.E.   t val.      p
+## ----------------------- ------- ------ -------- ------
+## (Intercept)                0.32   0.05     6.62   0.10
+## mean_var_batch            -0.09   0.40    -0.23   0.86
+## mean_var_celltype          0.48   0.45     1.07   0.48
+## mean_de_genes              0.18   0.47     0.39   0.77
+## n_genes                   -0.50   0.49    -1.01   0.50
+## n_cells                    0.01   0.62     0.01   0.99
+## n_batches                  0.65   0.37     1.75   0.33
+## n_ct                       0.25   0.87     0.29   0.82
+## ------------------------------------------------------
+## 
+## Continuous predictors are mean-centered and scaled by 1 s.d.</code></pre>
+</div>
+<div id="lisi" class="section level4">
+<h4>lisi</h4>
+<pre><code>## MODEL INFO:
+## Observations: 9
+## Dependent Variable: lisi
+## Type: OLS linear regression 
+## 
+## MODEL FIT:
+## F(7,1) = 9.37, p = 0.25
+## R² = 0.98
+## Adj. R² = 0.88 
+## 
+## Standard errors: OLS
+## ------------------------------------------------------
+##                            Est.   S.E.   t val.      p
+## ----------------------- ------- ------ -------- ------
+## (Intercept)                1.44   0.10    15.02   0.04
+## mean_var_batch             2.22   0.79     2.82   0.22
+## mean_var_celltype         -1.61   0.89    -1.81   0.32
+## mean_de_genes             -0.23   0.93    -0.25   0.85
+## n_genes                   -2.49   0.97    -2.56   0.24
+## n_cells                   -2.84   1.23    -2.32   0.26
+## n_batches                  1.08   0.73     1.49   0.38
+## n_ct                       3.75   1.72     2.17   0.27
+## ------------------------------------------------------
+## 
+## Continuous predictors are mean-centered and scaled by 1 s.d.</code></pre>
+</div>
+<div id="kbet" class="section level4">
+<h4>kbet</h4>
+<pre><code>## MODEL INFO:
+## Observations: 9
+## Dependent Variable: kbet
+## Type: OLS linear regression 
+## 
+## MODEL FIT:
+## F(7,1) = 0.21, p = 0.93
+## R² = 0.60
+## Adj. R² = -2.21 
+## 
+## Standard errors: OLS
+## ------------------------------------------------------
+##                            Est.   S.E.   t val.      p
+## ----------------------- ------- ------ -------- ------
+## (Intercept)                0.87   0.10     8.54   0.07
+## mean_var_batch            -0.12   0.84    -0.14   0.91
+## mean_var_celltype          0.14   0.95     0.15   0.91
+## mean_de_genes              0.87   0.99     0.88   0.54
+## n_genes                   -0.74   1.04    -0.72   0.60
+## n_cells                   -0.70   1.31    -0.54   0.69
+## n_batches                  0.68   0.78     0.88   0.54
+## n_ct                       1.21   1.84     0.66   0.63
+## ------------------------------------------------------
+## 
+## Continuous predictors are mean-centered and scaled by 1 s.d.</code></pre>
+</div>
+<div id="pcr" class="section level4">
+<h4>pcr</h4>
+<pre><code>## MODEL INFO:
+## Observations: 9
+## Dependent Variable: pcr
+## Type: OLS linear regression 
+## 
+## MODEL FIT:
+## F(7,1) = 7.82, p = 0.27
+## R² = 0.98
+## Adj. R² = 0.86 
+## 
+## Standard errors: OLS
+## ------------------------------------------------------
+##                            Est.   S.E.   t val.      p
+## ----------------------- ------- ------ -------- ------
+## (Intercept)                0.10   0.01     6.54   0.10
+## mean_var_batch             0.23   0.12     1.92   0.31
+## mean_var_celltype         -0.11   0.14    -0.83   0.56
+## mean_de_genes             -0.06   0.14    -0.44   0.74
+## n_genes                   -0.03   0.15    -0.24   0.85
+## n_cells                   -0.10   0.19    -0.54   0.68
+## n_batches                 -0.08   0.11    -0.74   0.59
+## n_ct                       0.11   0.26     0.42   0.75
+## ------------------------------------------------------
+## 
+## Continuous predictors are mean-centered and scaled by 1 s.d.</code></pre>
+</div>
+<div id="graph_connectivity" class="section level4">
+<h4>graph_connectivity</h4>
+<pre><code>## MODEL INFO:
+## Observations: 9
+## Dependent Variable: graph_connectivity
+## Type: OLS linear regression 
+## 
+## MODEL FIT:
+## F(7,1) = 254.55, p = 0.05
+## R² = 1.00
+## Adj. R² = 1.00 
+## 
+## Standard errors: OLS
+## ------------------------------------------------------
+##                            Est.   S.E.   t val.      p
+## ----------------------- ------- ------ -------- ------
+## (Intercept)                0.91   0.00   257.95   0.00
+## mean_var_batch            -0.23   0.03    -7.85   0.08
+## mean_var_celltype          0.08   0.03     2.33   0.26
+## mean_de_genes              0.01   0.03     0.31   0.81
+## n_genes                    0.07   0.04     1.84   0.32
+## n_cells                    0.24   0.05     5.23   0.12
+## n_batches                 -0.01   0.03    -0.48   0.72
+## n_ct                      -0.28   0.06    -4.44   0.14
+## ------------------------------------------------------
+## 
+## Continuous predictors are mean-centered and scaled by 1 s.d.</code></pre>
+</div>
+<div id="asw" class="section level4">
+<h4>asw</h4>
+<pre><code>## MODEL INFO:
+## Observations: 9
+## Dependent Variable: asw
+## Type: OLS linear regression 
+## 
+## MODEL FIT:
+## F(7,1) = 10.78, p = 0.23
+## R² = 0.99
+## Adj. R² = 0.90 
+## 
+## Standard errors: OLS
+## ------------------------------------------------------
+##                            Est.   S.E.   t val.      p
+## ----------------------- ------- ------ -------- ------
+## (Intercept)                0.84   0.01    65.39   0.01
+## mean_var_batch            -0.28   0.11    -2.70   0.23
+## mean_var_celltype          0.30   0.12     2.51   0.24
+## mean_de_genes              0.11   0.12     0.89   0.54
+## n_genes                   -0.00   0.13    -0.03   0.98
+## n_cells                    0.21   0.16     1.29   0.42
+## n_batches                  0.20   0.10     2.05   0.29
+## n_ct                      -0.16   0.23    -0.67   0.62
+## ------------------------------------------------------
+## 
+## Continuous predictors are mean-centered and scaled by 1 s.d.</code></pre>
+</div>
+</div>
+<div id="spearman-correlation-plot" class="section level3">
+<h3>Spearman correlation plot</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">size_num_cor &lt;-<span class="st"> </span>size_num %&gt;%<span class="st">  </span><span class="kw">as.matrix</span>() %&gt;%<span class="st"> </span><span class="kw">cor</span>(., <span class="dt">use =</span> <span class="st">&quot;complete.obs&quot;</span>, <span class="dt">method =</span> <span class="st">&quot;spearman&quot;</span>)
+feature_rows &lt;-<span class="st"> </span><span class="kw">rownames</span>(size_num_cor)[!<span class="kw">colnames</span>(size_num_cor) %in%<span class="st"> </span>metric_fullnam]
+size_num_cor &lt;-<span class="st"> </span>size_num_cor[feature_rows, metric_fullnam]
+
+size_num_long &lt;-<span class="st"> </span>size_num_cor %&gt;%<span class="st"> </span><span class="kw">as_tibble</span>() %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="st">&quot;feature&quot;</span> =<span class="st"> </span>feature_rows) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">pivot_longer</span>(-feature, <span class="dt">names_to =</span> <span class="st">&quot;metric&quot;</span>, <span class="dt">values_to =</span> <span class="st">&quot;Spearman_correlation&quot;</span>)
+
+size_num_long$cor_abs &lt;-<span class="st"> </span><span class="kw">abs</span>(size_num_long$Spearman_correlation)
+size_num_long$metric &lt;-<span class="st"> </span><span class="kw">recode</span>(size_num_long$metric, <span class="dt">cms.kmin80 =</span> <span class="st">&quot;cms_kmin&quot;</span>, <span class="dt">cms.bmin80 =</span> <span class="st">&quot;cms_bmin&quot;</span>,
+       <span class="dt">cms =</span> <span class="st">&quot;cms_default&quot;</span>)
+metric_order &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;cms_default&quot;</span>, <span class="st">&quot;cms_kmin&quot;</span>, <span class="st">&quot;cms_bmin&quot;</span>, <span class="st">&quot;lisi&quot;</span>, <span class="st">&quot;wisi&quot;</span>, <span class="st">&quot;isi&quot;</span>, 
+                  <span class="st">&quot;entropy&quot;</span>, <span class="st">&quot;mm&quot;</span>, <span class="st">&quot;asw&quot;</span>, <span class="st">&quot;graph_connectivity&quot;</span>, <span class="st">&quot;kbet&quot;</span>, <span class="st">&quot;pcr&quot;</span>)
+
+size_num_long$metric &lt;-<span class="st"> </span><span class="kw">factor</span>(size_num_long$metric, <span class="dt">levels =</span> metric_order)
+
+p &lt;-<span class="st"> </span><span class="kw">ggballoonplot</span>(size_num_long,
+              <span class="dt">x =</span> <span class="st">&#39;metric&#39;</span>,
+              <span class="dt">y =</span> <span class="st">&#39;feature&#39;</span>,
+              <span class="dt">size =</span> <span class="st">&#39;cor_abs&#39;</span>,
+              <span class="dt">size.range =</span> <span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">22</span>),
+              <span class="dt">col =</span> <span class="st">&quot;black&quot;</span>,
+              <span class="dt">font.label =</span> <span class="kw">c</span>(<span class="dv">22</span>, <span class="st">&quot;plain&quot;</span>),
+              <span class="dt">fill =</span> <span class="st">&#39;Spearman_correlation&#39;</span>) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title=</span><span class="st">&quot;Metric correlation with batch characteristics&quot;</span>) +
+<span class="st">  </span><span class="kw">theme_ipsum</span>(<span class="dt">base_family =</span> <span class="st">&#39;Helvetica&#39;</span>) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">guides</span>(<span class="dt">size =</span> <span class="ot">FALSE</span>) +
+<span class="st">  </span><span class="kw">scale_fill_continuous_diverging</span>() +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">10</span>, <span class="dt">angle=</span><span class="dv">45</span>, <span class="dt">hjust =</span> <span class="dv">1</span>))
+
+p</code></pre></div>
+<p><img src="batch_characteristics_metrics_files/figure-html/spearman%20correlation%20-1.svg" width="960" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">saveRDS</span>(p, <span class="kw">paste0</span>(out_path_fig, <span class="st">&quot;_spear_cor.rds&quot;</span>))</code></pre></div>
+</div>
+</div>
+<div id="relation-of-de-genes-and-rveb-with-confounding-effects-number-of-cellsgenes" class="section level2">
+<h2>Relation of DE genes and RVEB with confounding effects (number of cells/genes)</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">theme_def &lt;-<span class="st"> </span><span class="kw">theme_ipsum</span>(<span class="dt">base_family =</span> <span class="st">&#39;Helvetica&#39;</span>,
+                    <span class="dt">strip_text_face =</span> <span class="st">&quot;bold&quot;</span>,
+                    <span class="dt">axis_title_size =</span> <span class="dv">25</span>,
+                    <span class="dt">strip_text_size =</span> <span class="dv">22</span>,
+                    <span class="dt">base_size =</span> <span class="dv">25</span>) +
+<span class="st">        </span><span class="kw">theme</span>(
+            <span class="dt">legend.position=</span><span class="st">&quot;top&quot;</span>,
+            <span class="dt">plot.title =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">26</span>),
+            <span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">16</span>),
+            <span class="dt">axis.text.y =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">16</span>),
+            <span class="dt">panel.grid.major =</span> <span class="kw">element_blank</span>(),
+            <span class="dt">panel.spacing =</span> <span class="kw">unit</span>(<span class="dv">1</span>, <span class="st">&quot;lines&quot;</span>)) 
+
+
+
+conf_plot &lt;-<span class="st"> </span>function(con_var){
+  p1 &lt;-<span class="st"> </span><span class="kw">ggplot</span>(size_num, <span class="kw">aes_string</span>(<span class="dt">x =</span> con_var, <span class="dt">y =</span> <span class="st">&quot;mean_var_batch&quot;</span>)) +
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="dt">size =</span> <span class="dv">3</span>, <span class="dt">color =</span> <span class="st">&quot;#00AFBB&quot;</span>) +
+<span class="st">    </span><span class="kw">geom_smooth</span>(<span class="dt">method=</span>lm, <span class="dt">colour=</span><span class="st">&quot;#00AFBB&quot;</span>) +
+<span class="st">    </span>theme_def +
+<span class="st">    </span><span class="kw">ggtitle</span>(<span class="kw">paste0</span>(<span class="st">&quot;PVEB&quot;</span>))
+  p2 &lt;-<span class="st"> </span><span class="kw">ggplot</span>(size_num, <span class="kw">aes_string</span>(<span class="dt">x =</span> con_var, <span class="dt">y =</span> <span class="st">&quot;mean_de_genes&quot;</span>)) +
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="dt">size =</span> <span class="dv">3</span>, <span class="dt">color =</span> <span class="st">&quot;#C4961A&quot;</span>) +
+<span class="st">    </span><span class="kw">geom_smooth</span>(<span class="dt">method=</span>lm, <span class="dt">colour =</span> <span class="st">&quot;#C4961A&quot;</span>) +
+<span class="st">    </span>theme_def +
+<span class="st">    </span><span class="kw">ggtitle</span>(<span class="kw">paste0</span>(<span class="st">&quot;mean DE genes&quot;</span>))
+  p3 &lt;-<span class="st"> </span><span class="kw">ggplot</span>(size_num, <span class="kw">aes_string</span>(<span class="dt">x =</span> con_var, <span class="dt">y =</span> <span class="st">&quot;mean_var_celltype&quot;</span>)) +
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="dt">size =</span> <span class="dv">3</span>, <span class="dt">color =</span> <span class="st">&quot;#FC4E07&quot;</span>) +
+<span class="st">    </span><span class="kw">geom_smooth</span>(<span class="dt">method=</span>lm, <span class="dt">colour =</span> <span class="st">&quot;#FC4E07&quot;</span>) +
+<span class="st">    </span>theme_def +
+<span class="st">    </span><span class="kw">ggtitle</span>(<span class="kw">paste0</span>(<span class="st">&quot;PVEC&quot;</span>))
+  p_all &lt;-<span class="st"> </span><span class="kw">plot_grid</span>(p1,p2,p3, <span class="dt">ncol =</span> <span class="dv">1</span>)
+  <span class="kw">saveRDS</span>(p_all, <span class="kw">paste0</span>(out_path_fig, <span class="st">&quot;_cor_rel_vars_&quot;</span>, con_var, <span class="st">&quot;.rds&quot;</span>))
+  p_all
+}
+
+<span class="kw">conf_plot</span>(<span class="st">&quot;n_cells&quot;</span>)</code></pre></div>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;
+## `geom_smooth()` using formula &#39;y ~ x&#39;
+## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="batch_characteristics_metrics_files/figure-html/plot%20confounding-1.svg" width="384" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">conf_plot</span>(<span class="st">&quot;n_genes&quot;</span>)</code></pre></div>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;
+## `geom_smooth()` using formula &#39;y ~ x&#39;
+## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="batch_characteristics_metrics_files/figure-html/plot%20confounding-2.svg" width="384" /></p>
 </div>
 <div id="per-celltype-metric-score" class="section level2">
 <h2>Per celltype metric score</h2>
@@ -1099,8 +1699,12 @@ size_cor &lt;-<span class="st"> </span>size_cor[metric_order, metric_order]
     <span class="co"># asw</span>
     asw_columns &lt;-<span class="st"> </span><span class="kw">colnames</span>(ct_mat)[<span class="kw">grep</span>(<span class="st">&#39;asw&#39;</span>, <span class="kw">colnames</span>(ct_mat))]
     mean_asw &lt;-<span class="st"> </span><span class="kw">t</span>(<span class="kw">as.matrix</span>(ct_mat[, asw_columns]))
-
-    col_asw =<span class="st"> </span><span class="kw">colorRamp2</span>(<span class="kw">col_vec</span>(mean_asw), <span class="kw">rev</span>(q_metr))
+    
+    if (<span class="kw">min</span>(mean_asw, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>) ==<span class="st"> </span><span class="kw">max</span>(mean_asw, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)) {
+        col_asw =<span class="st"> </span><span class="kw">colorRamp2</span>(<span class="kw">c</span>(<span class="dv">0</span>, <span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="dv">1</span>), <span class="kw">rev</span>(q_metr))
+    } else {
+        col_asw =<span class="st"> </span><span class="kw">colorRamp2</span>(<span class="kw">col_vec</span>(mean_asw), <span class="kw">rev</span>(q_metr))
+    }
 
     h_asw &lt;-<span class="st"> </span><span class="kw">Heatmap</span>(mean_asw, 
           <span class="dt">cluster_rows =</span> <span class="ot">FALSE</span>, 
@@ -1224,12 +1828,12 @@ cor_all$dataset &lt;-<span class="st"> </span><span class="kw">as.factor</span>(
 cor_all &lt;-<span class="st"> </span>cor_all %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="st">&quot;batch_type&quot;</span> =<span class="st"> </span><span class="kw">revalue</span>(dataset, <span class="kw">c</span>(<span class="st">&quot;cellbench&quot;</span> =<span class="st"> &quot;linear&quot;</span>,
                                                         <span class="st">&quot;csf_media&quot;</span> =<span class="st"> &quot;additive&quot;</span>,
                                                         <span class="st">&quot;csf_patient&quot;</span> =<span class="st"> &quot;additive&quot;</span>,
-                                                       <span class="st">&quot;hca&quot;</span> =<span class="st"> &quot;none&quot;</span>,
-                                                       <span class="st">&quot;kang&quot;</span> =<span class="st"> &quot;none&quot;</span>,
+                                                       <span class="st">&quot;hca&quot;</span> =<span class="st"> &quot;other&quot;</span>,
+                                                       <span class="st">&quot;kang&quot;</span> =<span class="st"> &quot;other&quot;</span>,
                                                        <span class="st">&quot;pancreas&quot;</span> =<span class="st"> &quot;interacting&quot;</span>,
                                                        <span class="st">&quot;pbmc_roche&quot;</span> =<span class="st"> &quot;interacting&quot;</span>,
                                                        <span class="st">&quot;pbmc2_media&quot;</span> =<span class="st"> &quot;interacting&quot;</span>, 
-                                                       <span class="st">&quot;pbmc2_pat&quot;</span> =<span class="st"> &quot;none&quot;</span>)))
+                                                       <span class="st">&quot;pbmc2_pat&quot;</span> =<span class="st"> &quot;other&quot;</span>)))
 
 cor_all[<span class="kw">is.na</span>(cor_all)] &lt;-<span class="st"> </span><span class="dv">0</span>
 
@@ -1328,45 +1932,49 @@ cor_all[<span class="kw">is.na</span>(cor_all)] &lt;-<span class="st"> </span><s
 ##  [8] utils     methods   base     
 ## 
 ## other attached packages:
-##  [1] dplyr_0.8.5                 RColorBrewer_1.1-2         
-##  [3] corrplot_0.84               colorspace_1.4-1           
-##  [5] ComplexHeatmap_2.2.0        viridis_0.5.1              
-##  [7] viridisLite_0.3.0           circlize_0.4.9             
-##  [9] ggpubr_0.2.5                magrittr_1.5               
-## [11] ggplot2_3.3.0               jcolors_0.0.4              
-## [13] cowplot_1.0.0               scran_1.14.6               
-## [15] SingleCellExperiment_1.8.0  SummarizedExperiment_1.16.1
-## [17] DelayedArray_0.12.2         BiocParallel_1.20.1        
-## [19] matrixStats_0.55.0          Biobase_2.46.0             
-## [21] GenomicRanges_1.38.0        GenomeInfoDb_1.22.0        
-## [23] IRanges_2.20.2              S4Vectors_0.24.3           
-## [25] BiocGenerics_0.32.0         gridExtra_2.3              
-## [27] plyr_1.8.6                  tidyr_1.0.2                
-## [29] purrr_0.3.3                 CellMixS_1.3.4             
-## [31] kSamples_1.2-9              SuppDists_1.1-9.5          
+##  [1] jtools_2.1.0                hrbrthemes_0.8.0           
+##  [3] dplyr_0.8.5                 RColorBrewer_1.1-2         
+##  [5] corrplot_0.84               colorspace_1.4-1           
+##  [7] ComplexHeatmap_2.2.0        viridis_0.5.1              
+##  [9] viridisLite_0.3.0           circlize_0.4.9             
+## [11] ggpubr_0.2.5                magrittr_1.5               
+## [13] ggplot2_3.3.0               jcolors_0.0.4              
+## [15] cowplot_1.0.0               scran_1.14.6               
+## [17] SingleCellExperiment_1.8.0  SummarizedExperiment_1.16.1
+## [19] DelayedArray_0.12.2         BiocParallel_1.20.1        
+## [21] matrixStats_0.55.0          Biobase_2.46.0             
+## [23] GenomicRanges_1.38.0        GenomeInfoDb_1.22.0        
+## [25] IRanges_2.20.2              S4Vectors_0.24.3           
+## [27] BiocGenerics_0.32.0         gridExtra_2.3              
+## [29] plyr_1.8.6                  tidyr_1.0.2                
+## [31] purrr_0.3.3                 CellMixS_1.5.1             
+## [33] kSamples_1.2-9              SuppDists_1.1-9.5          
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] bitops_1.0-6             tools_3.6.1              R6_2.4.1                
-##  [4] irlba_2.3.3              vipor_0.4.5              GetoptLong_0.1.8        
-##  [7] withr_2.1.2              listarrays_0.3.1         tidyselect_1.0.0        
-## [10] compiler_3.6.1           BiocNeighbors_1.4.2      labeling_0.3            
-## [13] scales_1.1.0             ggridges_0.5.2           stringr_1.4.0           
-## [16] digest_0.6.25            rmarkdown_2.1            XVector_0.26.0          
-## [19] scater_1.14.6            pkgconfig_2.0.3          htmltools_0.4.0         
-## [22] limma_3.42.2             rlang_0.4.5              GlobalOptions_0.1.1     
-## [25] DelayedMatrixStats_1.8.0 farver_2.0.3             shape_1.4.4             
-## [28] RCurl_1.98-1.1           BiocSingular_1.2.2       GenomeInfoDbData_1.2.2  
-## [31] Matrix_1.2-18            Rcpp_1.0.3               ggbeeswarm_0.6.0        
-## [34] munsell_0.5.0            lifecycle_0.2.0          stringi_1.4.6           
-## [37] yaml_2.2.1               edgeR_3.28.1             zlibbioc_1.32.0         
-## [40] dqrng_0.2.1              crayon_1.3.4             lattice_0.20-40         
-## [43] locfit_1.5-9.1           knitr_1.28               pillar_1.4.3            
-## [46] igraph_1.2.4.2           rjson_0.2.20             ggsignif_0.6.0          
-## [49] glue_1.3.1               evaluate_0.14            renv_0.9.3-44           
-## [52] vctrs_0.2.3              png_0.1-7                gtable_0.3.0            
-## [55] clue_0.3-57              assertthat_0.2.1         xfun_0.12               
-## [58] rsvd_1.0.3               tibble_2.1.3             beeswarm_0.2.3          
-## [61] cluster_2.1.0            statmod_1.4.34</code></pre>
+##  [1] nlme_3.1-145             bitops_1.0-6             tools_3.6.1             
+##  [4] R6_2.4.1                 irlba_2.3.3              vipor_0.4.5             
+##  [7] mgcv_1.8-31              GetoptLong_0.1.8         withr_2.1.2             
+## [10] tidyselect_1.0.0         extrafontdb_1.0          compiler_3.6.1          
+## [13] BiocNeighbors_1.4.2      labeling_0.3             scales_1.1.0            
+## [16] ggridges_0.5.2           systemfonts_0.2.2        stringr_1.4.0           
+## [19] digest_0.6.25            rmarkdown_2.1            XVector_0.26.0          
+## [22] scater_1.14.6            pkgconfig_2.0.3          htmltools_0.4.0         
+## [25] extrafont_0.17           limma_3.42.2             rlang_0.4.5             
+## [28] GlobalOptions_0.1.1      DelayedMatrixStats_1.8.0 generics_0.0.2          
+## [31] farver_2.0.3             shape_1.4.4              RCurl_1.98-1.1          
+## [34] BiocSingular_1.2.2       GenomeInfoDbData_1.2.2   Matrix_1.2-18           
+## [37] Rcpp_1.0.3               ggbeeswarm_0.6.0         munsell_0.5.0           
+## [40] gdtools_0.2.2            lifecycle_0.2.0          stringi_1.4.6           
+## [43] yaml_2.2.1               edgeR_3.28.1             zlibbioc_1.32.0         
+## [46] dqrng_0.2.1              crayon_1.3.4             lattice_0.20-40         
+## [49] splines_3.6.1            pander_0.6.3             locfit_1.5-9.1          
+## [52] knitr_1.28               pillar_1.4.3             igraph_1.2.5            
+## [55] rjson_0.2.20             ggsignif_0.6.0           glue_1.3.1              
+## [58] evaluate_0.14            renv_0.9.3-44            vctrs_0.2.3             
+## [61] png_0.1-7                Rttf2pt1_1.3.8           gtable_0.3.0            
+## [64] clue_0.3-57              assertthat_0.2.1         xfun_0.12               
+## [67] rsvd_1.0.3               tibble_2.1.3             beeswarm_0.2.3          
+## [70] cluster_2.1.0            statmod_1.4.34</code></pre>
 </div>
 </div>
 </div>

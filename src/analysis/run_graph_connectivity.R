@@ -25,6 +25,7 @@ suppressPackageStartupMessages({
   library(cluster)
   library(magrittr)
   library(tibble)
+  library(igraph)
   library(scran)
 })
 
@@ -46,21 +47,26 @@ if (is.null(assays(sce)[["logcounts"]])) {
   assay_nam <- "logcounts"
 }
 
+if( is.null(reducedDims(sce)[["PCA"]])){
+  sce <- runPCA(sce, ncomponents = 50, exprs_values = assay_nam)
+}
+
 tic.clearlog()
 for( batch_var in batch ){
   tic(batch_var)
   print(batch_var)
+  knn <- buildKNNGraph(sce, use.dimred = "PCA", k = 5)
+  comp <- components(knn)
   cellt_filtered <- names(table(colData(sce)[, celltype]))[table(colData(sce)[, celltype]) > 30]
   ct_g <- lapply(cellt_filtered, function(ct){
-    sce_sub <- sce[, colData(sce)[, celltype] %in% ct]
-    sce_sub <- runPCA(sce_sub, ncomponents = 15, exprs_values = assay_nam)
-    knn_ct <- buildKNNGraph(sce_sub, use.dimred = "PCA")
-    lcc <- map(knn_ct, length) %>% unlist() %>% max()
-    nc <- knn_ct %>% unlist() %>% length()
-    g_ct <- lcc/nc
+    ind <- which(colData(sce)[,celltype] %in% ct)
+    # sub <- induced_subgraph(knn, ind, impl = "create_from_scratch")
+    # sub_comp <- components(sub)
+    lcc <- max(table(comp[[1]][ind]))
+    lcc_all <- lcc/length(ind)
   }) %>% unlist() %>% sum()
  
-  gcn <- ct_g * 1/length(cellt_filtered)
+  gcn <- ct_g/length(cellt_filtered)
   
   colData(sce)[,paste0("graph_connectivity.", batch_var)] <- 
     rep(gcn, ncol(sce))

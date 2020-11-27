@@ -1,0 +1,286 @@
+# subworkflow - Time and memory consumption
+#
+# Contributors: @almutlue 
+
+configfile: "config.yaml"
+
+import glob
+import os
+import logging
+
+
+# --- Main Build Rules --- #
+
+## -------------------------------------------------------------------------- ##
+## -------------------------------------------------------------------------- ##
+## Calculate metric scores
+## -------------------------------------------------------------------------- ##
+## -------------------------------------------------------------------------- ##
+
+
+## -------------------------------------------------------------------------- ##
+## Calculate cms scores
+## -------------------------------------------------------------------------- ##
+
+## ------------------ run cms default ---------------------------------- ##
+rule cms_default:
+    input: 
+        check = config["docs"] + "generate_time_data.html",
+        script = config["src_analysis"] + "run_cms_default.R",
+        data = config["out_time_dat"] + "{datasets}_{var}.rds",
+        meta = config["src_meta"] + "{datasets}_time_meta.rds"
+    params:
+        out = config["out_time_res"] + "{datasets}_{var}_time_sce.rds",
+    output:
+        out_time = config["out_time"] + "{datasets}_{var}_cms_default_time.rds",
+        bench = config["out_bench"] + "{datasets}_{var}_cms_default.txt"
+    log:
+        config["log_cms_def"] + "{datasets}_{var}_cms_default.Rout"
+    #benchmark:
+    #    config["out_bench"] + "{datasets}_{var}_cms_default.txt",
+    shell:
+        '''env /usr/bin/time -o '{output.bench}' -v R CMD BATCH --no-restore --no-save "--args data='{input.data}' meta='{input.meta}' outputfile='{params.out}' out_time='{output.out_time}'" {input.script} {log}'''
+
+
+
+## ------------------ run cms kmin ---------------------------------- ##
+rule cms_kmin:
+    input: 
+        check = config["docs"] + "generate_time_data.html",
+        script = config["src_analysis"] + "run_cms_kmin.R",
+        data = config["out_time_dat"] + "{datasets}_{var}.rds",
+        meta = config["src_meta"] + "{datasets}_time_meta.rds"
+    params:
+        out = config["out_time_res"] + "{datasets}_{var}_time_sce.rds"
+    output:
+        out_time = config["out_time"] + "{datasets}_{var}_cms_kmin_time.rds",
+        bench = config["out_bench"] + "{datasets}_{var}_cms_kmin.txt",
+    log:
+        config["log_cms_kmin"] + "{datasets}_{var}_cms_kmin.Rout"
+    shell:
+        '''env /usr/bin/time -o '{output.bench}' -v R CMD BATCH --no-restore --no-save "--args data='{input.data}' meta='{input.meta}' outputfile='{params.out}' out_time='{output.out_time}'" {input.script} {log}'''
+
+
+    
+## ------------------ run cms bmin ---------------------------------- ##
+rule cms_bmin:
+    input: 
+        check = config["docs"] + "generate_time_data.html",
+        script = config["src_analysis"] + "run_cms_bmin.R",
+        data = config["out_time_dat"] + "{datasets}_{var}.rds",
+        meta = config["src_meta"] + "{datasets}_time_meta.rds",
+    params:
+        out = config["out_time_res"] + "{datasets}_{var}_time_sce.rds"
+    output:
+        out_time = config["out_time"] + "{datasets}_{var}_cms_bmin_time.rds",
+        bench = config["out_bench"] + "{datasets}_{var}_cms_bmin.txt"
+    log:
+        config["log_cms_bmin"] + "{datasets}_{var}_cms_bmin.Rout"        
+    shell:
+        '''env /usr/bin/time -o '{output.bench}' -v R CMD BATCH --no-restore --no-save "--args data='{input.data}' meta='{input.meta}' outputfile='{params.out}' out_time='{output.out_time}'" {input.script} {log}'''
+        
+
+
+## -------------------------------------------------------------------------- ##
+## Calculate other scores from CellMixS package
+## -------------------------------------------------------------------------- ##
+
+## ------------------ run mm ---------------------------------- ##
+rule mm:
+    input: 
+        check = config["docs"] + "generate_time_data.html",
+        script = config["src_analysis"] + "run_mm.R",
+        data = config["out_time_dat"] + "{datasets}_{var}.rds",
+        meta = config["src_meta"] + "{datasets}_time_meta.rds",
+    params:
+        out = config["out_time_res"] + "{datasets}_{var}_time_sce.rds"
+    output:
+        out_time = config["out_time"] + "{datasets}_{var}_mm_time.rds",
+        bench = config["out_bench"] + "{datasets}_{var}_mm.txt"
+    log:
+        config["log_mm"] + "{datasets}_{var}_mm.Rout"
+    shell:
+        '''env /usr/bin/time -o '{output.bench}' -v R CMD BATCH --no-restore --no-save "--args data='{input.data}' meta='{input.meta}' outputfile='{params.out}' out_time='{output.out_time}'" {input.script} {log}'''
+        
+        
+## ------------------ run wisi ---------------------------------- ##
+rule wisi:
+    input: 
+        check = config["docs"] + "generate_time_data.html",
+        script = config["src_analysis"] + "run_wisi.R",
+        data = config["out_time_dat"] + "{datasets}_{var}.rds",
+        meta = config["src_meta"] + "{datasets}_time_meta.rds"
+    params:
+        out = config["out_time_res"] + "{datasets}_{var}_time_sce.rds"
+    output:
+        out_time = config["out_time"] + "{datasets}_{var}_wisi_time.rds",
+        bench = config["out_bench"] + "{datasets}_{var}_wisi.txt"
+    log:
+        config["log_wisi"] + "{datasets}_{var}_wisi.Rout"
+    shell:
+        '''env /usr/bin/time -o '{output.bench}' -v R CMD BATCH --no-restore --no-save "--args data='{input.data}' meta='{input.meta}' outputfile='{params.out}' out_time='{output.out_time}'" {input.script} {log}'''
+
+
+## ------------------ run isi ---------------------------------- ##
+rule isi:
+    input: 
+        check = config["docs"] + "generate_time_data.html",
+        script = config["src_analysis"] + "run_isi.R",
+        data = config["out_time_dat"] + "{datasets}_{var}.rds",
+        meta = config["src_meta"] + "{datasets}_time_meta.rds"
+    params:
+        out = config["out_time_res"] + "{datasets}_{var}_time_sce.rds"
+    output:
+        out_time = config["out_time"] + "{datasets}_{var}_isi_time.rds",
+        bench = config["out_bench"] + "{datasets}_{var}_isi.txt"
+    log:
+        config["log_isi"] + "{datasets}_{var}_isi.Rout"
+    shell:
+        '''env /usr/bin/time -o '{output.bench}' -v R CMD BATCH --no-restore --no-save "--args data='{input.data}' meta='{input.meta}' outputfile='{params.out}' out_time='{output.out_time}'" {input.script} {log}'''
+        
+        
+        
+## ------------------ run entropy ---------------------------------- ##
+rule entropy:
+    input: 
+        check = config["docs"] + "generate_time_data.html",
+        script = config["src_analysis"] + "run_entropy.R",
+        data = config["out_time_dat"] + "{datasets}_{var}.rds",
+        meta = config["src_meta"] + "{datasets}_time_meta.rds"
+    params: out = config["out_time_res"] + "{datasets}_{var}_time_sce.rds",
+    output:
+        out_time = config["out_time"] + "{datasets}_{var}_entropy_time.rds",
+        bench = config["out_bench"] + "{datasets}_{var}_entropy.txt"
+    log:
+        config["log_entr"] + "{datasets}_{var}_entropy.Rout"
+    shell:
+        '''env /usr/bin/time -o '{output.bench}' -v R CMD BATCH --no-restore --no-save "--args data='{input.data}' meta='{input.meta}' outputfile='{params.out}' out_time='{output.out_time}'" {input.script} {log}'''
+
+
+## -------------------------------------------------------------------------- ##
+## Calculate other scores NOT from CellMixS package
+## -------------------------------------------------------------------------- ##
+
+## ------------------ run lisi ---------------------------------- ##
+rule lisi_time:
+    input: 
+        check = config["docs"] + "generate_time_data.html",
+        script = config["src_analysis"] + "run_lisi.R",
+        data = config["out_time_dat"] + "{datasets}_{var}.rds",
+        meta = config["src_meta"] + "{datasets}_time_meta.rds"
+    params:
+        out = config["out_time_res"] + "{datasets}_{var}_time_sce.rds",
+    output:
+        out_time = config["out_time"] + "{datasets}_{var}_lisi_time.rds",
+        bench = config["out_bench"] + "{datasets}_{var}_lisi.txt"
+    log:
+        config["log_lisi"] + "{datasets}_{var}_lisi.Rout"
+    shell:
+        '''env /usr/bin/time -o '{output.bench}' -v R CMD BATCH --no-restore --no-save "--args data='{input.data}' meta='{input.meta}' outputfile='{params.out}' out_time='{output.out_time}'" {input.script} {log}'''
+        
+
+## ------------------ run kbet ---------------------------------- ##
+rule kbet:
+    input: 
+        check = config["docs"] + "generate_time_data.html",
+        script = config["src_analysis"] + "run_kbet.R",
+        data = config["out_time_dat"] + "{datasets}_{var}.rds",
+        meta = config["src_meta"] + "{datasets}_time_meta.rds"
+    params:
+        out = config["out_time_res"] + "{datasets}_{var}_time_sce.rds",
+    output:
+        out_time = config["out_time"] + "{datasets}_{var}_kbet_time.rds",
+        bench = config["out_bench"] + "{datasets}_{var}_kbet.txt"
+    log:
+        config["log_kbet"] + "{datasets}_{var}_kbet.Rout"
+    shell:
+        '''env /usr/bin/time -o '{output.bench}' -v R CMD BATCH --no-restore --no-save "--args data='{input.data}' meta='{input.meta}' outputfile='{params.out}' out_time='{output.out_time}'" {input.script} {log}'''
+        
+        
+## ------------------ run pcr ---------------------------------- ##        
+rule pcr:
+    input: 
+        check = config["docs"] + "generate_time_data.html",
+        script = config["src_analysis"] + "run_pcr.R",
+        data = config["out_time_dat"] + "{datasets}_{var}.rds",
+        meta = config["src_meta"] + "{datasets}_time_meta.rds"
+    params:
+        out = config["out_time_res"] + "{datasets}_{var}_time_sce.rds",
+    output:
+        out_time = config["out_time"] + "{datasets}_{var}_pcr_time.rds",
+        bench = config["out_bench"] + "{datasets}_{var}_pcr.txt"
+    log:
+        config["log_pcr"] + "{datasets}_{var}_pcr.Rout"
+    shell:
+        '''env /usr/bin/time -o '{output.bench}' -v R CMD BATCH --no-restore --no-save "--args data='{input.data}' meta='{input.meta}' outputfile='{params.out}' out_time='{output.out_time}'" {input.script} {log}'''        
+        
+
+## ------------------ run graph_connectivity ---------------------------------- ##        
+rule graph_connectivity:
+    input: 
+        check = config["docs"] + "generate_time_data.html",
+        script = config["src_analysis"] + "run_graph_connectivity.R",
+        data = config["out_time_dat"] + "{datasets}_{var}.rds",
+        meta = config["src_meta"] + "{datasets}_time_meta.rds"
+    params:
+        out = config["out_time_res"] + "{datasets}_{var}_time_sce.rds",
+    output:
+        out_time = config["out_time"] + "{datasets}_{var}_graph_connectivity_time.rds",
+        bench = config["out_bench"] + "{datasets}_{var}_graph_connectivity.txt"
+    log:
+        config["log_gcon"] + "{datasets}_{var}_graph_connectivity.Rout"
+    shell:
+        '''env /usr/bin/time -o '{output.bench}' -v R CMD BATCH --no-restore --no-save "--args data='{input.data}' meta='{input.meta}' outputfile='{params.out}' out_time='{output.out_time}'" {input.script} {log}'''
+
+        
+## ------------------ run asw ---------------------------------- ##
+rule asw:
+    input: 
+        check = config["docs"] + "generate_time_data.html",
+        script = config["src_analysis"] + "run_asw.R",
+        data = config["out_time_dat"] + "{datasets}_{var}.rds",
+        meta = config["src_meta"] + "{datasets}_time_meta.rds"
+    params:
+        out = config["out_time_res"] + "{datasets}_{var}_time_sce.rds",
+    output:
+        out_time = config["out_time"] + "{datasets}_{var}_asw_time.rds",
+        bench = config["out_bench"] + "{datasets}_{var}_asw.txt"
+    log:
+        config["log_asw"] + "{datasets}_{var}_var_asw.Rout"
+    shell:
+        '''env /usr/bin/time -o '{output.bench}' -v R CMD BATCH --no-restore --no-save "--args data='{input.data}' meta='{input.meta}' outputfile='{params.out}' out_time='{output.out_time}'" {input.script} {log}'''
+        
+
+## -------------------------------------------------------------------------- ##
+## Time and memory evaluation
+## -------------------------------------------------------------------------- ##
+
+rule time_mem:
+    input: 
+        check = expand(config["out_bench"] + "{datasets}_{var}_kbet.txt", datasets = time_all, var = var),
+        check1 = expand(config["out_bench"] + "{datasets}_{var}_asw.txt", datasets = time_all, var = var_sub),
+        check2 = expand(config["out_bench"] + "{datasets}_{var}_graph_connectivity.txt", datasets = time_all, var = var),
+        check3 = expand(config["out_bench"] + "{datasets}_{var}_pcr.txt", datasets = time_all, var = var),
+        check4 = expand(config["out_bench"] + "{datasets}_{var}_wisi.txt", datasets = time_all, var = var),
+        check5 = expand(config["out_bench"] + "{datasets}_{var}_isi.txt", datasets = time_all, var = var),
+        check6 = expand(config["out_bench"] + "{datasets}_{var}_lisi.txt", datasets = time_all, var = var),
+        check7 = expand(config["out_bench"] + "{datasets}_{var}_cms_bmin.txt", datasets = time_all, var = var),
+        check8 = expand(config["out_bench"] + "{datasets}_{var}_cms_default.txt", datasets = time_all, var = var),
+        check9 = expand(config["out_bench"] + "{datasets}_{var}_cms_kmin.txt", datasets = time_all, var = var),
+        check10 = expand(config["out_bench"] + "{datasets}_{var}_mm.txt", datasets = time_all, var = var),
+        check11 = expand(config["out_bench"] + "{datasets}_{var}_entropy.txt", datasets = time_all, var = var),
+        size_tab = config["out_time_dat"] + "summary_size.rds",
+        script = config["src_time"] + "evaluate_time_data.Rmd"
+    params:
+        outdir = config["docs"],
+        data = ",".join(time_all),
+        data_path = config["out_bench"],
+        out_path = config["out_fig_obj"] + "time/"
+    output:
+        out = config["docs"] + "evaluate_time_data.html",
+        out_fig = config["out_fig_obj"] + "time/rss_cells_all.rds",
+        out_sum = config["out_bench"] + "summary_time_mem.rds"
+    shell:
+        '''R -e "rmarkdown::render(input ='{input.script}', output_file=basename('{output.out}'), output_dir='{params.outdir}', knit_root_dir=getwd(), params = list(data='{params.data}', size_tab ='{input.size_tab}', data_path = '{params.data_path}', out_path ='{params.out_path}'))"'''
+
+

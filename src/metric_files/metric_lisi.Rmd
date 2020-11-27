@@ -1,0 +1,25 @@
+---
+title: "Metric_lisi"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Local Inverse Simpson Index (lisi)
+
+Metric that uses the Inverse Simpson’s Index to calculate the diversification within a specified neighbourhood. 
+The Simpson index describes the probability that two entities are taken at random from the dataset and its inverse represent the
+effective number of batches in a neighbourhood. The inverse Simpson index has been proposed as a diversity score for batch
+mixing in single cell RNAseq by [Korunsky et al.](https://www.nature.com/articles/s41592-019-0619-0). 
+They provide a distance-based neighbourhood weightening in their [Lisi](https://github.com/immunogenomics/LISI) R package.
+A simplified way of distance-based neighbour weightening by $\frac{1}{d^{2}}$ with *d* representing the euclidean distance in pricipal component space and an unweighted version are implemented as *wisi* and *isi* score in the [CellMixS](https://www.bioconductor.org/packages/release/bioc/html/CellMixS.html) R package.
+  
+Inverse Simpson Index with $p(b)$ representing the batch probabilities in the local neighborhood distributions: 
+
+$$\frac{1}{\sum_{b=1}^{B} p(b)}$$
+
+
+

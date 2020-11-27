@@ -39,14 +39,21 @@ batch
 celltype <- meta[["celltype"]]
 celltype
 
-### ------------ Average silhouette width -----------------------###
+### ------------ Principle component regression -----------------------###
 
-if (is.null(assays(sce)[["logcounts"]])) {
-  clusters <- quickCluster(sce, use.ranks=FALSE)
-  table(clusters)
-  sce <- computeSumFactors(sce, min.mean=0.1, cluster=clusters)
-  sce <-  logNormCounts(sce)
-}
+# if (is.null(assays(sce)[["logcounts"]])) {
+#   ### ------------ Standardize normalized counts-----------###
+#   clusters <- quickCluster(sce, use.ranks=FALSE)
+#   table(clusters)
+#   sce <- computeSumFactors(sce, min.mean=0.1, cluster=clusters)
+#   sce <-  logNormCounts(sce)
+#   #assay_nam <- "counts"
+# }
+# # }else{
+# #   assay_nam <- "logcounts"
+# # }
+
+assay_nam <- "logcounts"
 
 #reduce sce to highly variable genes only to speed up
 dec <- modelGeneVar(sce)
@@ -60,7 +67,7 @@ for( batch_var in batch ){
   print(batch_var)
   batch_d <- data.frame(batch = as.numeric(as.factor(colData(sce)[, batch_var]))) %>% 
     set_rownames(colnames(sce))
-  p <- pca(assays(sce)[["logcounts"]], metadata = batch_d, rank = 100)
+  p <- pca(assays(sce)[[assay_nam]], metadata = batch_d, rank = 100)
   data <- p$rotated
   metadata <- p$metadata
   components = getComponents(p, seq_len(100))

@@ -17,22 +17,22 @@ Here we summarize a list of metrics included into our metric benchmark classifie
 Cellspecific metrics are run on each cell independently by determining the mixing score within it's neighbourhood of cells.
 They are independent from previous clustering or prior generated celltype label. Each cell get an individual score.
 
-+ Cellspecific Mixing Score (cms)
-  
-+ Local Inverse Simpson Index (lisi)  
-  
-+ Mixing Metric (mm)  
++ [Cellspecific Mixing Score (cms)](metric_cms.html)  
 
-+ Shannon's entrophy  
++ [Local Inverse Simpson Index (lisi)](metric_lisi.html)  
+  
++ [Mixing Metric (mm)](metric_mm.html)  
+
++ [Shannon's entropy](metric_entropy.html)  
   
 ### Celltype specific metrics 
 Celltype specific metrics are using prior generated celltype label to determine the mixing within each celltype separately. Some can also be run globally, but couldn't account for celltypespecificity with batch effects in that case. Each celltype gets a single score.
 
-+ k-nearest neighbour Batch Effect Test (kBet)  
++ [k-nearest neighbor Batch Effect Test (kBet)](metric_kbet.html)  
   
-+ Average silhouette width (aws)
++ [Average silhouette width (asw)](metric_asw.html)
 
-+ Graph connectivity
++ [Graph connectivity](metric_graph.html)
 
 ### Global metrics  
 Global metrics are independent from celltype label and instead use a global representation of the data to determine mixing in.

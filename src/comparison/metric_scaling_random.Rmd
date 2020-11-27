@@ -7,6 +7,7 @@ params:
   meta:
   metrics:
   out_cor:
+  fig_res:
 output:
   html_document:
     self_contained: no
@@ -64,6 +65,7 @@ metrics <- params$metrics
 metrics
 
 out_path_cor <- params$out_cor
+out_path_fig <- params$fig_res
 
 dim_red_nam <- ifelse("TSNE" %in% reducedDimNames(sce), "TSNE", "tsne")
 
@@ -84,6 +86,8 @@ metrics <- gsub("_batch0", "", metrics)
 metrics <- gsub(".batch0", "", metrics)
 metrics[which(metrics %in% "cms")] <- "cms.batch"
 metrics_raw <- metrics[!grepl("smooth", metrics)]
+metrics_raw <-  metrics_raw[!grepl("casw", metrics_raw)]
+metrics_raw <-  metrics_raw[!grepl("^sw", metrics_raw)]
 
 #### ---------- Order by metric type ----------------------------------####### 
 #(manual needs to be adjusted if new metrics are added)
@@ -91,11 +95,11 @@ cms_ind <- grep("cms", metrics_raw)
 lisi_ind <- grep("isi", metrics_raw)
 ent_ind <- grep("entropy", metrics_raw)
 mm_ind <- grep("mm", metrics_raw)
-asw_ind <- grep("sw", metrics_raw)
+asw_ind <- grep("^asw", metrics_raw)
 kbet_ind <- grep("kbet", metrics_raw)
 graph_ind <- grep("graph", metrics_raw)
 pcr_ind <- grep("pcr", metrics_raw)
-metric_order <- metrics_raw[c(cms_ind, lisi_ind, ent_ind, mm_ind, 
+metric_order <- metrics_raw[c(cms_ind, lisi_ind[c(1,3,2)], ent_ind, mm_ind, 
                                        kbet_ind, asw_ind, graph_ind, pcr_ind)]
 names(cols) <- metric_order
 #cols <- cols[names(res_by_met[[1]])]
@@ -106,7 +110,9 @@ names(cols) <- metric_order
 template <- c(
     "#### {{nm}}\n",
     "```{r hist{{nm}}, echo = FALSE}\n",
-    "visHist(sce, metric = '{{nm}}', n_col = 3)\n",
+    "p <- visHist(sce, metric = '{{nm}}', n_col = 3)\n",
+    "p",
+    "saveRDS(p, paste0(out_path_fig, '_hist_{{nm}}.rds'))",
     "```\n",
     "\n"
   )
@@ -125,7 +131,9 @@ How does the metric scores change across batches
 template_range <- c(
     "#### {{nm}}\n",
     "```{r range{{nm}}, echo = FALSE}\n",
-    "visIntegration(sce, metric = '{{nm}}', metric_name = '{{nm}}')\n",
+    "p <- visIntegration(sce, metric = '{{nm}}', metric_name = '{{nm}}')\n",
+    "p",
+    "saveRDS(p, paste0(out_path_fig, '_{{nm}}.rds'))",
     "```\n",
     "\n"
   )
@@ -205,6 +213,7 @@ scaling_sum <- lapply(metrics_raw, function(score){
   mean_tab <- data.frame(score = score_all_b,
                          "randomness" = seq.int(from = 0, to = 100, by = 10))
   r <- cor(mean_tab$score, mean_tab$randomness, method = "spearman")
+  r_na <- ifelse(is.na(r), 0, r) 
   }) %>% set_names(metrics_raw) %>% bind_cols() %>% t() %>%
   set_colnames("R") %>% as_tibble(.) %>% mutate("metric" = metrics_raw)
 
@@ -241,6 +250,7 @@ cor_metrics <- cor(mean_res, method = "spearman")
 dir_ind <- which(!colnames(mean_res) %in% c("randomness", "mm", "kbet", "pcr"))
 mean_res[, dir_ind] <- mean_res[, dir_ind] * -1
 scale_res <-  mean_res %>% select(-randomness) %>% scale() %>% as.data.frame()
+scale_res[is.na(scale_res)] <- 0  
 scale_res$randomness <- mean_res$randomness
 
 mean_long <- scale_res %>% pivot_longer(-randomness, names_to = "metric",
@@ -266,24 +276,35 @@ scale_long <- scale_res %>% pivot_longer(-randomness, names_to = "metric",
                                            values_to = "scaled_score")
 
 scale_long$metric <- factor(scale_long$metric,levels = metric_order)
+cols_rep <- rep(cols[levels(as.factor(scale_long$metric))], each = nrow(mean_res))
+scale_long$metric <- recode(scale_long$metric, cms.kmin80 = "cms_kmin", cms.bmin80 = "cms_bmin",
+       cms.batch = "cms_default", graph_connectivity = "graph", kbet = "kBet")
+
+label <- data.frame(
+  scaled_score = c(rep(1.5, 1)), 
+  randomness = c(rep(65, 12)), 
+  metric = levels(scale_long$metric),
+  label = c(paste0("R = ", signif(abs(cor_metrics[metric_order,"randomness"]), digits = 2)))
+)
 
 scale_long <- scale_long %>% mutate(metric2 = metric)
-cols_rep <- rep(cols[levels(as.factor(scale_long$metric))], each = nrow(mean_res))
 p <- ggplot(scale_long, aes(x = randomness, y = scaled_score)) +
       geom_line(data=scale_long %>% dplyr::select(-metric), aes(group=metric2),
                  color="grey", size=0.5, alpha=0.5) + 
       geom_line( aes(color=metric), color=cols_rep, size=1.2 ) + 
       scale_color_viridis(discrete = TRUE) +
-      theme_ipsum() +
+      theme_ipsum(base_family = 'Helvetica') +
       theme(
         legend.position="none",
         plot.title = element_text(size=14),
         panel.grid.minor = element_blank()
       ) +
-      ggtitle("Gradual increased randomness - starting with a strong batch effect") +
+      geom_label(data = label, aes(label = label), size = 6) + 
+      ggtitle("Gradual increased randomness") +
       facet_wrap(~metric) 
 p
 
+saveRDS(p, paste0(out_path_fig, "_all.rds"))
 
 ```
 

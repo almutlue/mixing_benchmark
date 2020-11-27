@@ -1,0 +1,210 @@
+---
+title: "Metrics timing"
+author: "Almut Lütge"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+params:
+  data:
+  data_path:
+  size_tab:
+  out_path:
+output:
+  html_document:
+    self_contained: no
+    lib_dir: '../../docs/site_libs'
+    code_folding: show
+    theme: journal
+    highlight: tango
+    number_sections: no
+    toc: yes
+    toc_depth: 3
+    toc_float: true
+    collapsed: no
+    smooth_scroll: yes
+---
+
+
+
+```{r libraries, warning=FALSE}
+suppressPackageStartupMessages({
+  library(purrr)
+  library(tidyr)
+  library(dplyr)
+  library(jcolors)
+  library(hrbrthemes)
+  library(ggplot2)
+  library(magrittr)
+})
+
+options(bitmapType='cairo')
+default_guide <- ggplot2::waiver()
+```
+
+
+### Dataset and metrics
+```{r data, warning=FALSE}
+data <- params$data
+data_path <- params$data_path
+size_tab <- readRDS(params$size_tab)
+out_path <- params$out_path
+
+time_res <- list.files(path = data_path, pattern = ".txt")
+
+metrics <- time_res %>% gsub('.*[0-9]_', '', .) %>% 
+    gsub('.txt', '', .) %>% unique()
+
+size_fac <- time_res %>% gsub('[a-z]*', '', .) %>% gsub('^[0-9]', '', .) %>% 
+    gsub('_*', '', .) %>% gsub('\\.$', '', .) %>% unique()
+
+size_dat <- as.vector(outer(data, size_fac, paste, sep="_"))
+
+read_time <- function(file){
+    inf <- read.delim2(paste0(data_path, file), header = FALSE, sep = "\t", dec = ",")
+    time1 <- inf[[2]][[2]] %>% gsub('.*: ', '', .) %>% as.numeric()
+    time2 <- inf[[2]][[3]] %>% gsub('.*: ', '', .) %>% as.numeric()
+    time <- time1 + time2
+    rss <- inf[[2]][[10]] %>% gsub('.*: ', '', .) %>% as.numeric()
+    size_f <- file %>% gsub('[a-z]*', '', .) %>% gsub('^[0-9]', '', .) %>% 
+    gsub('_*', '', .) %>% gsub('\\.$', '', .)
+    name <- file %>% gsub('_[0-9].*', '', .)
+    metric <- file %>% gsub('.*[0-9]_', '', .) %>% gsub('.txt', '', .)
+    cells <- size_tab[[name]][[size_f]]
+    res <- data.frame("CPU_time" = time,
+                      "RSS" = rss,
+                      "cells" = cells[[2]],
+                      "genes" = cells[[1]],
+                      "metric" = metric)
+}
+
+res_tab <- time_res %>% map(read_time) %>% bind_rows()
+
+cols_data <-c(c(jcolors('pal6'),jcolors('pal8'))[c(1,8,14,5,2:4,6,7,9:13,15:20)],jcolors('pal4'))
+names(cols_data) <- c()
+
+cols <-c(c(jcolors('pal6'),jcolors('pal8'), jcolors('pal7'))[c(1,12,18,25,27,2,4,7,3,6,8,14,9,20)],jcolors('pal4'))
+
+
+#### ---------- Order by metric type ----------------------------------####### 
+#(manual needs to be adjusted if new metrics are added)
+res_tab$metric <- as.factor(res_tab$metric)
+res_tab$metric <- recode(res_tab$metric, graph_connectivity = "graph", kbet = "kBet")
+cms_ind <- grep("cms", levels(res_tab$metric))
+lisi_ind <- grep("isi", levels(res_tab$metric))
+ent_ind <- grep("entropy", levels(res_tab$metric))
+mm_ind <- grep("mm", levels(res_tab$metric))
+asw_ind <- grep("sw", levels(res_tab$metric))
+kbet_ind <- grep("kbet", levels(res_tab$metric), ignore.case = TRUE)
+graph_ind <- grep("graph", levels(res_tab$metric))
+pcr_ind <- grep("pcr", levels(res_tab$metric))
+metric_order <- levels(res_tab$metric)[c(cms_ind, lisi_ind, ent_ind, mm_ind, 
+                                       kbet_ind, asw_ind, graph_ind, pcr_ind)]
+
+#adjust metric names
+names(cols) <- levels(res_tab$metric)
+####--------------------------------------------------------------------########
+```
+
+## Visualize time and memory results
+
+```{r time plots,  fig.width = 8, fig.height = 7}
+#change units
+res_tab$CPU_time <- res_tab$CPU_time/(60*60)
+res_tab$RSS <- res_tab$RSS/1000000
+res_tab$cells <- res_tab$cells/1000
+
+res_tab <- res_tab %>% mutate(metric2 = as.factor(metric))
+cols_rep <- rep(cols[1: length(levels(res_tab$metric2))], 
+                each = length(levels(as.factor(res_tab$cells))))
+n_t <- which(metric_order %in% "asw")*length(levels(as.factor(res_tab$cells)))
+cols_rep <- cols_rep[-c(n_t, n_t - 1)]
+res_tab$metric <- factor(res_tab$metric, levels = metric_order)
+res_tab$genes <- as.factor(res_tab$genes)
+
+sep_trends <- function(com1, com2){
+  p <- ggplot(res_tab, aes_string(x = com1, y =com2)) +
+        geom_line(data=res_tab %>% dplyr::select(-metric) %>% 
+                    dplyr::filter(as.numeric(as.character(genes)) == max(as.numeric(as.character(genes)))),
+                  aes(group=metric2),
+                   color="grey", size=0.5, alpha=0.5) + 
+        geom_line( aes(color=metric, linetype=genes), color=cols_rep, size=1.2 ) + 
+        theme_ipsum(base_family = 'Helvetica') +
+        theme(
+        legend.position="none",
+        plot.title = element_text(size=14),
+        axis.text.x = element_text(size=12),
+        axis.text.y = element_text(size=12),
+      ) +
+      ggtitle(paste0(com1, " - ", com2)) +
+      facet_wrap(~metric)
+    p
+}
+
+
+p1 <- sep_trends("cells", "RSS") + ylab("RSS [GB]") + xlab("# cells (thousands)")
+p2 <- sep_trends("cells", "CPU_time") + ylab("CPU_time [h]") + scale_y_log10() + 
+  xlab("# cells (thousands)")
+p3 <- sep_trends("RSS", "CPU_time") + ylab("CPU_time [h]") + scale_y_log10() + 
+  xlab("RSS [GB]")
+
+p4 <- ggplot(res_tab, aes(x = cells, y = CPU_time)) +
+        geom_line(aes(color = metric, linetype=genes)) + 
+        scale_y_log10() +
+        theme_ipsum(base_family = 'Helvetica') +
+        geom_point(aes(color = metric, shape = genes), size = 3) +
+        scale_color_manual(values = cols) +
+        ggtitle("CPU time") + 
+        ylab("CPU_time [h]") +
+        xlab("# cells (thousands)")
+
+p5 <- ggplot(res_tab, aes(x = cells, y = RSS)) +
+        geom_line(aes(color = metric, linetype=genes)) + 
+        theme_ipsum(base_family = 'Helvetica') +
+        geom_point(aes(color = metric, shape = genes), size = 3) +
+        scale_color_manual(values = cols) +
+        ggtitle("RSS") + 
+        ylab("RSS [GB]") +
+        xlab("# cells (thousands)")
+
+
+# res_tab$genes <- factor(res_tab$genes, levels = c("8331", "23381"), 
+#                   labels = c("dataset1", "dataset2"))
+
+gene.labs <- c("dataset1 (max. 68K cells)", "dataset2 (max. 80K cells)")
+names(gene.labs) <- c("8331", "23381")
+
+p6 <- ggplot(res_tab, aes(x = RSS, y = CPU_time)) +
+        geom_line(aes(color = metric, linetype=genes)) + 
+        theme_ipsum(base_family = 'Helvetica') +
+        geom_point(aes(color = metric), size = 4) +
+        scale_color_manual(values = cols) +
+        ggtitle("CPU vs. RSS") + 
+        scale_y_log10() +
+        ylab("CPU_time [h]") +
+        xlab("RSS [GB]") +
+        facet_wrap(~genes, ncol = 2, labeller = labeller(genes = gene.labs), scales = "free_x")
+
+
+
+p1
+p2
+p3
+p4
+p5
+p6
+
+saveRDS(p1, paste0(out_path, "rss_cells.rds"))
+saveRDS(p2, paste0(out_path, "time_cells.rds"))
+saveRDS(p3, paste0(out_path, "rss_time.rds"))
+saveRDS(p4, paste0(out_path, "time_cells_all.rds"))
+saveRDS(p5, paste0(out_path, "rss_cells_all.rds"))
+saveRDS(p6, paste0(out_path, "rss_cpu_all.rds"))
+saveRDS(res_tab, paste0(data_path, "summary_time_mem.rds"))
+
+```
+
+
+
+
+```{r}
+sessionInfo()
+```
+

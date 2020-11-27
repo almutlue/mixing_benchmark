@@ -1,0 +1,16 @@
+---
+title: "Metric_mm"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Shannon's entropy
+
+Metric calculating the Shannon's entropy of the batch/group variable within each cell's k-nearest neigbours.
+Shannon's entropy can be written as: $$entropy = -\sum_{i=1}^{n}p(x_i)*\log(p(x_i))$$.
+Thereby $p(x_i)$ describes the probability of *batch i* in the neighborhood of a specific cell. This probability is the proportion of the observed number of cells from each batch within the knn. We divide each cell's Shannon's entropy by $\log(\#batches)$ to ensure a value in $[0:1]$.
+

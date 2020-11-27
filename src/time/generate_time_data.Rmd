@@ -1,0 +1,100 @@
+---
+title: "Generate benchmark computations datasets"
+author: "Almut Lütge"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+params:
+  data:
+  meta:
+  data_path:
+  out:
+output:
+  html_document:
+    self_contained: no
+    lib_dir: '../../docs/site_libs'
+    code_folding: show
+    theme: journal
+    highlight: tango
+    number_sections: no
+    toc: yes
+    toc_depth: 3
+    toc_float: true
+    collapsed: no
+    smooth_scroll: yes
+---
+
+```{r libraries, warning=FALSE}
+suppressPackageStartupMessages({
+  library(scater)
+  library(purrr)
+  library(tidyr)
+  library(dplyr)
+  library(scran)
+  library(magrittr)
+  library(PCAtools)
+})
+
+options(bitmapType='cairo')
+```
+
+```{r data}
+#Read datsets into list 
+data_path <- params$data_path
+meta_path <- params$meta
+
+sce_nam <- unlist(c(strsplit(params$data, ",")))
+
+sce_name <- gsub("^sim_", "", sce_nam) %>% 
+    gsub("_[0-9].*", "", .) %>% unique()
+
+combine_sce <- function(sce_n, sce_all){
+    num <- grep(sce_n, sce_all)
+    sce <- readRDS(paste0(data_path, sce_n, ".rds"))
+    meta <- readRDS(paste0(meta_path, sce_n, "_meta.rds"))
+    batch <- meta[["batch"]]
+    colData(sce)[, batch] <- paste0(colData(sce)[, batch], "_", num)
+    colnames(sce) <- paste0(colnames(sce) , "_", num)
+    sce
+}
+
+sce_list <- lapply(sce_name, function(dataset){
+    ind <- grep(dataset, sce_nam)
+    sce_all <- sce_nam[ind]
+    sce_com <- sce_all %>% map(combine_sce, sce_all = sce_all) %>% do.call(SingleCellExperiment::cbind, .)
+}) %>% set_names(sce_name)
+
+
+out_path <- params$out
+
+```
+
+
+# Generate subsets time 
+```{r sub time }
+norm_pca <- function(sce){
+  clusters <- quickCluster(sce, use.ranks=FALSE)
+  sce <- computeSumFactors(sce, min.mean=0.1, cluster=clusters)
+  sce <-  logNormCounts(sce)
+  sce <- runPCA(sce, ncomponents = 10, ntop = 1000)
+  sce
+}
+
+sce_list <- sce_list %>% map(norm_pca) %>% set_names(sce_name)
+
+#subsets
+sub <- seq(0.2, 1, by = 0.2)
+
+sub_sce <- function(sub_v, sce, sce_n = sce_n){
+  sce <- sce[, sample(seq_len(ncol(sce)), (sub_v * ncol(sce)))]
+  saveRDS(sce, paste0(out_path, sce_n, "_", sub_v, ".rds"))
+  dim(sce)
+}
+
+sce_size <- lapply(sce_name, function(sce_n){
+  sce <- sce_list[[sce_n]]
+  sub_size <- sub %>% map(sub_sce, sce = sce, sce_n = sce_n) %>% set_names(sub)
+}) %>% set_names(sce_name)
+
+
+saveRDS(sce_size, paste0(out_path, "summary_size.rds"))
+```
+

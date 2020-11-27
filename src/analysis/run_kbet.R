@@ -50,7 +50,7 @@ for( batch_var in batch ){
     print(batch_var)
     sce_sub <- sce[, colData(sce)[,celltype] %in% ct]
     names(assays(sce_sub))
-    sub_data <- t(assays(sce_sub)[["counts"]])
+    sub_data <- t(assays(sce_sub)[["logcounts"]])
     batch_vec <- colData(sce_sub)[, batch_var]
     batch.estimate <- kBET(sub_data, batch_vec, plot=FALSE)
     average <- ifelse(is.na(batch.estimate), NA, batch.estimate$summary$kBET.observed[1])[1]

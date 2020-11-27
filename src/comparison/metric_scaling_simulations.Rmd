@@ -10,6 +10,7 @@ params:
   metrics:
   out_cor:
   out_res:
+  fig_res:
 output:
   html_document:
     self_contained: no
@@ -48,6 +49,7 @@ suppressPackageStartupMessages({
   library(forcats)
   library(corrplot)
   library(RColorBrewer)
+  library(ggforce)
 })
 
 options(bitmapType='cairo')
@@ -82,6 +84,7 @@ meta_list <- lapply(sce_name, function(dataset){
 
 out_path_cor <- params$out_cor
 out_path_res <- params$out_res
+out_path_fig <- params$fig_res
 
 cols_data <-c(c(jcolors('pal6'),jcolors('pal8'))[c(1,8,14,5,2:4,6,7,9:13,15:20)],jcolors('pal4'))
 names(cols_data) <- c()
@@ -136,6 +139,7 @@ graph_ind <- grep("graph", names(res_by_met[[1]]))
 pcr_ind <- grep("pcr", names(res_by_met[[1]]))
 metric_order <- names(res_by_met[[1]])[c(cms_ind, lisi_ind, ent_ind, mm_ind, 
                                        kbet_ind, asw_ind, graph_ind, pcr_ind)]
+
 names(cols) <- names(res_by_met[[1]])
 #cols <- cols[names(res_by_met[[1]])]
 ####--------------------------------------------------------------------########
@@ -155,8 +159,7 @@ mean_tab <- lapply(sce_name, function(dataset){
 #scale means
 scale_means <- lapply(names(mean_tab), function(dataset){
     mean_res <- mean_tab[[dataset]]
-    dir_ind <- which(!colnames(mean_res) %in% c("batch", "mm", "kbet", "pcr",
-                                                "graph.connectivity"))
+    dir_ind <- which(!colnames(mean_res) %in% c("batch", "mm", "kbet", "pcr"))
     mean_res[, dir_ind] <- mean_res[, dir_ind] * -1
     scale_res <- mean_res %>% select(-batch) %>% scale() %>% as.data.frame()
     scale_res$batch <- mean_res$batch
@@ -193,48 +196,6 @@ plots <- lapply(names(scale_means),
 `r knitr::knit(text = unlist(plots))`
 
 
-### Metrics performance separated {.tabset} 
-
-```{r spagetti separated, fig.width = 8, fig.height = 7}
-
-sep_trends <- function(dataset){
-  mean_res <- scale_means[[dataset]]
-  mean_long <- mean_res %>% pivot_longer(-batch, names_to = "metric",
-                                           values_to = "scaled_score")
-  mean_long <- mean_long %>% mutate(metric2 = metric)
-  cols_rep <- rep(cols[1: ncol(mean_res)-1], each = nrow(mean_res))
-  mean_long$metric <- factor(mean_long$metric,levels = metric_order)
-  p <- ggplot(mean_long, aes(x = batch, y = scaled_score)) +
-        geom_line(data=mean_long %>% dplyr::select(-metric), aes(group=metric2),
-                   color="grey", size=0.5, alpha=0.5) + 
-        geom_line( aes(color=metric), color=cols_rep, size=1.2 ) + 
-        theme_ipsum() +
-        theme(
-        legend.position="none",
-        plot.title = element_text(size=14),
-        panel.grid = element_blank()
-      ) +
-      ggtitle(dataset) +
-      facet_wrap(~metric)
-    p
-}
-
-template_sep <- c(
-    "#### {{nm}}\n",
-    "```{r scaling sep {{nm}}, echo = FALSE, fig.width = 8, fig.height = 7}\n",
-    "sep_trends('{{nm}}')\n",
-    "```\n",
-    "\n"
-  )
-
-plots_sep <- lapply(names(scale_means), 
-  function(nm) knitr::knit_expand(text = template_sep)
-)
-
-```
-
-`r knitr::knit(text = unlist(plots_sep))`
-
 
 ### Compare detection limits and correlation within limits {.tabset}
 To compare the metrics limits and their relative correlation with batch 
@@ -252,15 +213,21 @@ limit_list <- lapply(names(mean_tab), function(dataset){
     mean_res <- mean_tab[[dataset]]
     lim_rev <- function(x){
         percent <- (max(x) - min(x))/100
-        lower <- min(x[x > (max(x) - 10 * percent)]) # smallest value above 0.95 * batch0
-        upper <- max(x[x < (min(x) + 10 * percent)])
-        ind_low <- which(x == lower)
-        ind_up <- which(x == upper)
-        batch <- mean_res$batch[c(ind_low, ind_up)]
+        lower <- which(x < (max(x) - 10 * percent)) # smallest value above 0.95 * batch0
+        upper <- which(x > (min(x) + 10 * percent))
+        upper_lim <- which(x < (min(x) + 1 * percent))
+        lower_lim <- which(x > (max(x) - 1 * percent))
+        min_bat <- min(mean_res$batch[which(x == max(x))])
+        max_bat <- min(mean_res$batch[which(x == min(x))])
+        res_low <- min(mean_res$batch[lower][mean_res$batch[lower] > min_bat])
+        res_up <- min(mean_res$batch[upper][mean_res$batch[upper] > max_bat])
+        res_up_limit <-  min(mean_res$batch[upper_lim])
+        res_low_limit <-  min(mean_res$batch[lower_lim])
+        batch <- c(res_low, res_up, res_up_limit, res_low_limit)
     }
-    batch_lim <- apply(mean_res, 2, lim_rev) %>% set_rownames(c("lower", "upper"))
-    batch_lim[,c("kbet", "mm", "pcr", "graph.connectivity")] <- 
-      batch_lim[c(2,1), c("kbet", "mm", "pcr", "graph.connectivity")]
+    batch_lim <- apply(mean_res, 2, lim_rev) %>% set_rownames(c("lower", "upper", "limit", "limit2"))
+    batch_lim[,c("kbet", "mm", "pcr")] <- 
+      batch_lim[c(2,1,4,3), c("kbet", "mm", "pcr")]
     batch_lim
 }) %>% set_names(names(mean_tab))
 
@@ -283,8 +250,8 @@ cor_list <- lapply(names(mean_tab), function(dataset){
     limit_res <- limit_list[[dataset]]
     cor_fun <- function(metric){
         cor_res <- mean_res  %>%
-            filter(batch <= limit_res["upper", metric]) %>%
-            select(metric, "batch") %>% cor(method ="spearman") %>% min() %>% abs()
+            filter(batch <= limit_res["limit", metric]) %>%
+            select(metric, "batch") %>% cor(method ="pearson") %>% min() %>% abs()
         #%>% filter(batch >= limit_res["lower", metric])
     }
     cor_tab <- map(colnames(mean_res), cor_fun) %>% bind_cols() %>% 
@@ -310,42 +277,77 @@ cor_long_all <- cor_list_all  %>% mutate(dataset = rownames(.)) %>% select(-batc
     pivot_longer(-dataset, names_to = "metric", values_to = "correlation")
 
 
+### Mutual information
+# mut_list <- lapply(names(mean_tab), function(dataset){
+#     mean_res <-  mean_tab[[dataset]]
+#     mut <- cmi(mean_res)
+#     norm_mi <- mut$mi[ncol(mut$mi), nrow(mut$mi)]
+#     norm_vec <- rep(sqrt(norm_mi * norm_mi), ncol(mean_res))
+#     norm_mut <- mut$mi[,ncol(mut$mi)]/norm_vec %>% set_names(colnames(mean_res))
+# }) %>% bind_rows() %>% set_rownames(names(mean_tab))
+# 
+# mut_long <- mut_list  %>% mutate(dataset = rownames(.)) %>% select(-batch) %>% 
+#     pivot_longer(-dataset, names_to = "metric", values_to = "MI")
+
 # # order by metrics type
 lim_long$metric <- factor(lim_long$metric,levels = metric_order)
 cor_long$metric <- factor(cor_long$metric,levels = metric_order)
 cor_long_all$metric <- factor(cor_long_all$metric,levels = metric_order)
+#mut_long$metric <- factor(mut_long$metric,levels = metric_order)
 ```
+
 
 #### Batch limits
 ```{r batch lims}
-ggplot(lim_long, aes(x = metric , y = batch_limit, fill = dataset)) + 
+p <- ggplot(lim_long, aes(x = metric , y = batch_limit, fill = metric)) + 
     geom_boxplot(fill = cols[1:length(levels(as.factor(lim_long$metric)))], alpha = 0.5) + 
     geom_dotplot(binaxis='y', stackdir='center', dotsize=0.5) +
     scale_fill_manual(values=cols) + 
-    theme_bw() +
-    theme(axis.text.x = element_text(face="bold", size=10, angle=45))
+    theme_ipsum(base_family = 'Helvetica') +
+    theme(axis.text.x = element_text(size=10, angle=45, hjust = 1))
+
+p
+saveRDS(p, paste0(out_path_fig, "_limits.rds"))
 ```
 
 #### Relative strength correlation
 ```{r strength correlation}
-ggplot(cor_long, aes(x = metric , y = correlation, fill = dataset)) + 
+p <- ggplot(cor_long, aes(x = metric , y = correlation, fill = metric)) + 
     geom_boxplot(fill = cols[1:length(levels(as.factor(cor_long$metric)))], alpha = 0.5) + 
     geom_dotplot(binaxis='y', stackdir='center', dotsize=0.5) +
-    scale_fill_manual(values=cols_data) + 
-    theme_bw() +
-    theme(axis.text.x = element_text(face="bold", size=10, angle=45))
+    scale_fill_manual(values=cols) + 
+    theme_ipsum(base_family = 'Helvetica') +
+    theme(axis.text.x = element_text(size=10, angle=45, hjust = 1))
+
+p
+saveRDS(p, paste0(out_path_fig, "_rel_cor.rds"))
 ```
 
 #### Total strength correlation
 ```{r strength correlation total}
-ggplot(cor_long_all, aes(x = metric , y = correlation, fill = dataset)) + 
+p <- ggplot(cor_long_all, aes(x = metric , y = correlation, fill = metric)) + 
     geom_boxplot(fill = cols[1:length(levels(as.factor(cor_long$metric)))], alpha = 0.5) + 
     geom_dotplot(binaxis='y', stackdir='center', dotsize=0.5) +
-    scale_fill_manual(values=cols_data) + 
-    theme_bw() +
-    theme(axis.text.x = element_text(face="bold", size=10, angle=45))
+    scale_fill_manual(values=cols) + 
+    theme_ipsum(base_family = 'Helvetica') +
+    theme(axis.text.x = element_text(size=10, angle=45, hjust = 1))
+
+p
+saveRDS(p, paste0(out_path_fig, "_cor.rds"))
 ```
 
+<!-- #### Mutual information -->
+<!-- ```{r mutual information} -->
+<!-- p <- ggplot(mut_long, aes(x = metric , y = MI, fill = metric)) +  -->
+<!--     geom_boxplot(fill = cols[1:length(levels(as.factor(cor_long$metric)))], alpha = 0.5) +  -->
+<!--     geom_dotplot(binaxis='y', stackdir='center', dotsize=0.5) + -->
+<!--     scale_fill_manual(values=cols) +  -->
+<!--     theme_ipsum(base_family = 'Helvetica') + -->
+<!--     theme(axis.text.x = element_text(size=10, angle=45, hjust = 1)) -->
+
+<!-- p -->
+
+<!-- ``` -->
 
 #### Plot trade-off between strength correlation and detection limit
 ```{r relationship}
@@ -378,12 +380,13 @@ ggplot(trade_sorted, aes(x=mean_limit, y=mean_correlation, color=metric)) +
                         xmax=mean_limit + batch_limit_sd)) +
     scale_colour_manual(values=cols) +
     ggtitle("Trade off: batch detection limit - correlation") +
-    theme_ipsum()
+    theme_ipsum(base_family = 'Helvetica')
+
 ```
 
 #### Trade off top metrics
 ```{r trade off top metrics}
-trade_top <- trade_sorted %>% filter(mean_limit < 0.25, mean_correlation > 0.9)
+trade_top <- trade_sorted %>% filter(mean_limit < 0.6, mean_correlation > 0.7)
 
 ggplot(trade_top, aes(x=mean_limit, y=mean_correlation, color=metric)) +
     geom_pointrange(aes(ymin=mean_correlation - correlation_sd, 
@@ -392,21 +395,39 @@ ggplot(trade_top, aes(x=mean_limit, y=mean_correlation, color=metric)) +
                         xmax=mean_limit + batch_limit_sd)) +
     scale_colour_manual(values = cols) +
     ggtitle("Trade off: batch detection limit - correlation") +
-    theme_ipsum()
+    theme_ipsum(base_family = 'Helvetica')
+
 ```
 
 
 #### Trade-off mean_only
-```{r relationship points}
+```{r relationship points, fig.height=5, fig.width=8.5}
 #join datasets
-ggplot(trade_sorted, aes(x=mean_limit, y=mean_correlation, color=metric, shape = metric_level)) +
-    geom_point(size = 4.5, color = "black", ) +
-    geom_point(size = 4) +
+p <- ggplot(trade_sorted, aes(x=mean_limit, y=mean_correlation, color=metric, shape = metric_level)) +
+    geom_point(size = 8, color = "black", ) +
+    geom_point(size = 7) +
     scale_colour_manual(values=cols) +
-    ggtitle("Trade off: batch detection limit - correlation") +
-    theme_ipsum()
-```
+    ggtitle("Trade off: Sensitivity - scaling") +
+    theme_ipsum(base_family = 'Helvetica') +
+    theme(legend.box = "vertical")
 
+p
+saveRDS(p, paste0(out_path_fig, "_trade_off.rds"))
+```
+#### Trade-off using relative correlation
+```{r rel corr, fig.height=5, fig.width=8.5}
+#join datasets
+p <- ggplot(trade_sorted, aes(x=mean_limit, y=mean_correlation, color=metric, shape = metric_level)) +
+    geom_point(size = 8, color = "black", ) +
+    geom_point(size = 7) +
+    scale_colour_manual(values=cols) +
+    ggtitle("Trade off: Sensitivity - scaling") +
+    theme_ipsum(base_family = 'Helvetica') +
+    theme(legend.box = "vertical")
+
+p
+saveRDS(p, paste0(out_path_fig, "_trade_off_relative.rds"))
+```
 
 ### Correlation between metrics
 
@@ -440,6 +461,78 @@ saveRDS(cor_met_mean, out_path_cor)
 saveRDS(trade_sorted, out_path_res)
 ```
 
+
+### Metrics performance separated {.tabset} 
+
+```{r spagetti separated, fig.width = 8, fig.height = 7}
+
+sep_trends <- function(dataset){
+  mean_res <- scale_means[[dataset]]
+  dat_nam <- dataset
+  cor_dat <- cor_long %>% dplyr::filter(dataset %in% dat_nam) %>% 
+    arrange(match(metric, metric_order)) %>% select(correlation) %>% 
+    abs() %>% signif(digits = 2)
+  label <- data.frame(
+    scaled_score = c(rep(-1, 12)), 
+    batch = c(rep(2.5, 12)), 
+    metric = metric_order,
+    label = c(paste0("R = ", cor_dat$correlation))
+  )
+  lim_ordered <- limit_tab %>% dplyr::filter(metric %in% metric_order) %>%
+    arrange(match(metric, metric_order))
+  find_scal <- function(met){
+    lim <- lim_ordered[lim_ordered$metric %in% met, dataset]
+    lim_score <- mean_res[mean_res$batch == lim[[1]], met]
+  }
+  mean_lim <- metric_order %>% map(find_scal) %>% unlist()
+  sens_limit <- data.frame("batch" = lim_ordered[,dataset][[1]],
+                           "metric" = metric_order,
+                           "scaled_score" = mean_lim,
+                           "label" = paste0("limit = ", lim_ordered[,dataset][[1]]))
+  mean_long <- mean_res %>% pivot_longer(-batch, names_to = "metric",
+                                           values_to = "scaled_score")
+  mean_long <- mean_long %>% mutate(metric2 = metric)
+  cols_rep <- rep(cols[1: ncol(mean_res)-1], each = nrow(mean_res))
+  mean_long$metric <- factor(mean_long$metric,levels = metric_order)
+  p <- ggplot(mean_long, aes(x = batch, y = scaled_score)) +
+        geom_line(data=mean_long %>% dplyr::select(-metric), aes(group=metric2),
+                   color="grey", size=0.5, alpha=0.5) + 
+        geom_line( aes(color=metric), color=cols_rep, size=1.2 ) + 
+        theme_ipsum(base_family = 'Helvetica') +
+        theme(
+        legend.position="none",
+        plot.title = element_text(size=14),
+        panel.grid = element_blank()
+      ) +
+      geom_label(data = label, aes(label = label), size = 6) + 
+      geom_mark_circle(data = sens_limit, aes(label = label, x = batch, y = scaled_score),
+                        label.colour = "black", inherit.aes = FALSE,
+                        label.fontsize = 16,
+                        size = 1,
+                        expand = unit(1, "mm"),
+                        label.minwidth = unit(50, "mm")) +
+      ggtitle(dataset) +
+      facet_wrap(~metric)
+    p
+}
+
+template_sep <- c(
+    "#### {{nm}}\n",
+    "```{r scaling sep {{nm}}, echo = FALSE, fig.width = 8, fig.height = 7}\n",
+    "p <- sep_trends('{{nm}}')\n",
+    "p",
+    "saveRDS(p, paste0(out_path_fig, '_{{nm}}.rds'))",
+    "```\n",
+    "\n"
+  )
+
+plots_sep <- lapply(names(scale_means), 
+  function(nm) knitr::knit_expand(text = template_sep)
+)
+
+```
+
+`r knitr::knit(text = unlist(plots_sep))`
 
 
 

@@ -9,6 +9,7 @@ params:
   last:
   out_cor:
   out_res:
+  fig_res:
 output:
   html_document:
     self_contained: no
@@ -53,6 +54,7 @@ suppressPackageStartupMessages({
   library(hrbrthemes)
   library(corrplot)
   library(RColorBrewer)
+  library(ggforce)
 })
 
 options(bitmapType='cairo')
@@ -85,11 +87,12 @@ sce_list <- lapply(sce_name, function(dataset){
 
 out_path_cor <- params$out_cor
 out_path_res <- params$out_res
+out_path_fig <- params$fig_res
 
 cols_data <-c(c(jcolors('pal6'),jcolors('pal8'))[c(1,8,14,5,2:4,6,7,9:13,15:20)],jcolors('pal4'))
 names(cols_data) <- c()
 
-cols <-c(c(jcolors('pal6'),jcolors('pal8'), jcolors('pal7'))[c(12,18,1,2,25,27,4,7,3,6,8,14,9,20)],jcolors('pal4'))
+cols <-c(c(jcolors('pal6'),jcolors('pal8'), jcolors('pal7'))[c(12,18,1,25,27,2,4,7,3,6,8,14,9,20)],jcolors('pal4'))
 names(cols) <- c()
 ```
 
@@ -165,7 +168,7 @@ scale_means <- lapply(names(mean_tab), function(dataset){
     mm_ind <- grep("mm", colnames(mean_res))
     lis_ind <- grep("isi", colnames(mean_res))
     scal_vec <- rep(1, ncol(mean_res)-1)
-    scal_vec[mm_ind] <- 300
+    scal_vec[mm_ind] <- 200
     scal_vec[lis_ind] <- n_bids - 1
     max_res <- mean_res[mean_res$unbalanced == 0, !colnames(mean_res) %in% "unbalanced"]
     scale_res <- mean_res %>% select(-unbalanced) %>%
@@ -176,7 +179,7 @@ scale_means <- lapply(names(mean_tab), function(dataset){
 
 #get_descriptive_names
 ind_no_batch <- grep("_0$", names(mean_tab))
-ind_int_batch <- grep("_0.7$", names(mean_tab))
+ind_int_batch <- grep("_0.3$", names(mean_tab))
 ind_strong_batch <- grep("_1$", names(mean_tab))
 d_names <- names(mean_tab)
 d_names[ind_no_batch] <- "no_batch_effect"
@@ -219,6 +222,20 @@ Plot trends per metric
 ### Metrics performance separated {.tabset} 
 
 ```{r spagetti separated}
+# Get lowest level of unbalance that deviates more than 5% from the balanced value. 
+limit_tab <- lapply(names(scale_means), function(dataset){
+    mean_res <- scale_means[[dataset]]
+    dev_lim <- function(x){
+        dev_all <- which(abs(x) > 0.05)
+        batch <- mean_res$unbalanced[dev_all] %>% min()
+    }
+    batch_lim <- apply(mean_res, 2, dev_lim)
+}) %>% set_names(names(scale_means)) %>% bind_cols() %>% 
+  mutate(metric = colnames(scale_means[[1]]))
+
+limit_tab[limit_tab == Inf] <- 1 
+
+
 
 sep_trends <- function(dataset){
   mean_res <- scale_means[[dataset]]
@@ -227,17 +244,35 @@ sep_trends <- function(dataset){
   mean_long <- mean_long %>% mutate(metric2 = metric)
   cols_rep <- rep(cols[1: ncol(mean_res)-1], each = nrow(mean_res))
   mean_long$metric <- factor(mean_long$metric,levels = metric_order)
+  lim_ordered <- limit_tab %>% filter(metric %in% metric_order) %>% 
+    arrange(match(metric, metric_order))
+  find_scal <- function(met){
+    lim <- lim_ordered[lim_ordered$metric %in% met, dataset]
+    lim_score <- mean_res[mean_res$unbalanced == lim[[1]], met]
+  }
+  mean_lim <- metric_order %>% map(find_scal) %>% unlist()
+  unb_limit <- data.frame("unbalanced" = lim_ordered[,dataset][[1]],
+                           "metric" = metric_order,
+                           "scaled_score" = mean_lim,
+                           "label" = paste0("limit = ", lim_ordered[,dataset][[1]]))
+  
   p <- ggplot(mean_long, aes(x = unbalanced, y = scaled_result)) +
         geom_line(data=mean_long %>% dplyr::select(-metric), aes(group=metric2),
                    color="grey", size=0.5, alpha=0.5) + 
         geom_line( aes(color=metric), color=cols_rep, size=1.2 ) + 
         scale_color_viridis(discrete = TRUE) +
-        theme_ipsum() +
+        theme_ipsum(base_family = 'Helvetica') +
         theme(
           legend.position="none",
           plot.title = element_text(size=14),
           panel.grid.minor = element_blank()
         ) +
+        geom_mark_circle(data = unb_limit, aes(label = label, x = unbalanced, y = scaled_score),
+                        label.colour = "black", inherit.aes = FALSE,
+                        label.fontsize = 20,
+                        size = 1,
+                        expand = unit(1, "mm"),
+                        label.minwidth = unit(20, "mm")) +
         ggtitle(dataset) +
         facet_wrap(~metric)
   p
@@ -246,7 +281,9 @@ sep_trends <- function(dataset){
 template_sep <- c(
     "#### {{nm}}\n",
     "```{r scaling sep {{nm}}, echo = FALSE, fig.width = 8, fig.height = 7}\n",
-    "sep_trends('{{nm}}')\n",
+    "p <- sep_trends('{{nm}}')\n",
+    "p",
+    "saveRDS(p, paste0(out_path_fig, '_{{nm}}.rds'))",
     "```\n",
     "\n"
   )
@@ -284,12 +321,15 @@ lim_long <- limit_tab %>% filter(!metric %in% "unbalanced") %>%
 ## order by metrics type
 lim_long$metric <- factor(lim_long$metric,levels = metric_order)
 
-ggplot(lim_long, aes(x = metric , y = unbalanced_limit, fill = dataset)) + 
+p <- ggplot(lim_long, aes(x = metric , y = unbalanced_limit, fill = dataset)) + 
     geom_boxplot(fill = cols[1:length(levels(as.factor(lim_long$metric)))], alpha = 0.5) + 
     geom_dotplot(binaxis='y', stackdir='center', dotsize=0.5) +
     scale_fill_manual(values=cols_data) + 
-    theme_ipsum() +
+    theme_ipsum(base_family = 'Helvetica') +
     theme(axis.text.x = element_text(face="bold", size=10, angle=45))
+
+p
+saveRDS(p, paste0(out_path_fig, "_limits.rds"))
 
 #save mean results
 mean_unb_lim <- lim_long %>% group_by(metric) %>% 
@@ -298,6 +338,33 @@ mean_unb_lim <- lim_long %>% group_by(metric) %>%
 
 saveRDS(mean_unb_lim, out_path_res)
 ```
+
+As lollipop plot
+```{r dot plot, fig.width = 10, fig.height=5}
+lim_long$metric <- recode(lim_long$metric, cms.kmin = "cms_kmin", cms.bmin = "cms_bmin",
+       cms.batch_id = "cms_default", graph.connectivity = "graph", kbet = "kBet")
+names(cols) <- c()
+
+p <- ggplot(lim_long) +
+  geom_segment( aes(x=dataset, xend=dataset, y=0, yend=unbalanced_limit), color="black") +
+  geom_point( aes(x=dataset, y=unbalanced_limit, color=metric, shape = dataset), size=4 ) +
+  #coord_flip()+
+  theme_ipsum(base_family = 'Helvetica') +
+  theme(
+    legend.position = "top",
+    panel.border = element_blank(),
+    panel.spacing = unit(0.1, "lines")
+  ) +
+  scale_colour_manual(values = c(cols[1:length(levels(as.factor(lim_long$metric)))]), guide=FALSE) +
+  xlab("") +
+  ylab("Value of Y") +
+  facet_wrap(~metric, ncol=length(levels(as.factor(lim_long$metric))), strip.position = "bottom")
+
+p
+saveRDS(p, paste0(out_path_fig, "_limits_lolli.rds"))
+```
+
+
 
 ### Correlation between metrics
 

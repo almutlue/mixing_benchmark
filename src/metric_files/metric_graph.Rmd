@@ -1,0 +1,23 @@
+---
+title: "Metric_graph"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Graph connectivity 
+Modified and adapted from [Luecken et al, 2020](https://www.biorxiv.org/content/10.1101/2020.05.22.111161v1)
+
+The graph connectivity metric assesses whether the kNN graph representation $G$ of the
+data directly connects all cells with the same cell identity label. For each cell identity
+label $c$, a subset kNN graph $G(N_c;E_c)$ was created to contain only cells from a given label. 
+Within these celltype specific subset kNN graphs the graph connectivity score is defined as the 
+mean fraction of directly within the longest connected component ($LCC$) connected cells within each celltype graph:
+$$gc = \frac{1}{|c|}\sum_{c \in C}\frac{LCC(G(N_c;E_c))}{N_c}$$
+
+
+
+

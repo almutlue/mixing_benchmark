@@ -1,0 +1,26 @@
+---
+title: "Metric_asw"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Average silhouette width (asw) 
+Modified and adapted from [Luecken et al, 2020](https://www.biorxiv.org/content/10.1101/2020.05.22.111161v1)
+
+The silhouette width measures the relationship between the within-cluster distances of a cell
+and the between-cluster distances of that cell to the closest cluster. Averaging over all
+silhouette widths yields the asw, which ranges between -1 and 1. Originally, Asw was used to
+determine the separation of clusters where 1 represents dense and well-separated clusters.
+Furthermore, an asw of 0 or -1 corresponds to overlapping clusters (caused by equal between-
+and within-cluster variability) or strong misclassification, respectively. 
+Here we use asw to describe the mixing of batches within cell clusters, 
+so basically the incoherence of clustering by batch. 
+In this usage, an asw of 0 indicates that batches are well-mixed.
+Relative to the usual silhouette width it is calculated like $asw = 1 − abs(asw)$.
+
+
+

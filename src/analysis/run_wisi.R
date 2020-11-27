@@ -18,6 +18,8 @@ print(meta)
 suppressPackageStartupMessages({
   library(SingleCellExperiment)
   library(CellMixS)
+  library(scater)
+  library(scran)
   library(foreach)
   library(tictoc)
 })
@@ -30,18 +32,17 @@ meta <- readRDS(file = meta)
 batch <- meta[["batch"]]
 celltype <- meta[["celltype"]]
 
-
 ### ------------ CellMixS-------------------------###
+if (is.null(assays(sce)[["logcounts"]])) {
+  assay_nam <- "counts"
+}else{
+  assay_nam <- "logcounts"
+}
+
 if( !is.null(reducedDims(sce)[["PCA"]]) && ncol(reducedDims(sce)[["PCA"]]) < 10 ){
   n_dim = ncol(reducedDims(sce)[["PCA"]])
 }else{
   n_dim = 10
-}
-
-if (is.null(assays(sce)[["logcounts"]])) {
-    assay_nam <- "counts"
-}else{
-    assay_nam <- "logcounts"
 }
 
 tic.clearlog()

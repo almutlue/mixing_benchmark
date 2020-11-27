@@ -19,6 +19,8 @@ suppressPackageStartupMessages({
   library(SingleCellExperiment)
   library(CellMixS)
   library(foreach)
+  library(scater)
+  library(scran)
   library(tictoc)
 })
 
@@ -30,18 +32,17 @@ meta <- readRDS(file = meta)
 batch <- meta[["batch"]]
 celltype <- meta[["celltype"]]
 
+### ------------ Entropy-------------------------###
+if (is.null(assays(sce)[["logcounts"]])) {
+  assay_nam <- "counts"
+}else{
+  assay_nam <- "logcounts"
+}
 
-### ------------ CellMixS-------------------------###
 if( !is.null(reducedDims(sce)[["PCA"]]) && ncol(reducedDims(sce)[["PCA"]]) < 10 ){
   n_dim = ncol(reducedDims(sce)[["PCA"]])
 }else{
   n_dim = 10
-}
-
-if (is.null(assays(sce)[["logcounts"]])) {
-    assay_nam <- "counts"
-}else{
-    assay_nam <- "logcounts"
 }
 
 tic.clearlog()
@@ -57,6 +58,8 @@ for( batch_var in batch ){
                          res_name = paste0("entropy_", batch_var))
   toc(log = TRUE, quiet = TRUE)
 }
+
+print("updated entropy run")
 
 #Get timings
 log.txt <- tic.log(format = TRUE)

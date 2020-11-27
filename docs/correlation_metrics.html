@@ -443,7 +443,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">Correlation_metrics</h1>
 <h4 class="author">Almut Lütge</h4>
-<h4 class="date">25 June, 2020</h4>
+<h4 class="date">24 November, 2020</h4>
 
 </div>
 
@@ -507,17 +507,20 @@ cor_list &lt;-<span class="st"> </span>cor_list %&gt;%<span class="st"> </span><
 rand_char &lt;-<span class="st"> </span>chars[<span class="kw">grep</span>(<span class="st">&quot;random&quot;</span>, chars)]
 cor_list[[<span class="st">&quot;random&quot;</span>]] &lt;-<span class="st"> </span><span class="kw">t</span>(<span class="kw">apply</span>(<span class="kw">simplify2array</span>(cor_list[rand_char]), <span class="dv">1</span>:<span class="dv">2</span>, 
                                     mean, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>))
+
 cor_list &lt;-<span class="st"> </span>cor_list[!<span class="kw">names</span>(cor_list) %in%<span class="st"> </span>rand_char]
 
 <span class="co"># Get mean for all tasks</span>
 cor_mean &lt;-<span class="st"> </span><span class="kw">Reduce</span>(<span class="st">&quot;+&quot;</span>, cor_list)/<span class="kw">length</span>(cor_list)
 
+<span class="co">#Colors and path variables </span>
 cols &lt;-<span class="kw">c</span>(<span class="kw">c</span>(<span class="kw">jcolors</span>(<span class="st">&#39;pal6&#39;</span>),<span class="kw">jcolors</span>(<span class="st">&#39;pal8&#39;</span>), <span class="kw">jcolors</span>(<span class="st">&#39;pal7&#39;</span>))[<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">12</span>,<span class="dv">18</span>,<span class="dv">25</span>,<span class="dv">27</span>,<span class="dv">2</span>,<span class="dv">4</span>,<span class="dv">7</span>,<span class="dv">3</span>,<span class="dv">6</span>,<span class="dv">8</span>,<span class="dv">14</span>,<span class="dv">9</span>,<span class="dv">20</span>)],<span class="kw">jcolors</span>(<span class="st">&#39;pal4&#39;</span>))
 <span class="kw">names</span>(cols) &lt;-<span class="st"> </span><span class="kw">c</span>()
 
-
 cols_data &lt;-<span class="kw">c</span>(<span class="kw">c</span>(<span class="kw">jcolors</span>(<span class="st">&#39;pal6&#39;</span>),<span class="kw">jcolors</span>(<span class="st">&#39;pal8&#39;</span>))[<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">8</span>,<span class="dv">14</span>,<span class="dv">5</span>,<span class="dv">2</span>:<span class="dv">4</span>,<span class="dv">6</span>,<span class="dv">7</span>,<span class="dv">9</span>:<span class="dv">13</span>,<span class="dv">15</span>:<span class="dv">20</span>)],<span class="kw">jcolors</span>(<span class="st">&#39;pal4&#39;</span>))
-<span class="kw">names</span>(cols_data) &lt;-<span class="st"> </span><span class="kw">c</span>()</code></pre></div>
+<span class="kw">names</span>(cols_data) &lt;-<span class="st"> </span><span class="kw">c</span>()
+
+out_path_fig &lt;-<span class="st"> </span>params$fig_res</code></pre></div>
 </div>
 <div id="visulaize-correlation" class="section level3">
 <h3>Visulaize correlation</h3>
@@ -553,6 +556,8 @@ cor_mean &lt;-<span class="st"> </span>cor_mean[metric_order, metric_order]
 <p><img src="correlation_metrics_files/figure-html/corrplot-1.svg" width="768" /></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#Order by hclust (take absolute values as the direction of correlation is irrelevant)</span>
 cor_mean_abs &lt;-<span class="st"> </span><span class="kw">abs</span>(cor_mean)
+graph_ind &lt;-<span class="st"> </span><span class="kw">which</span>(<span class="kw">colnames</span>(cor_mean_abs) %in%<span class="st"> &quot;graph&quot;</span>)
+cor_mean_abs &lt;-<span class="st"> </span>cor_mean_abs[-graph_ind, -graph_ind]
 <span class="kw">corrplot</span>(cor_mean_abs, 
          <span class="dt">type=</span><span class="st">&quot;upper&quot;</span>, 
          <span class="dt">order=</span><span class="st">&quot;hclust&quot;</span>,
@@ -588,7 +593,11 @@ g1 &lt;-<span class="st"> </span><span class="kw">ggplot</span>(cor_bin_long, <s
     <span class="dt">axis.text.x=</span><span class="kw">element_blank</span>(),
     <span class="dt">plot.title =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">14</span>),
     <span class="dt">panel.grid.minor =</span> <span class="kw">element_blank</span>()
-      )</code></pre></div>
+      )
+
+g1</code></pre></div>
+<pre><code>## Warning: Removed 28 rows containing missing values (position_stack).</code></pre>
+<p><img src="correlation_metrics_files/figure-html/split%20corplot-1.svg" width="960" /></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cor_bin_long$metric &lt;-<span class="st"> </span><span class="kw">factor</span>(cor_bin_long$metric, <span class="dt">levels =</span> metric_order)
 cor_bin_long$metric2 &lt;-<span class="st"> </span><span class="kw">factor</span>(cor_bin_long$metric2, <span class="dt">levels =</span> metric_order)
 cor_bin_long$M1 &lt;-<span class="st"> </span><span class="kw">as.numeric</span>(cor_bin_long$metric)
@@ -607,8 +616,8 @@ p.list =<span class="st"> </span><span class="kw">mapply</span>(<span class="dt"
 <span class="st">      </span><span class="kw">ylab</span>(cor_bin$metric2) +
 <span class="st">      </span><span class="kw">theme_minimal</span>() +<span class="st"> </span>
 <span class="st">      </span><span class="kw">theme</span>(
-        <span class="dt">axis.title.x =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">10</span>, <span class="dt">face =</span> <span class="st">&quot;bold&quot;</span>),
-        <span class="dt">axis.title.y =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">10</span>, <span class="dt">face =</span> <span class="st">&quot;bold&quot;</span>),
+        <span class="dt">axis.title.x =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">10</span>),
+        <span class="dt">axis.title.y =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">10</span>),
         <span class="dt">panel.border =</span> <span class="kw">element_blank</span>(),
         <span class="dt">panel.grid=</span><span class="kw">element_blank</span>(),
         <span class="dt">axis.ticks =</span> <span class="kw">element_blank</span>(),
@@ -657,7 +666,7 @@ p.list =<span class="st"> </span><span class="kw">mapply</span>(<span class="dt"
 
 
 <span class="co">#get legend</span>
-g_legend&lt;-function(a.gplot){
+g_legend &lt;-<span class="st"> </span>function(a.gplot){
   tmp &lt;-<span class="st"> </span><span class="kw">ggplot_gtable</span>(<span class="kw">ggplot_build</span>(a.gplot))
   leg &lt;-<span class="st"> </span><span class="kw">which</span>(<span class="kw">sapply</span>(tmp$grobs, function(x) x$name) ==<span class="st"> &quot;guide-box&quot;</span>)
   legend &lt;-<span class="st"> </span>tmp$grobs[[leg]]
@@ -673,6 +682,8 @@ mylegend &lt;-<span class="st"> </span><span class="kw">g_legend</span>(g1)
                                        <span class="dt">ncol=</span><span class="kw">length</span>(<span class="kw">levels</span>(cor_bin_long$metric)))), <span class="dt">widths=</span><span class="kw">c</span>(<span class="fl">0.05</span>,<span class="fl">0.95</span>)),
     <span class="kw">textGrob</span>(<span class="st">&quot;&quot;</span>), <span class="dt">heights=</span><span class="kw">c</span>(<span class="fl">0.95</span>,<span class="fl">0.05</span>)), mylegend, <span class="dt">ncol=</span><span class="dv">2</span>,<span class="dt">widths=</span><span class="kw">c</span>(<span class="dv">10</span>, <span class="fl">2.2</span>))</code></pre></div>
 <p><img src="correlation_metrics_files/figure-html/unnamed-chunk-1-1.svg" width="1008" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">saveRDS</span>(p.list, <span class="kw">paste0</span>(out_path_fig, <span class="st">&quot;_all.rds&quot;</span>))
+<span class="kw">saveRDS</span>(mylegend, <span class="kw">paste0</span>(out_path_fig, <span class="st">&quot;_legend.rds&quot;</span>))</code></pre></div>
 </div>
 </div>
 

@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Almut Lütge" />
+
+
+<title>Metrics timing</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/journal.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; background-color: #f8f8f8; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+pre, code { background-color: #f8f8f8; }
+code > span.kw { color: #204a87; font-weight: bold; } /* Keyword */
+code > span.dt { color: #204a87; } /* DataType */
+code > span.dv { color: #0000cf; } /* DecVal */
+code > span.bn { color: #0000cf; } /* BaseN */
+code > span.fl { color: #0000cf; } /* Float */
+code > span.ch { color: #4e9a06; } /* Char */
+code > span.st { color: #4e9a06; } /* String */
+code > span.co { color: #8f5902; font-style: italic; } /* Comment */
+code > span.ot { color: #8f5902; } /* Other */
+code > span.al { color: #ef2929; } /* Alert */
+code > span.fu { color: #000000; } /* Function */
+code > span.er { color: #a40000; font-weight: bold; } /* Error */
+code > span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #000000; } /* Constant */
+code > span.sc { color: #000000; } /* SpecialChar */
+code > span.vs { color: #4e9a06; } /* VerbatimString */
+code > span.ss { color: #4e9a06; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #000000; } /* Variable */
+code > span.cf { color: #204a87; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #ce5c00; font-weight: bold; } /* Operator */
+code > span.pp { color: #8f5902; font-style: italic; } /* Preprocessor */
+code > span.ex { } /* Extension */
+code > span.at { color: #c4a000; } /* Attribute */
+code > span.do { color: #8f5902; font-weight: bold; font-style: italic; } /* Documentation */
+code > span.an { color: #8f5902; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #8f5902; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #8f5902; font-weight: bold; font-style: italic; } /* Information */
+
+.sourceCode .row {
+  width: 100%;
+}
+.sourceCode {
+  overflow-x: auto;
+}
+.code-folding-btn {
+  margin-right: -30px;
+}
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="fluid-row" id="header">
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Metrics timing</h1>
+<h4 class="author">Almut Lütge</h4>
+<h4 class="date">24 November, 2020</h4>
+
+</div>
+
+
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">suppressPackageStartupMessages</span>({
+  <span class="kw">library</span>(purrr)
+  <span class="kw">library</span>(tidyr)
+  <span class="kw">library</span>(dplyr)
+  <span class="kw">library</span>(jcolors)
+  <span class="kw">library</span>(hrbrthemes)
+  <span class="kw">library</span>(ggplot2)
+  <span class="kw">library</span>(magrittr)
+})
+
+<span class="kw">options</span>(<span class="dt">bitmapType=</span><span class="st">&#39;cairo&#39;</span>)
+default_guide &lt;-<span class="st"> </span>ggplot2::<span class="kw">waiver</span>()</code></pre></div>
+<div id="dataset-and-metrics" class="section level3">
+<h3>Dataset and metrics</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data &lt;-<span class="st"> </span>params$data
+data_path &lt;-<span class="st"> </span>params$data_path
+size_tab &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$size_tab)
+out_path &lt;-<span class="st"> </span>params$out_path
+
+time_res &lt;-<span class="st"> </span><span class="kw">list.files</span>(<span class="dt">path =</span> data_path, <span class="dt">pattern =</span> <span class="st">&quot;.txt&quot;</span>)
+
+metrics &lt;-<span class="st"> </span>time_res %&gt;%<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&#39;.*[0-9]_&#39;</span>, <span class="st">&#39;&#39;</span>, .) %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">gsub</span>(<span class="st">&#39;.txt&#39;</span>, <span class="st">&#39;&#39;</span>, .) %&gt;%<span class="st"> </span><span class="kw">unique</span>()
+
+size_fac &lt;-<span class="st"> </span>time_res %&gt;%<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&#39;[a-z]*&#39;</span>, <span class="st">&#39;&#39;</span>, .) %&gt;%<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&#39;^[0-9]&#39;</span>, <span class="st">&#39;&#39;</span>, .) %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">gsub</span>(<span class="st">&#39;_*&#39;</span>, <span class="st">&#39;&#39;</span>, .) %&gt;%<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&#39;</span><span class="ch">\\</span><span class="st">.$&#39;</span>, <span class="st">&#39;&#39;</span>, .) %&gt;%<span class="st"> </span><span class="kw">unique</span>()
+
+size_dat &lt;-<span class="st"> </span><span class="kw">as.vector</span>(<span class="kw">outer</span>(data, size_fac, paste, <span class="dt">sep=</span><span class="st">&quot;_&quot;</span>))
+
+read_time &lt;-<span class="st"> </span>function(file){
+    inf &lt;-<span class="st"> </span><span class="kw">read.delim2</span>(<span class="kw">paste0</span>(data_path, file), <span class="dt">header =</span> <span class="ot">FALSE</span>, <span class="dt">sep =</span> <span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>, <span class="dt">dec =</span> <span class="st">&quot;,&quot;</span>)
+    time1 &lt;-<span class="st"> </span>inf[[<span class="dv">2</span>]][[<span class="dv">2</span>]] %&gt;%<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&#39;.*: &#39;</span>, <span class="st">&#39;&#39;</span>, .) %&gt;%<span class="st"> </span><span class="kw">as.numeric</span>()
+    time2 &lt;-<span class="st"> </span>inf[[<span class="dv">2</span>]][[<span class="dv">3</span>]] %&gt;%<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&#39;.*: &#39;</span>, <span class="st">&#39;&#39;</span>, .) %&gt;%<span class="st"> </span><span class="kw">as.numeric</span>()
+    time &lt;-<span class="st"> </span>time1 +<span class="st"> </span>time2
+    rss &lt;-<span class="st"> </span>inf[[<span class="dv">2</span>]][[<span class="dv">10</span>]] %&gt;%<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&#39;.*: &#39;</span>, <span class="st">&#39;&#39;</span>, .) %&gt;%<span class="st"> </span><span class="kw">as.numeric</span>()
+    size_f &lt;-<span class="st"> </span>file %&gt;%<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&#39;[a-z]*&#39;</span>, <span class="st">&#39;&#39;</span>, .) %&gt;%<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&#39;^[0-9]&#39;</span>, <span class="st">&#39;&#39;</span>, .) %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">gsub</span>(<span class="st">&#39;_*&#39;</span>, <span class="st">&#39;&#39;</span>, .) %&gt;%<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&#39;</span><span class="ch">\\</span><span class="st">.$&#39;</span>, <span class="st">&#39;&#39;</span>, .)
+    name &lt;-<span class="st"> </span>file %&gt;%<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&#39;_[0-9].*&#39;</span>, <span class="st">&#39;&#39;</span>, .)
+    metric &lt;-<span class="st"> </span>file %&gt;%<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&#39;.*[0-9]_&#39;</span>, <span class="st">&#39;&#39;</span>, .) %&gt;%<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&#39;.txt&#39;</span>, <span class="st">&#39;&#39;</span>, .)
+    cells &lt;-<span class="st"> </span>size_tab[[name]][[size_f]]
+    res &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="st">&quot;CPU_time&quot;</span> =<span class="st"> </span>time,
+                      <span class="st">&quot;RSS&quot;</span> =<span class="st"> </span>rss,
+                      <span class="st">&quot;cells&quot;</span> =<span class="st"> </span>cells[[<span class="dv">2</span>]],
+                      <span class="st">&quot;genes&quot;</span> =<span class="st"> </span>cells[[<span class="dv">1</span>]],
+                      <span class="st">&quot;metric&quot;</span> =<span class="st"> </span>metric)
+}
+
+res_tab &lt;-<span class="st"> </span>time_res %&gt;%<span class="st"> </span><span class="kw">map</span>(read_time) %&gt;%<span class="st"> </span><span class="kw">bind_rows</span>()
+
+cols_data &lt;-<span class="kw">c</span>(<span class="kw">c</span>(<span class="kw">jcolors</span>(<span class="st">&#39;pal6&#39;</span>),<span class="kw">jcolors</span>(<span class="st">&#39;pal8&#39;</span>))[<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">8</span>,<span class="dv">14</span>,<span class="dv">5</span>,<span class="dv">2</span>:<span class="dv">4</span>,<span class="dv">6</span>,<span class="dv">7</span>,<span class="dv">9</span>:<span class="dv">13</span>,<span class="dv">15</span>:<span class="dv">20</span>)],<span class="kw">jcolors</span>(<span class="st">&#39;pal4&#39;</span>))
+<span class="kw">names</span>(cols_data) &lt;-<span class="st"> </span><span class="kw">c</span>()
+
+cols &lt;-<span class="kw">c</span>(<span class="kw">c</span>(<span class="kw">jcolors</span>(<span class="st">&#39;pal6&#39;</span>),<span class="kw">jcolors</span>(<span class="st">&#39;pal8&#39;</span>), <span class="kw">jcolors</span>(<span class="st">&#39;pal7&#39;</span>))[<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">12</span>,<span class="dv">18</span>,<span class="dv">25</span>,<span class="dv">27</span>,<span class="dv">2</span>,<span class="dv">4</span>,<span class="dv">7</span>,<span class="dv">3</span>,<span class="dv">6</span>,<span class="dv">8</span>,<span class="dv">14</span>,<span class="dv">9</span>,<span class="dv">20</span>)],<span class="kw">jcolors</span>(<span class="st">&#39;pal4&#39;</span>))
+
+
+#### ---------- Order by metric type ----------------------------------####### 
+<span class="co">#(manual needs to be adjusted if new metrics are added)</span>
+res_tab$metric &lt;-<span class="st"> </span><span class="kw">as.factor</span>(res_tab$metric)
+res_tab$metric &lt;-<span class="st"> </span><span class="kw">recode</span>(res_tab$metric, <span class="dt">graph_connectivity =</span> <span class="st">&quot;graph&quot;</span>, <span class="dt">kbet =</span> <span class="st">&quot;kBet&quot;</span>)
+cms_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;cms&quot;</span>, <span class="kw">levels</span>(res_tab$metric))
+lisi_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;isi&quot;</span>, <span class="kw">levels</span>(res_tab$metric))
+ent_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;entropy&quot;</span>, <span class="kw">levels</span>(res_tab$metric))
+mm_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;mm&quot;</span>, <span class="kw">levels</span>(res_tab$metric))
+asw_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;sw&quot;</span>, <span class="kw">levels</span>(res_tab$metric))
+kbet_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;kbet&quot;</span>, <span class="kw">levels</span>(res_tab$metric), <span class="dt">ignore.case =</span> <span class="ot">TRUE</span>)
+graph_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;graph&quot;</span>, <span class="kw">levels</span>(res_tab$metric))
+pcr_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;pcr&quot;</span>, <span class="kw">levels</span>(res_tab$metric))
+metric_order &lt;-<span class="st"> </span><span class="kw">levels</span>(res_tab$metric)[<span class="kw">c</span>(cms_ind, lisi_ind, ent_ind, mm_ind, 
+                                       kbet_ind, asw_ind, graph_ind, pcr_ind)]
+
+<span class="co">#adjust metric names</span>
+<span class="kw">names</span>(cols) &lt;-<span class="st"> </span><span class="kw">levels</span>(res_tab$metric)
+####--------------------------------------------------------------------########</code></pre></div>
+</div>
+<div id="visualize-time-and-memory-results" class="section level2">
+<h2>Visualize time and memory results</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#change units</span>
+res_tab$CPU_time &lt;-<span class="st"> </span>res_tab$CPU_time/(<span class="dv">60</span>*<span class="dv">60</span>)
+res_tab$RSS &lt;-<span class="st"> </span>res_tab$RSS/<span class="dv">1000000</span>
+res_tab$cells &lt;-<span class="st"> </span>res_tab$cells/<span class="dv">1000</span>
+
+res_tab &lt;-<span class="st"> </span>res_tab %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">metric2 =</span> <span class="kw">as.factor</span>(metric))
+cols_rep &lt;-<span class="st"> </span><span class="kw">rep</span>(cols[<span class="dv">1</span>:<span class="st"> </span><span class="kw">length</span>(<span class="kw">levels</span>(res_tab$metric2))], 
+                <span class="dt">each =</span> <span class="kw">length</span>(<span class="kw">levels</span>(<span class="kw">as.factor</span>(res_tab$cells))))
+n_t &lt;-<span class="st"> </span><span class="kw">which</span>(metric_order %in%<span class="st"> &quot;asw&quot;</span>)*<span class="kw">length</span>(<span class="kw">levels</span>(<span class="kw">as.factor</span>(res_tab$cells)))
+cols_rep &lt;-<span class="st"> </span>cols_rep[-<span class="kw">c</span>(n_t, n_t -<span class="st"> </span><span class="dv">1</span>)]
+res_tab$metric &lt;-<span class="st"> </span><span class="kw">factor</span>(res_tab$metric, <span class="dt">levels =</span> metric_order)
+res_tab$genes &lt;-<span class="st"> </span><span class="kw">as.factor</span>(res_tab$genes)
+
+sep_trends &lt;-<span class="st"> </span>function(com1, com2){
+  p &lt;-<span class="st"> </span><span class="kw">ggplot</span>(res_tab, <span class="kw">aes_string</span>(<span class="dt">x =</span> com1, <span class="dt">y =</span>com2)) +
+<span class="st">        </span><span class="kw">geom_line</span>(<span class="dt">data=</span>res_tab %&gt;%<span class="st"> </span>dplyr::<span class="kw">select</span>(-metric) %&gt;%<span class="st"> </span>
+<span class="st">                    </span>dplyr::<span class="kw">filter</span>(<span class="kw">as.numeric</span>(<span class="kw">as.character</span>(genes)) ==<span class="st"> </span><span class="kw">max</span>(<span class="kw">as.numeric</span>(<span class="kw">as.character</span>(genes)))),
+                  <span class="kw">aes</span>(<span class="dt">group=</span>metric2),
+                   <span class="dt">color=</span><span class="st">&quot;grey&quot;</span>, <span class="dt">size=</span><span class="fl">0.5</span>, <span class="dt">alpha=</span><span class="fl">0.5</span>) +<span class="st"> </span>
+<span class="st">        </span><span class="kw">geom_line</span>( <span class="kw">aes</span>(<span class="dt">color=</span>metric, <span class="dt">linetype=</span>genes), <span class="dt">color=</span>cols_rep, <span class="dt">size=</span><span class="fl">1.2</span> ) +<span class="st"> </span>
+<span class="st">        </span><span class="kw">theme_ipsum</span>(<span class="dt">base_family =</span> <span class="st">&#39;Helvetica&#39;</span>) +
+<span class="st">        </span><span class="kw">theme</span>(
+        <span class="dt">legend.position=</span><span class="st">&quot;none&quot;</span>,
+        <span class="dt">plot.title =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">14</span>),
+        <span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">12</span>),
+        <span class="dt">axis.text.y =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">12</span>),
+      ) +
+<span class="st">      </span><span class="kw">ggtitle</span>(<span class="kw">paste0</span>(com1, <span class="st">&quot; - &quot;</span>, com2)) +
+<span class="st">      </span><span class="kw">facet_wrap</span>(~metric)
+    p
+}
+
+
+p1 &lt;-<span class="st"> </span><span class="kw">sep_trends</span>(<span class="st">&quot;cells&quot;</span>, <span class="st">&quot;RSS&quot;</span>) +<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;RSS [GB]&quot;</span>) +<span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;# cells (thousands)&quot;</span>)
+p2 &lt;-<span class="st"> </span><span class="kw">sep_trends</span>(<span class="st">&quot;cells&quot;</span>, <span class="st">&quot;CPU_time&quot;</span>) +<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;CPU_time [h]&quot;</span>) +<span class="st"> </span><span class="kw">scale_y_log10</span>() +<span class="st"> </span>
+<span class="st">  </span><span class="kw">xlab</span>(<span class="st">&quot;# cells (thousands)&quot;</span>)
+p3 &lt;-<span class="st"> </span><span class="kw">sep_trends</span>(<span class="st">&quot;RSS&quot;</span>, <span class="st">&quot;CPU_time&quot;</span>) +<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;CPU_time [h]&quot;</span>) +<span class="st"> </span><span class="kw">scale_y_log10</span>() +<span class="st"> </span>
+<span class="st">  </span><span class="kw">xlab</span>(<span class="st">&quot;RSS [GB]&quot;</span>)
+
+p4 &lt;-<span class="st"> </span><span class="kw">ggplot</span>(res_tab, <span class="kw">aes</span>(<span class="dt">x =</span> cells, <span class="dt">y =</span> CPU_time)) +
+<span class="st">        </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">color =</span> metric, <span class="dt">linetype=</span>genes)) +<span class="st"> </span>
+<span class="st">        </span><span class="kw">scale_y_log10</span>() +
+<span class="st">        </span><span class="kw">theme_ipsum</span>(<span class="dt">base_family =</span> <span class="st">&#39;Helvetica&#39;</span>) +
+<span class="st">        </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">color =</span> metric, <span class="dt">shape =</span> genes), <span class="dt">size =</span> <span class="dv">3</span>) +
+<span class="st">        </span><span class="kw">scale_color_manual</span>(<span class="dt">values =</span> cols) +
+<span class="st">        </span><span class="kw">ggtitle</span>(<span class="st">&quot;CPU time&quot;</span>) +<span class="st"> </span>
+<span class="st">        </span><span class="kw">ylab</span>(<span class="st">&quot;CPU_time [h]&quot;</span>) +
+<span class="st">        </span><span class="kw">xlab</span>(<span class="st">&quot;# cells (thousands)&quot;</span>)
+
+p5 &lt;-<span class="st"> </span><span class="kw">ggplot</span>(res_tab, <span class="kw">aes</span>(<span class="dt">x =</span> cells, <span class="dt">y =</span> RSS)) +
+<span class="st">        </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">color =</span> metric, <span class="dt">linetype=</span>genes)) +<span class="st"> </span>
+<span class="st">        </span><span class="kw">theme_ipsum</span>(<span class="dt">base_family =</span> <span class="st">&#39;Helvetica&#39;</span>) +
+<span class="st">        </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">color =</span> metric, <span class="dt">shape =</span> genes), <span class="dt">size =</span> <span class="dv">3</span>) +
+<span class="st">        </span><span class="kw">scale_color_manual</span>(<span class="dt">values =</span> cols) +
+<span class="st">        </span><span class="kw">ggtitle</span>(<span class="st">&quot;RSS&quot;</span>) +<span class="st"> </span>
+<span class="st">        </span><span class="kw">ylab</span>(<span class="st">&quot;RSS [GB]&quot;</span>) +
+<span class="st">        </span><span class="kw">xlab</span>(<span class="st">&quot;# cells (thousands)&quot;</span>)
+
+
+<span class="co"># res_tab$genes &lt;- factor(res_tab$genes, levels = c(&quot;8331&quot;, &quot;23381&quot;), </span>
+<span class="co">#                   labels = c(&quot;dataset1&quot;, &quot;dataset2&quot;))</span>
+
+gene.labs &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;dataset1 (max. 68K cells)&quot;</span>, <span class="st">&quot;dataset2 (max. 80K cells)&quot;</span>)
+<span class="kw">names</span>(gene.labs) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;8331&quot;</span>, <span class="st">&quot;23381&quot;</span>)
+
+p6 &lt;-<span class="st"> </span><span class="kw">ggplot</span>(res_tab, <span class="kw">aes</span>(<span class="dt">x =</span> RSS, <span class="dt">y =</span> CPU_time)) +
+<span class="st">        </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">color =</span> metric, <span class="dt">linetype=</span>genes)) +<span class="st"> </span>
+<span class="st">        </span><span class="kw">theme_ipsum</span>(<span class="dt">base_family =</span> <span class="st">&#39;Helvetica&#39;</span>) +
+<span class="st">        </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">color =</span> metric), <span class="dt">size =</span> <span class="dv">4</span>) +
+<span class="st">        </span><span class="kw">scale_color_manual</span>(<span class="dt">values =</span> cols) +
+<span class="st">        </span><span class="kw">ggtitle</span>(<span class="st">&quot;CPU vs. RSS&quot;</span>) +<span class="st"> </span>
+<span class="st">        </span><span class="kw">scale_y_log10</span>() +
+<span class="st">        </span><span class="kw">ylab</span>(<span class="st">&quot;CPU_time [h]&quot;</span>) +
+<span class="st">        </span><span class="kw">xlab</span>(<span class="st">&quot;RSS [GB]&quot;</span>) +
+<span class="st">        </span><span class="kw">facet_wrap</span>(~genes, <span class="dt">ncol =</span> <span class="dv">2</span>, <span class="dt">labeller =</span> <span class="kw">labeller</span>(<span class="dt">genes =</span> gene.labs), <span class="dt">scales =</span> <span class="st">&quot;free_x&quot;</span>)
+
+
+
+p1</code></pre></div>
+<p><img src="evaluate_time_data_files/figure-html/time%20plots-1.svg" width="768" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p2</code></pre></div>
+<p><img src="evaluate_time_data_files/figure-html/time%20plots-2.svg" width="768" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p3</code></pre></div>
+<p><img src="evaluate_time_data_files/figure-html/time%20plots-3.svg" width="768" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p4</code></pre></div>
+<p><img src="evaluate_time_data_files/figure-html/time%20plots-4.svg" width="768" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p5</code></pre></div>
+<p><img src="evaluate_time_data_files/figure-html/time%20plots-5.svg" width="768" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p6</code></pre></div>
+<p><img src="evaluate_time_data_files/figure-html/time%20plots-6.svg" width="768" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">saveRDS</span>(p1, <span class="kw">paste0</span>(out_path, <span class="st">&quot;rss_cells.rds&quot;</span>))
+<span class="kw">saveRDS</span>(p2, <span class="kw">paste0</span>(out_path, <span class="st">&quot;time_cells.rds&quot;</span>))
+<span class="kw">saveRDS</span>(p3, <span class="kw">paste0</span>(out_path, <span class="st">&quot;rss_time.rds&quot;</span>))
+<span class="kw">saveRDS</span>(p4, <span class="kw">paste0</span>(out_path, <span class="st">&quot;time_cells_all.rds&quot;</span>))
+<span class="kw">saveRDS</span>(p5, <span class="kw">paste0</span>(out_path, <span class="st">&quot;rss_cells_all.rds&quot;</span>))
+<span class="kw">saveRDS</span>(p6, <span class="kw">paste0</span>(out_path, <span class="st">&quot;rss_cpu_all.rds&quot;</span>))
+<span class="kw">saveRDS</span>(res_tab, <span class="kw">paste0</span>(data_path, <span class="st">&quot;summary_time_mem.rds&quot;</span>))</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sessionInfo</span>()</code></pre></div>
+<pre><code>## R version 3.6.1 (2019-07-05)
+## Platform: x86_64-pc-linux-gnu (64-bit)
+## Running under: Ubuntu 16.04.6 LTS
+## 
+## Matrix products: default
+## BLAS:   /home/aluetg/R/lib/R/lib/libRblas.so
+## LAPACK: /home/aluetg/R/lib/R/lib/libRlapack.so
+## 
+## locale:
+##  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+##  [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+##  [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+##  [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+##  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+## [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+## 
+## attached base packages:
+## [1] stats     graphics  grDevices datasets  utils     methods   base     
+## 
+## other attached packages:
+## [1] magrittr_1.5     ggplot2_3.3.0    hrbrthemes_0.8.0 jcolors_0.0.4   
+## [5] dplyr_0.8.5      tidyr_1.0.2      purrr_0.3.3     
+## 
+## loaded via a namespace (and not attached):
+##  [1] Rcpp_1.0.3        pillar_1.4.3      compiler_3.6.1    tools_3.6.1      
+##  [5] extrafont_0.17    digest_0.6.25     evaluate_0.14     lifecycle_0.2.0  
+##  [9] tibble_2.1.3      gtable_0.3.0      pkgconfig_2.0.3   rlang_0.4.5      
+## [13] yaml_2.2.1        xfun_0.12         Rttf2pt1_1.3.8    withr_2.1.2      
+## [17] stringr_1.4.0     knitr_1.28        gdtools_0.2.2     vctrs_0.2.3      
+## [21] systemfonts_0.2.2 grid_3.6.1        tidyselect_1.0.0  glue_1.3.1       
+## [25] R6_2.4.1          rmarkdown_2.1     farver_2.0.3      extrafontdb_1.0  
+## [29] scales_1.1.0      htmltools_0.4.0   assertthat_0.2.1  colorspace_1.4-1 
+## [33] renv_0.9.3-44     labeling_0.3      stringi_1.4.6     munsell_0.5.0    
+## [37] crayon_1.3.4</code></pre>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("show" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

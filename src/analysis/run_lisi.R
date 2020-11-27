@@ -19,6 +19,8 @@ suppressPackageStartupMessages({
   library(SingleCellExperiment)
   library(scater)
   library(lisi)
+  library(scater)
+  library(scran)
   library(foreach)
   library(tictoc)
 })
@@ -34,11 +36,12 @@ celltype <- meta[["celltype"]]
 
 ### ------------ CellMixS-------------------------###
 if( is.null(reducedDims(sce)[["PCA"]]) || ncol(reducedDims(sce)[["PCA"]]) < 10 ){
-  if( !"logcounts" %in% names(assays(sce)) ){
-    sce <- runPCA(sce, ncomponents = 10, exprs_values = "counts")
+  if (is.null(assays(sce)[["logcounts"]])) {
+    assay_nam <- "counts"
   }else{
-    sce <- runPCA(sce, ncomponents = 10)
+    assay_nam <- "logcounts"
   }
+   sce <- runPCA(sce, ncomponents = 10, exprs_values = assay_nam)
 }
 
 tic.clearlog()

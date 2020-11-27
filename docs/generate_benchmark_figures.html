@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Almut Lütge" />
+
+
+<title>Figures benchmark</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/journal.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; background-color: #f8f8f8; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+pre, code { background-color: #f8f8f8; }
+code > span.kw { color: #204a87; font-weight: bold; } /* Keyword */
+code > span.dt { color: #204a87; } /* DataType */
+code > span.dv { color: #0000cf; } /* DecVal */
+code > span.bn { color: #0000cf; } /* BaseN */
+code > span.fl { color: #0000cf; } /* Float */
+code > span.ch { color: #4e9a06; } /* Char */
+code > span.st { color: #4e9a06; } /* String */
+code > span.co { color: #8f5902; font-style: italic; } /* Comment */
+code > span.ot { color: #8f5902; } /* Other */
+code > span.al { color: #ef2929; } /* Alert */
+code > span.fu { color: #000000; } /* Function */
+code > span.er { color: #a40000; font-weight: bold; } /* Error */
+code > span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #000000; } /* Constant */
+code > span.sc { color: #000000; } /* SpecialChar */
+code > span.vs { color: #4e9a06; } /* VerbatimString */
+code > span.ss { color: #4e9a06; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #000000; } /* Variable */
+code > span.cf { color: #204a87; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #ce5c00; font-weight: bold; } /* Operator */
+code > span.pp { color: #8f5902; font-style: italic; } /* Preprocessor */
+code > span.ex { } /* Extension */
+code > span.at { color: #c4a000; } /* Attribute */
+code > span.do { color: #8f5902; font-weight: bold; font-style: italic; } /* Documentation */
+code > span.an { color: #8f5902; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #8f5902; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #8f5902; font-weight: bold; font-style: italic; } /* Information */
+
+.sourceCode .row {
+  width: 100%;
+}
+.sourceCode {
+  overflow-x: auto;
+}
+.code-folding-btn {
+  margin-right: -30px;
+}
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="fluid-row" id="header">
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Figures benchmark</h1>
+<h4 class="author">Almut Lütge</h4>
+<h4 class="date">25 November, 2020</h4>
+
+</div>
+
+
+<div id="benchmark-figures-mixing-metrics" class="section level2">
+<h2>Benchmark figures mixing metrics</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">suppressPackageStartupMessages</span>({
+  <span class="kw">library</span>(cowplot)
+  <span class="kw">library</span>(hrbrthemes)
+  <span class="kw">library</span>(ggplot2)
+  <span class="kw">library</span>(jcolors)
+  <span class="kw">library</span>(ComplexHeatmap)
+  <span class="kw">library</span>(dplyr)
+})
+
+cols_data &lt;-<span class="kw">c</span>(<span class="kw">c</span>(<span class="kw">jcolors</span>(<span class="st">&#39;pal6&#39;</span>),<span class="kw">jcolors</span>(<span class="st">&#39;pal8&#39;</span>))[<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">8</span>,<span class="dv">14</span>,<span class="dv">5</span>,<span class="dv">2</span>:<span class="dv">4</span>,<span class="dv">6</span>,<span class="dv">7</span>,<span class="dv">9</span>:<span class="dv">13</span>,<span class="dv">15</span>:<span class="dv">20</span>)],<span class="kw">jcolors</span>(<span class="st">&#39;pal4&#39;</span>))
+<span class="kw">names</span>(cols_data) &lt;-<span class="st"> </span><span class="kw">c</span>()</code></pre></div>
+<p>Get figure objects</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># random mixing</span>
+random_tsne &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$random_tsne)
+random_res_all &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$random_res_all)
+random_pbmc &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$random_pbmc)
+random_cms &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$random_cms)
+random_lisi &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$random_lisi)
+random_ent &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$random_ent)
+random_mm &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$random_mm)
+random_pcr &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$random_pcr)
+random_kbet &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$random_kbet)
+
+<span class="co"># scaling and batch limits simulation</span>
+limit_scaling &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$sca_limit)
+correlation_scaling &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$sca_cor)
+trade_off &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$sca_trade_off)
+sim_data &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$sim_data)
+sim_scal_dist &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$sim_scal_dist)
+
+<span class="co"># unbalanced mixing</span>
+unb_moderate &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$unb_moderate)
+unb_limit &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$unb_limit)
+
+<span class="co"># batch characteristics</span>
+cor_char &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$cor_char)
+h_size &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$h_size)
+h_type &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$h_type)
+h_ct_spec &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$h_ct_spec)
+lfc_dist &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$lfc_dist)
+tsne_type &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$tsne_type)
+rel_cells &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$rel_cells)
+rel_genes &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$rel_genes)
+gi_legend &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$gi_legend)
+h_gi &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$h_gi)
+tern &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$tern)</code></pre></div>
+<pre><code>## Registered S3 methods overwritten by &#39;ggtern&#39;:
+##   method           from   
+##   grid.draw.ggplot ggplot2
+##   plot.ggplot      ggplot2
+##   print.ggplot     ggplot2</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tern_nopan &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$tern_nopan)
+den_1 &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$den1)
+den_2 &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$den2)
+met_char &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$met_char)
+
+<span class="co"># correlation (and summary?)</span>
+cor &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$cor)
+cor_legend &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$cor_legend)
+summary &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$summary)
+
+<span class="co"># general</span>
+out_path &lt;-<span class="st"> </span>params$out_path
+
+
+<span class="co">#Simulation</span>
+tern_sim &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$tern_sim)
+den_3 &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$den3)
+den_4 &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$den4)
+den_5 &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$den5)
+sim_1 &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$sim1)
+sim_2 &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$sim2)
+sim_3 &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$sim3)
+
+
+<span class="co"># time and memory</span>
+time &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$time)
+mem &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$mem)
+
+
+<span class="co">#themes</span>
+theme_def &lt;-<span class="st"> </span><span class="kw">theme_ipsum</span>(<span class="dt">base_family =</span> <span class="st">&#39;Helvetica&#39;</span>,
+                    <span class="dt">strip_text_face =</span> <span class="st">&quot;bold&quot;</span>,
+                    <span class="dt">axis_title_size =</span> <span class="dv">25</span>,
+                    <span class="dt">strip_text_size =</span> <span class="dv">22</span>,
+                    <span class="dt">base_size =</span> <span class="dv">25</span>) +
+<span class="st">        </span><span class="kw">theme</span>(
+            <span class="dt">legend.position=</span><span class="st">&quot;top&quot;</span>,
+            <span class="dt">plot.title =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">26</span>),
+            <span class="dt">plot.subtitle =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">20</span>),
+            <span class="dt">panel.grid.major =</span> <span class="kw">element_blank</span>(),
+            <span class="dt">axis.text.x =</span> <span class="kw">element_blank</span>(),
+            <span class="dt">axis.text.y =</span> <span class="kw">element_blank</span>(),
+            <span class="dt">panel.spacing =</span> <span class="kw">unit</span>(<span class="dv">1</span>, <span class="st">&quot;lines&quot;</span>)
+        )
+
+theme_axis &lt;-<span class="st"> </span><span class="kw">theme_ipsum</span>(<span class="dt">base_family =</span> <span class="st">&#39;Helvetica&#39;</span>,
+                    <span class="dt">strip_text_face =</span> <span class="st">&quot;bold&quot;</span>,
+                    <span class="dt">axis_title_size =</span> <span class="dv">25</span>,
+                    <span class="dt">strip_text_size =</span> <span class="dv">22</span>,
+                    <span class="dt">plot_margin =</span> <span class="kw">margin</span>(<span class="dv">5</span>, <span class="dv">5</span>, <span class="dv">5</span>, <span class="dv">5</span>),
+                    <span class="dt">base_size =</span> <span class="dv">25</span>) +
+<span class="st">        </span><span class="kw">theme</span>(
+            <span class="dt">legend.position=</span><span class="st">&quot;top&quot;</span>,
+            <span class="dt">plot.title =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">26</span>),
+            <span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">16</span>),
+            <span class="dt">panel.grid.major =</span> <span class="kw">element_blank</span>(),
+            <span class="dt">panel.spacing =</span> <span class="kw">unit</span>(<span class="dv">1</span>, <span class="st">&quot;lines&quot;</span>)
+        )
+
+theme_axis_long &lt;-<span class="st"> </span><span class="kw">theme_ipsum</span>(<span class="dt">base_family =</span> <span class="st">&#39;Helvetica&#39;</span>,
+                    <span class="dt">strip_text_face =</span> <span class="st">&quot;bold&quot;</span>,
+                    <span class="dt">axis_title_size =</span> <span class="dv">25</span>,
+                    <span class="dt">strip_text_size =</span> <span class="dv">22</span>,
+                    <span class="dt">base_size =</span> <span class="dv">25</span>) +
+<span class="st">        </span><span class="kw">theme</span>(
+            <span class="dt">legend.position=</span><span class="st">&quot;top&quot;</span>,
+            <span class="dt">plot.title =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">26</span>),
+            <span class="dt">panel.grid.major =</span> <span class="kw">element_blank</span>(),
+            <span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">16</span>, <span class="dt">angle=</span><span class="dv">45</span>, <span class="dt">hjust =</span> <span class="dv">1</span>),
+            <span class="dt">panel.spacing =</span> <span class="kw">unit</span>(<span class="dv">1</span>, <span class="st">&quot;lines&quot;</span>)
+        )
+
+theme_summary &lt;-<span class="st"> </span><span class="kw">theme_ipsum</span>(<span class="dt">base_family =</span> <span class="st">&#39;Helvetica&#39;</span>,
+                    <span class="dt">strip_text_face =</span> <span class="st">&quot;bold&quot;</span>,
+                    <span class="dt">axis_title_size =</span> <span class="dv">24</span>,
+                    <span class="dt">strip_text_size =</span> <span class="dv">22</span>,
+                    <span class="dt">base_size =</span> <span class="dv">22</span>) +
+<span class="st">        </span><span class="kw">theme</span>(
+            <span class="dt">legend.position=</span><span class="st">&quot;top&quot;</span>,
+            <span class="dt">plot.title =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">26</span>),
+            <span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">18</span>),
+            <span class="dt">panel.spacing =</span> <span class="kw">unit</span>(<span class="dv">1</span>, <span class="st">&quot;lines&quot;</span>)
+        )</code></pre></div>
+<div id="figure-benchmark-random" class="section level3">
+<h3>Figure Benchmark random</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p1 &lt;-<span class="st"> </span>random_tsne
+batch_int &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;batch0&quot;</span>, <span class="st">&quot;batch30&quot;</span>, <span class="st">&quot;batch60&quot;</span>, <span class="st">&quot;batch100&quot;</span>)
+p1_1 &lt;-<span class="st"> </span>p1 %+%<span class="st"> </span>p1$data[p1$data$randomness %in%<span class="st"> </span>batch_int,]
+p1_1$layers[[<span class="dv">1</span>]]$aes_params$size &lt;-<span class="st"> </span><span class="dv">1</span>
+p1_1$layers[[<span class="dv">1</span>]]$aes_params$alpha &lt;-<span class="st"> </span><span class="fl">0.5</span> 
+p1_1 &lt;-<span class="st"> </span>p1_1 +<span class="st"> </span><span class="kw">guides</span>(<span class="dt">colour =</span> <span class="kw">guide_legend</span>(<span class="dt">override.aes =</span> <span class="kw">list</span>(<span class="dt">size=</span><span class="dv">7</span>))) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">scale_colour_manual</span>(<span class="dt">values =</span> <span class="kw">c</span>(<span class="st">&quot;#1D2645FF&quot;</span>, <span class="st">&quot;#E75B64FF&quot;</span>)) +<span class="st"> </span>
+<span class="st">  </span>theme_def</code></pre></div>
+<pre><code>## Scale for &#39;colour&#39; is already present. Adding another scale for &#39;colour&#39;,
+## which will replace the existing scale.</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p1_1$facet$params$ncol &lt;-<span class="st"> </span><span class="dv">4</span>
+
+p2 &lt;-<span class="st"> </span>random_res_all +<span class="st"> </span>
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Mean score with increased number of randomly shuffled labels&quot;</span>, 
+       <span class="dt">subtitle =</span> <span class="st">&quot;Dataset with clearly separated batches (see A)&quot;</span>) +
+<span class="st">  </span>theme_def +
+<span class="st">  </span><span class="kw">xlab</span>(<span class="st">&quot;% random batch label&quot;</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">18</span>),
+        <span class="dt">axis.text.y =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">18</span>))
+
+p2$data$metric &lt;-<span class="st"> </span><span class="kw">recode</span>(p2$data$metric, <span class="dt">cms.kmin80 =</span> <span class="st">&quot;cms_kmin&quot;</span>, <span class="dt">cms.bmin80 =</span> <span class="st">&quot;cms_bmin&quot;</span>,
+       <span class="dt">cms.batch =</span> <span class="st">&quot;cms_default&quot;</span>, <span class="dt">graph_connectivity =</span> <span class="st">&quot;graph&quot;</span>, <span class="dt">kbet =</span> <span class="st">&quot;kBet&quot;</span>)
+
+p2$data$metric2 &lt;-<span class="st"> </span><span class="kw">recode</span>(p2$data$metric2, <span class="dt">cms.kmin80 =</span> <span class="st">&quot;cms_kmin&quot;</span>, <span class="dt">cms.bmin80 =</span> <span class="st">&quot;cms_bmin&quot;</span>,
+       <span class="dt">cms.batch =</span> <span class="st">&quot;cms_default&quot;</span>, <span class="dt">graph_connectivity =</span> <span class="st">&quot;graph&quot;</span>, <span class="dt">kbet =</span> <span class="st">&quot;kBet&quot;</span>)
+p2$facet$params$ncol &lt;-<span class="st"> </span><span class="dv">6</span>
+
+p_random &lt;-<span class="st"> </span><span class="kw">plot_grid</span>(p1_1, p2, <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&#39;A&#39;</span>, <span class="st">&#39;B&#39;</span>), <span class="dt">label_size =</span> <span class="dv">20</span>, <span class="dt">ncol =</span> <span class="dv">1</span>,
+                      <span class="dt">rel_heights =</span> <span class="kw">c</span>(<span class="fl">1.4</span>, <span class="dv">2</span>))
+p_random</code></pre></div>
+<p><img src="generate_benchmark_figures_files/figure-html/fig%20random-1.svg" width="1536" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggsave</span>(<span class="dt">filename =</span> <span class="kw">paste0</span>(out_path, <span class="st">&quot;results_random.pdf&quot;</span>), <span class="dt">plot =</span> p_random,
+       <span class="dt">dpi =</span> <span class="dv">600</span>)</code></pre></div>
+<pre><code>## Saving 16 x 18 in image</code></pre>
+<p>Supplementary figure random</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p3 &lt;-<span class="st"> </span>random_pbmc +<span class="st"> </span>
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Mean score with increased number of randomly shuffled labels&quot;</span>, 
+       <span class="dt">subtitle =</span> <span class="st">&quot;Dataset with moderate batch effect&quot;</span>) +
+<span class="st">  </span>theme_axis
+
+p3$data$metric &lt;-<span class="st"> </span><span class="kw">recode</span>(p3$data$metric, <span class="dt">cms.kmin80 =</span> <span class="st">&quot;cms_kmin&quot;</span>, <span class="dt">cms.bmin80 =</span> <span class="st">&quot;cms_bmin&quot;</span>,
+       <span class="dt">cms.batch =</span> <span class="st">&quot;cms_default&quot;</span>, <span class="dt">graph_connectivity =</span> <span class="st">&quot;graph&quot;</span>, <span class="dt">kbet =</span> <span class="st">&quot;kBet&quot;</span>)
+
+p3$data$metric2 &lt;-<span class="st"> </span><span class="kw">recode</span>(p3$data$metric2, <span class="dt">cms.kmin80 =</span> <span class="st">&quot;cms_kmin&quot;</span>, <span class="dt">cms.bmin80 =</span> <span class="st">&quot;cms_bmin&quot;</span>,
+       <span class="dt">cms.batch =</span> <span class="st">&quot;cms_default&quot;</span>, <span class="dt">graph_connectivity =</span> <span class="st">&quot;graph&quot;</span>, <span class="dt">kbet =</span> <span class="st">&quot;kBet&quot;</span>)
+
+p3 &lt;-<span class="st"> </span><span class="kw">plot_grid</span>(p3)
+p3</code></pre></div>
+<p><img src="generate_benchmark_figures_files/figure-html/supp%20random-1.svg" width="1152" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggsave</span>(<span class="dt">filename =</span> <span class="kw">paste0</span>(out_path, <span class="st">&quot;results_random_pbmc.pdf&quot;</span>), <span class="dt">plot =</span> p3,
+       <span class="dt">dpi =</span> <span class="dv">600</span>)</code></pre></div>
+<pre><code>## Saving 12 x 12 in image</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p1 &lt;-<span class="st"> </span>random_cms +<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;random batch label [%]&quot;</span>) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">xlab</span>(<span class="st">&quot;cms_default&quot;</span>) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Cms score distributions&quot;</span>) +<span class="st">  </span>theme_def +
+<span class="st">  </span><span class="kw">scale_y_discrete</span>(<span class="dt">breaks=</span><span class="kw">c</span>(<span class="st">&quot;cms.batch0&quot;</span>,<span class="st">&quot;cms.batch20&quot;</span>,<span class="st">&quot;cms.batch40&quot;</span>, <span class="st">&quot;cms.batch60&quot;</span>,
+                            <span class="st">&quot;cms.batch80&quot;</span>, <span class="st">&quot;cms.batch100&quot;</span>),
+                   <span class="dt">labels=</span><span class="kw">c</span>(<span class="st">&quot;0&quot;</span>, <span class="st">&quot;20&quot;</span>, <span class="st">&quot;40&quot;</span>, <span class="st">&quot;60&quot;</span>, <span class="st">&quot;80&quot;</span>, <span class="st">&quot;100&quot;</span>)) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>,
+        <span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">18</span>),
+        <span class="dt">axis.text.y =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">18</span>))
+
+p2 &lt;-<span class="st"> </span>random_lisi +<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;&quot;</span>) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Lisi score distributions&quot;</span>) +<span class="st">  </span>theme_def +<span class="st"> </span>
+<span class="st">  </span><span class="kw">xlab</span>(<span class="st">&quot;lisi&quot;</span>) +
+<span class="st">  </span><span class="kw">scale_y_discrete</span>(<span class="dt">breaks=</span><span class="kw">c</span>(<span class="st">&quot;lisi.batch0&quot;</span>,<span class="st">&quot;lisi.batch20&quot;</span>,<span class="st">&quot;lisi.batch40&quot;</span>, <span class="st">&quot;lisi.batch60&quot;</span>,
+                            <span class="st">&quot;lisi.batch80&quot;</span>, <span class="st">&quot;lisi.batch100&quot;</span>),
+                   <span class="dt">labels=</span><span class="kw">c</span>(<span class="st">&quot;0&quot;</span>, <span class="st">&quot;20&quot;</span>, <span class="st">&quot;40&quot;</span>, <span class="st">&quot;60&quot;</span>, <span class="st">&quot;80&quot;</span>, <span class="st">&quot;100&quot;</span>)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>,
+        <span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">18</span>),
+        <span class="dt">axis.text.y =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">18</span>))
+
+p3 &lt;-<span class="st"> </span>random_ent +<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;random batch label [%]&quot;</span>) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">xlab</span>(<span class="st">&quot;entropy&quot;</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Entropy score distributions&quot;</span>) +<span class="st">  </span>theme_def +<span class="st"> </span>
+<span class="st">  </span><span class="kw">scale_y_discrete</span>(<span class="dt">breaks=</span><span class="kw">c</span>(<span class="st">&quot;entropy_batch0&quot;</span>,<span class="st">&quot;entropy_batch20&quot;</span>,<span class="st">&quot;entropy_batch40&quot;</span>, <span class="st">&quot;entropy_batch60&quot;</span>,
+                            <span class="st">&quot;entropy_batch80&quot;</span>, <span class="st">&quot;entropy_batch100&quot;</span>),
+                   <span class="dt">labels=</span><span class="kw">c</span>(<span class="st">&quot;0&quot;</span>, <span class="st">&quot;20&quot;</span>, <span class="st">&quot;40&quot;</span>, <span class="st">&quot;60&quot;</span>, <span class="st">&quot;80&quot;</span>, <span class="st">&quot;100&quot;</span>)) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>,
+        <span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">18</span>),
+        <span class="dt">axis.text.y =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">18</span>))
+
+p4 &lt;-<span class="st"> </span>random_mm +<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;&quot;</span>) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">xlab</span>(<span class="st">&quot;mixing metric&quot;</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Mm score distributions&quot;</span>) +<span class="st">  </span>theme_def +
+<span class="st">  </span><span class="kw">scale_y_discrete</span>(<span class="dt">breaks=</span><span class="kw">c</span>(<span class="st">&quot;mm_batch0&quot;</span>,<span class="st">&quot;mm_batch20&quot;</span>,<span class="st">&quot;mm_batch40&quot;</span>, <span class="st">&quot;mm_batch60&quot;</span>,
+                            <span class="st">&quot;mm_batch80&quot;</span>, <span class="st">&quot;mm_batch100&quot;</span>),
+                   <span class="dt">labels=</span><span class="kw">c</span>(<span class="st">&quot;0&quot;</span>, <span class="st">&quot;20&quot;</span>, <span class="st">&quot;40&quot;</span>, <span class="st">&quot;60&quot;</span>, <span class="st">&quot;80&quot;</span>, <span class="st">&quot;100&quot;</span>)) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>,
+        <span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">18</span>),
+        <span class="dt">axis.text.y =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">18</span>))
+
+p5 &lt;-<span class="st"> </span>random_pcr +<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;random batch label [%]&quot;</span>) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">xlab</span>(<span class="st">&quot;pcr&quot;</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Pcr score distributions&quot;</span>) +<span class="st">  </span>theme_def +
+<span class="st">  </span><span class="kw">scale_y_discrete</span>(<span class="dt">breaks=</span><span class="kw">c</span>(<span class="st">&quot;pcr.batch0&quot;</span>,<span class="st">&quot;pcr.batch20&quot;</span>,<span class="st">&quot;pcr.batch40&quot;</span>, <span class="st">&quot;pcr.batch60&quot;</span>,
+                            <span class="st">&quot;pcr.batch80&quot;</span>, <span class="st">&quot;pcr.batch100&quot;</span>),
+                   <span class="dt">labels=</span><span class="kw">c</span>(<span class="st">&quot;0&quot;</span>, <span class="st">&quot;20&quot;</span>, <span class="st">&quot;40&quot;</span>, <span class="st">&quot;60&quot;</span>, <span class="st">&quot;80&quot;</span>, <span class="st">&quot;100&quot;</span>)) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>,
+        <span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">18</span>),
+        <span class="dt">axis.text.y =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">18</span>))
+
+p6 &lt;-<span class="st"> </span>random_kbet +<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;&quot;</span>) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">xlab</span>(<span class="st">&quot;kBet&quot;</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;kBet score distributions&quot;</span>) +<span class="st">  </span>theme_def +
+<span class="st">  </span><span class="kw">scale_y_discrete</span>(<span class="dt">breaks=</span><span class="kw">c</span>(<span class="st">&quot;kbet.batch0&quot;</span>,<span class="st">&quot;kbet.batch20&quot;</span>,<span class="st">&quot;kbet.batch40&quot;</span>, <span class="st">&quot;kbet.batch60&quot;</span>,
+                            <span class="st">&quot;kbet.batch80&quot;</span>, <span class="st">&quot;kbet.batch100&quot;</span>),
+                   <span class="dt">labels=</span><span class="kw">c</span>(<span class="st">&quot;0&quot;</span>, <span class="st">&quot;20&quot;</span>, <span class="st">&quot;40&quot;</span>, <span class="st">&quot;60&quot;</span>, <span class="st">&quot;80&quot;</span>, <span class="st">&quot;100&quot;</span>)) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>,
+        <span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">18</span>),
+        <span class="dt">axis.text.y =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">18</span>))
+
+p_ran_met &lt;-<span class="st"> </span><span class="kw">plot_grid</span>(p1, p2, p3, p4, p5, p6, 
+                       <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&#39;A&#39;</span>, <span class="st">&#39;B&#39;</span>, <span class="st">&#39;C&#39;</span>, <span class="st">&#39;D&#39;</span>, <span class="st">&#39;E&#39;</span>, <span class="st">&#39;F&#39;</span>), <span class="dt">label_size =</span> <span class="dv">20</span>, 
+                       <span class="dt">ncol =</span> <span class="dv">2</span>)</code></pre></div>
+<pre><code>## Picking joint bandwidth of 0.0395</code></pre>
+<pre><code>## Picking joint bandwidth of 0.0939</code></pre>
+<pre><code>## Picking joint bandwidth of 0.0134</code></pre>
+<pre><code>## Picking joint bandwidth of 2.21</code></pre>
+<pre><code>## Picking joint bandwidth of 0.000674</code></pre>
+<pre><code>## Picking joint bandwidth of 0.0124</code></pre>
+<pre><code>## Warning: Removed 495 rows containing non-finite values (stat_density_ridges).</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p_ran_met</code></pre></div>
+<p><img src="generate_benchmark_figures_files/figure-html/random%20supp%20met-1.svg" width="1632" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggsave</span>(<span class="dt">filename =</span> <span class="kw">paste0</span>(out_path, <span class="st">&quot;results_random_mets.pdf&quot;</span>), <span class="dt">plot =</span> p_ran_met,
+       <span class="dt">dpi =</span> <span class="dv">600</span>)</code></pre></div>
+<pre><code>## Saving 17 x 20 in image</code></pre>
+</div>
+<div id="figure-scaling-and-batch-limits" class="section level3">
+<h3>Figure Scaling and batch limits</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p2 &lt;-<span class="st"> </span>limit_scaling +<span class="st"> </span>
+<span class="st">  </span>theme_axis_long +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">ggtitle</span>(<span class="st">&quot;Batch detection limits&quot;</span>)
+p2$data$metric &lt;-<span class="st"> </span><span class="kw">recode</span>(p2$data$metric, <span class="dt">cms.kmin =</span> <span class="st">&quot;cms_kmin&quot;</span>, <span class="dt">cms.bmin =</span> <span class="st">&quot;cms_bmin&quot;</span>,
+       <span class="dt">cms.batch_id =</span> <span class="st">&quot;cms_default&quot;</span>, <span class="dt">graph.connectivity =</span> <span class="st">&quot;graph&quot;</span>, <span class="dt">kbet =</span> <span class="st">&quot;kBet&quot;</span>)
+p1 &lt;-<span class="st"> </span>correlation_scaling +<span class="st"> </span>
+<span class="st">  </span>theme_axis_long +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">ggtitle</span>(<span class="st">&quot;Scaling&quot;</span>)
+p1$data$metric &lt;-<span class="st"> </span><span class="kw">recode</span>(p1$data$metric, <span class="dt">cms.kmin =</span> <span class="st">&quot;cms_kmin&quot;</span>, <span class="dt">cms.bmin =</span> <span class="st">&quot;cms_bmin&quot;</span>,
+       <span class="dt">cms.batch_id =</span> <span class="st">&quot;cms_default&quot;</span>, <span class="dt">graph.connectivity =</span> <span class="st">&quot;graph&quot;</span>, <span class="dt">kbet =</span> <span class="st">&quot;kBet&quot;</span>)
+
+  
+p3 &lt;-<span class="st"> </span>sim_data 
+p3$layers[[<span class="dv">1</span>]]$aes_params$size &lt;-<span class="st"> </span><span class="dv">1</span>
+p3$layers[[<span class="dv">1</span>]]$aes_params$alpha &lt;-<span class="st"> </span><span class="fl">0.5</span> 
+sim_int &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;0&quot;</span>, <span class="st">&quot;0.6&quot;</span>, <span class="st">&quot;1&quot;</span>, <span class="st">&quot;2&quot;</span>)
+p3_1 &lt;-<span class="st"> </span>p3 %+%<span class="st"> </span>p3$data[p3$data$batch_size %in%<span class="st"> </span>sim_int,]
+p3_1 &lt;-<span class="st"> </span>p3_1 +<span class="st"> </span>
+<span class="st">  </span><span class="kw">scale_colour_manual</span>(<span class="dt">values =</span> <span class="kw">c</span>(<span class="st">&quot;#1D2645FF&quot;</span>, <span class="st">&quot;#E75B64FF&quot;</span>)) +<span class="st"> </span>
+<span class="st">  </span>theme_def +<span class="st"> </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;bottom&quot;</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Simulation with incresing batch logFC&quot;</span>)</code></pre></div>
+<pre><code>## Scale for &#39;colour&#39; is already present. Adding another scale for &#39;colour&#39;,
+## which will replace the existing scale.</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p4 &lt;-<span class="st"> </span>trade_off +
+<span class="st">  </span>theme_axis_long +
+<span class="st">  </span><span class="kw">xlab</span>(<span class="st">&quot;mean limit&quot;</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;bottom&quot;</span>,
+        <span class="dt">legend.box =</span> <span class="st">&quot;vertical&quot;</span>,
+        <span class="dt">legend.title =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">18</span>),
+        <span class="dt">legend.text =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">16</span>)) 
+p4$data$metric &lt;-<span class="st"> </span><span class="kw">recode</span>(p4$data$metric, <span class="dt">cms.kmin =</span> <span class="st">&quot;cms_kmin&quot;</span>, <span class="dt">cms.bmin =</span> <span class="st">&quot;cms_bmin&quot;</span>,
+       <span class="dt">cms.batch_id =</span> <span class="st">&quot;cms_default&quot;</span>, <span class="dt">graph.connectivity =</span> <span class="st">&quot;graph&quot;</span>, <span class="dt">kbet =</span> <span class="st">&quot;kBet&quot;</span>)
+
+<span class="co">#p4 &lt;- plot_grid(p4, &quot;&quot;, ncol = 1, rel_heights = c(2,0.1))</span>
+
+p_sub1 &lt;-<span class="st"> </span><span class="kw">plot_grid</span>(p3_1, p1, <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&#39;A&#39;</span>, <span class="st">&#39;B&#39;</span>), <span class="dt">align =</span> <span class="st">&quot;v&quot;</span>, 
+                   <span class="dt">label_size =</span> <span class="dv">20</span>, <span class="dt">ncol =</span> <span class="dv">2</span>, <span class="dt">rel_heights =</span> <span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">1</span>))</code></pre></div>
+<pre><code>## `stat_bindot()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<pre><code>## Warning: Graphs cannot be vertically aligned unless the axis parameter is set.
+## Placing graphs unaligned.</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p_sub2 &lt;-<span class="st"> </span><span class="kw">plot_grid</span>(p2, p4, <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&#39;C&#39;</span>, <span class="st">&#39;D&#39;</span>), <span class="dt">label_size =</span> <span class="dv">20</span>,
+                   <span class="dt">ncol =</span> <span class="dv">2</span>, <span class="dt">rel_heights =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>))</code></pre></div>
+<pre><code>## `stat_bindot()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p_scaling &lt;-<span class="st"> </span><span class="kw">plot_grid</span>(p_sub1, p_sub2, <span class="dt">ncol =</span> <span class="dv">1</span>, <span class="dt">rel_heights =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>))
+p_scaling</code></pre></div>
+<p><img src="generate_benchmark_figures_files/figure-html/scaling%20and%20batch%20limits-1.svg" width="1536" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggsave</span>(<span class="dt">filename =</span> <span class="kw">paste0</span>(out_path, <span class="st">&quot;results_scaling.pdf&quot;</span>), <span class="dt">plot =</span> p_scaling,
+       <span class="dt">dpi =</span> <span class="dv">600</span>)</code></pre></div>
+<pre><code>## Saving 16 x 18 in image</code></pre>
+<div id="supplement-figure-score-distributions-scaling-simulated" class="section level4">
+<h4>Supplement figure: Score distributions scaling simulated</h4>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p_dist &lt;-<span class="st"> </span>sim_scal_dist +<span class="st"> </span>
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Mean score by relative batch strength&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;Simulation series of 13 simulations with increasing batch effect.&quot;</span>) +
+<span class="st">  </span><span class="kw">xlab</span>(<span class="st">&quot;batch logFC factor&quot;</span>) +
+<span class="st">  </span>theme_axis +<span class="st"> </span><span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">22</span>))
+
+p_dist$data$metric &lt;-<span class="st"> </span><span class="kw">recode</span>(p_dist$data$metric, <span class="dt">cms.kmin =</span> <span class="st">&quot;cms_kmin&quot;</span>, <span class="dt">cms.bmin =</span> <span class="st">&quot;cms_bmin&quot;</span>,
+       <span class="dt">cms.batch_id =</span> <span class="st">&quot;cms_default&quot;</span>, <span class="dt">graph.connectivity =</span> <span class="st">&quot;graph&quot;</span>, <span class="dt">kbet =</span> <span class="st">&quot;kBet&quot;</span>)
+
+p_dist$data$metric2 &lt;-<span class="st"> </span><span class="kw">recode</span>(p_dist$data$metric2, <span class="dt">cms.kmin =</span> <span class="st">&quot;cms_kmin&quot;</span>, <span class="dt">cms.bmin =</span> <span class="st">&quot;cms_bmin&quot;</span>,
+       <span class="dt">cms.batch_id =</span> <span class="st">&quot;cms_default&quot;</span>, <span class="dt">graph.connectivity =</span> <span class="st">&quot;graph&quot;</span>, <span class="dt">kbet =</span> <span class="st">&quot;kBet&quot;</span>)
+
+p_dist$layers[[<span class="dv">3</span>]]$data$metric &lt;-<span class="st"> </span><span class="kw">recode</span>(p_dist$layers[[<span class="dv">3</span>]]$data$metric,
+                                              <span class="dt">cms.kmin =</span> <span class="st">&quot;cms_kmin&quot;</span>, 
+                                              <span class="dt">cms.bmin =</span> <span class="st">&quot;cms_bmin&quot;</span>, 
+                                              <span class="dt">cms.batch_id =</span> <span class="st">&quot;cms_default&quot;</span>, 
+                                              <span class="dt">graph.connectivity =</span> <span class="st">&quot;graph&quot;</span>, 
+                                              <span class="dt">kbet =</span> <span class="st">&quot;kBet&quot;</span>)
+
+p_dist$layers[[<span class="dv">4</span>]]$data$metric &lt;-<span class="st"> </span><span class="kw">recode</span>(p_dist$layers[[<span class="dv">3</span>]]$data$metric,
+                                              <span class="dt">cms.kmin =</span> <span class="st">&quot;cms_kmin&quot;</span>, 
+                                              <span class="dt">cms.bmin =</span> <span class="st">&quot;cms_bmin&quot;</span>, 
+                                              <span class="dt">cms.batch_id =</span> <span class="st">&quot;cms_default&quot;</span>, 
+                                              <span class="dt">graph.connectivity =</span> <span class="st">&quot;graph&quot;</span>, 
+                                              <span class="dt">kbet =</span> <span class="st">&quot;kBet&quot;</span>)
+
+
+p_dist &lt;-<span class="st"> </span><span class="kw">plot_grid</span>(p_dist)
+p_dist</code></pre></div>
+<p><img src="generate_benchmark_figures_files/figure-html/supp%20scaling%20sim-1.svg" width="1152" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggsave</span>(<span class="dt">filename =</span> <span class="kw">paste0</span>(out_path, <span class="st">&quot;results_sim_scal_dist.pdf&quot;</span>), <span class="dt">plot =</span> p_dist,
+       <span class="dt">dpi =</span> <span class="dv">600</span>)</code></pre></div>
+<pre><code>## Saving 12 x 12 in image</code></pre>
+</div>
+</div>
+<div id="figure-unbalanced-batch-effects" class="section level3">
+<h3>Figure unbalanced batch effects</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">unb_moderate$layers[[<span class="dv">3</span>]]$data$metric &lt;-<span class="st"> </span><span class="kw">recode</span>(unb_moderate$layers[[<span class="dv">3</span>]]$data$metric,
+                                              <span class="dt">cms.kmin =</span> <span class="st">&quot;cms_kmin&quot;</span>, 
+                                              <span class="dt">cms.bmin =</span> <span class="st">&quot;cms_bmin&quot;</span>, 
+                                              <span class="dt">cms.batch_id =</span> <span class="st">&quot;cms_default&quot;</span>, 
+                                              <span class="dt">graph.connectivity =</span> <span class="st">&quot;graph&quot;</span>, 
+                                              <span class="dt">kbet =</span> <span class="st">&quot;kBet&quot;</span>)
+
+
+p1 &lt;-<span class="st"> </span>unb_moderate +<span class="st"> </span>
+<span class="st">  </span>theme_axis_long +<span class="st"> </span>
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;top&quot;</span>,
+        <span class="dt">plot.subtitle =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">22</span>),
+        <span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">16</span>)) +
+<span class="st">  </span><span class="kw">scale_y_continuous</span>(<span class="dt">breaks=</span><span class="kw">c</span>(-<span class="fl">0.3</span>, <span class="dv">0</span>, <span class="fl">0.1</span>)) +
+<span class="st">  </span><span class="kw">scale_x_continuous</span>(<span class="dt">breaks =</span> <span class="kw">c</span>(<span class="dv">0</span>,<span class="fl">0.5</span>, <span class="dv">1</span>), <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&quot;0&quot;</span>, <span class="st">&quot;50&quot;</span>, <span class="st">&quot;100&quot;</span>)) +
+<span class="st">  </span><span class="kw">xlab</span>(<span class="st">&quot;[%] unbalanced&quot;</span>) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">ggtitle</span>(<span class="st">&quot;Metric scores by increasingly imbalanced batch effects&quot;</span>,
+          <span class="dt">subtitle =</span> <span class="st">&quot;Simulated data with a moderate batch effect using csf_patient as reference.&quot;</span>)
+p1$data$metric &lt;-<span class="st"> </span><span class="kw">recode</span>(p1$data$metric, <span class="dt">cms.kmin =</span> <span class="st">&quot;cms_kmin&quot;</span>, <span class="dt">cms.bmin =</span> <span class="st">&quot;cms_bmin&quot;</span>,
+       <span class="dt">cms.batch_id =</span> <span class="st">&quot;cms_default&quot;</span>, <span class="dt">graph.connectivity =</span> <span class="st">&quot;graph&quot;</span>, <span class="dt">kbet =</span> <span class="st">&quot;kBet&quot;</span>)
+
+<span class="co"># p2 &lt;- unb_limit + </span>
+<span class="co">#   theme_axis_long +</span>
+<span class="co">#   ylab(&#39;unbalance limit&#39;) +</span>
+<span class="co">#   theme(legend.position = &quot;top&quot;,</span>
+<span class="co">#         axis.text.x = element_text(size=20, angle=45, hjust = 1)) + </span>
+<span class="co">#   ggtitle(&quot;Imbalance limits of metric score&#39;s divergence&quot;)</span>
+p2 &lt;-<span class="st"> </span>unb_limit +<span class="st"> </span>
+<span class="st">  </span>theme_axis_long +
+<span class="st">  </span><span class="kw">ylab</span>(<span class="st">&#39;imbalance limit&#39;</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;top&quot;</span>,
+        <span class="dt">plot.subtitle =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">22</span>),
+        <span class="dt">axis.text.x =</span> <span class="kw">element_blank</span>(),
+        <span class="dt">strip.text.x =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">16</span>, <span class="dt">angle=</span><span class="dv">45</span>, <span class="dt">hjust =</span> <span class="fl">0.2</span>)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">ggtitle</span>(<span class="st">&quot;Imbalance limits of metric score&#39;s divergence&quot;</span>,
+          <span class="dt">subtitle =</span> <span class="st">&quot;Simulated data with csf_patient as reference.&quot;</span>)
+
+<span class="co"># p2$data$metric &lt;- recode(p2$data$metric, cms.kmin = &quot;cms_kmin&quot;, cms.bmin = &quot;cms_bmin&quot;,</span>
+<span class="co">#        cms.batch_id = &quot;cms_default&quot;, graph.connectivity = &quot;graph&quot;, kbet = &quot;kBet&quot;)</span>
+
+p2$layers[[<span class="dv">2</span>]]$aes_params$size &lt;-<span class="st"> </span><span class="dv">7</span>
+ 
+p_unbalanced &lt;-<span class="st"> </span><span class="kw">plot_grid</span>(p1, <span class="st">&quot;&quot;</span>, p2, <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&#39;A&#39;</span>,<span class="st">&#39;&#39;</span>, <span class="st">&#39;B&#39;</span>), <span class="dt">label_size =</span> <span class="dv">20</span>, <span class="dt">ncol =</span> <span class="dv">1</span>,
+                          <span class="dt">rel_heights =</span> <span class="kw">c</span>(<span class="dv">14</span>,<span class="fl">0.5</span>,<span class="dv">9</span>))</code></pre></div>
+<pre><code>## Warning in as_grob.default(plot): Cannot convert object of class character into
+## a grob.</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p_unbalanced</code></pre></div>
+<p><img src="generate_benchmark_figures_files/figure-html/unbalanced-1.svg" width="1536" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggsave</span>(<span class="dt">filename =</span> <span class="kw">paste0</span>(out_path, <span class="st">&quot;results_unbalanced.pdf&quot;</span>), <span class="dt">plot =</span> p_unbalanced,
+       <span class="dt">dpi =</span> <span class="dv">600</span>)</code></pre></div>
+<pre><code>## Saving 16 x 22 in image</code></pre>
+</div>
+<div id="summary-and-correlation" class="section level3">
+<h3>Summary and correlation</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p2 &lt;-<span class="st"> </span><span class="kw">plot_grid</span>(<span class="dt">plotlist =</span> cor)
+p2_legend &lt;-<span class="st">  </span>cor_legend
+p2_ &lt;-<span class="st"> </span><span class="kw">plot_grid</span>(<span class="st">&quot;&quot;</span>, p2, p2_legend, <span class="dt">ncol =</span> <span class="dv">3</span>, <span class="dt">rel_widths =</span> <span class="kw">c</span>(<span class="fl">0.1</span>, <span class="dv">1</span>, <span class="fl">0.3</span>))
+p2_title &lt;-<span class="st"> </span><span class="kw">ggdraw</span>() +<span class="st"> </span>
+<span class="st">  </span><span class="kw">draw_label</span>(
+    <span class="st">&quot;Metrics correlation - by benchmark task&quot;</span>,
+    <span class="dt">fontface =</span> <span class="st">&#39;bold&#39;</span>,
+    <span class="dt">x =</span> <span class="dv">0</span>,
+    <span class="dt">size =</span> <span class="dv">20</span>,
+    <span class="dt">hjust =</span> -<span class="st"> </span><span class="fl">0.3</span>,
+    <span class="dt">vjust =</span> <span class="fl">0.5</span>) +
+<span class="st">  </span>theme_def +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">plot.margin =</span> <span class="kw">margin</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">7</span>))
+p2_new &lt;-<span class="st"> </span><span class="kw">plot_grid</span>(p2_title, p2_, <span class="st">&quot;&quot;</span>, <span class="dt">ncol =</span> <span class="dv">1</span>, <span class="dt">rel_heights =</span> <span class="kw">c</span>(<span class="fl">0.15</span>, <span class="dv">1</span>, <span class="fl">0.15</span>))
+p2_new</code></pre></div>
+<p><img src="generate_benchmark_figures_files/figure-html/sum%20cor-1.svg" width="1248" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p1 &lt;-<span class="st"> </span>summary +<span class="st"> </span>theme_summary +<span class="st"> </span>
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;top&quot;</span>)
+
+p1$data$metric &lt;-<span class="st"> </span><span class="kw">recode</span>(p1$data$metric, <span class="dt">graph.connectivity =</span> <span class="st">&quot;graph&quot;</span>, <span class="dt">kbet =</span> <span class="st">&quot;kBet&quot;</span>)
+
+p1$layers[[<span class="dv">1</span>]]$aes_params$size &lt;-<span class="st"> </span><span class="dv">16</span> 
+
+p1_new &lt;-<span class="st"> </span><span class="kw">plot_grid</span>(<span class="st">&quot;&quot;</span>, p1, <span class="st">&quot;&quot;</span>, <span class="dt">ncol =</span> <span class="dv">1</span>, <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&#39;A&#39;</span>,<span class="st">&#39;&#39;</span>, <span class="st">&#39;&#39;</span>), 
+                    <span class="dt">label_size =</span> <span class="dv">20</span>, <span class="dt">rel_heights =</span> <span class="kw">c</span>(<span class="fl">0.01</span>, <span class="dv">1</span>, <span class="fl">0.01</span>))
+
+p_summary &lt;-<span class="st"> </span><span class="kw">plot_grid</span>(p1) 
+p_summary</code></pre></div>
+<p><img src="generate_benchmark_figures_files/figure-html/sum%20cor-2.svg" width="1248" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p_cor &lt;-<span class="st"> </span><span class="kw">plot_grid</span>(p2_new)
+p_cor</code></pre></div>
+<p><img src="generate_benchmark_figures_files/figure-html/sum%20cor-3.svg" width="1248" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggsave</span>(<span class="dt">filename =</span> <span class="kw">paste0</span>(out_path, <span class="st">&quot;results_summary.pdf&quot;</span>), <span class="dt">plot =</span> p_summary, <span class="dt">dpi =</span> <span class="dv">600</span>)
+<span class="kw">ggsave</span>(<span class="dt">filename =</span> <span class="kw">paste0</span>(out_path, <span class="st">&quot;results_correlation.pdf&quot;</span>), <span class="dt">plot =</span> p_cor, <span class="dt">dpi =</span> <span class="dv">600</span>)</code></pre></div>
+</div>
+<div id="figure-characterization-supplement" class="section level3">
+<h3>Figure characterization supplement</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Plot characteristics
+p_size &lt;-<span class="st"> </span><span class="kw">grid.grabExpr</span>(<span class="kw">draw</span>(h_size))
+p_ct &lt;-<span class="st"> </span><span class="kw">grid.grabExpr</span>(<span class="kw">draw</span>(h_ct_spec))
+pct_title &lt;-<span class="st"> </span><span class="kw">ggdraw</span>() +<span class="st"> </span>
+<span class="st">  </span><span class="kw">draw_label</span>(<span class="st">&quot;Batch characteristics&quot;</span>,
+    <span class="dt">fontface =</span> <span class="st">&#39;bold&#39;</span>, <span class="dt">x =</span> <span class="dv">0</span>, <span class="dt">size =</span> <span class="dv">20</span>, <span class="dt">hjust =</span> -<span class="st"> </span><span class="fl">0.3</span>, <span class="dt">vjust =</span> <span class="fl">0.5</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">plot.margin =</span> <span class="kw">margin</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">7</span>))
+p_ct1 &lt;-<span class="st"> </span><span class="kw">plot_grid</span>(pct_title, p_ct, <span class="st">&quot;&quot;</span>, <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&#39;&#39;</span>, <span class="st">&#39;&#39;</span>, <span class="st">&#39;&#39;</span>), <span class="dt">label_size =</span> <span class="dv">20</span>, 
+                   <span class="dt">ncol =</span> <span class="dv">1</span>, <span class="dt">rel_heights =</span> <span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">10</span>, <span class="dv">1</span>))</code></pre></div>
+<pre><code>## Warning in as_grob.default(plot): Cannot convert object of class character into
+## a grob.</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p_lfc &lt;-<span class="st"> </span><span class="kw">grid.grabExpr</span>(<span class="kw">draw</span>(lfc_dist))
+plfc_title &lt;-<span class="st"> </span><span class="kw">ggdraw</span>() +<span class="st"> </span>
+<span class="st">  </span><span class="kw">draw_label</span>(<span class="st">&quot;Batch logFC distribution across cell-types&quot;</span>,
+    <span class="dt">fontface =</span> <span class="st">&#39;bold&#39;</span>, <span class="dt">x =</span> <span class="dv">0</span>, <span class="dt">size =</span> <span class="dv">20</span>, <span class="dt">hjust =</span> -<span class="st"> </span><span class="fl">0.3</span>, <span class="dt">vjust =</span> <span class="fl">0.5</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">plot.margin =</span> <span class="kw">margin</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">7</span>))
+p_lfc1 &lt;-<span class="st"> </span><span class="kw">plot_grid</span>(plfc_title, p_lfc, <span class="dt">ncol =</span> <span class="dv">1</span>, <span class="dt">rel_heights =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">10</span>))
+p_lfc2 &lt;-<span class="st"> </span><span class="kw">plot_grid</span>(<span class="st">&#39;&#39;</span>, p_lfc1, <span class="st">&#39;&#39;</span>, <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&#39;B&#39;</span>, <span class="st">&#39;&#39;</span>, <span class="st">&#39;&#39;</span>), <span class="dt">label_size =</span> <span class="dv">20</span>, 
+                   <span class="dt">ncol =</span> <span class="dv">3</span>, <span class="dt">rel_widths =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">10</span>, <span class="fl">0.5</span>))</code></pre></div>
+<pre><code>## Warning in as_grob.default(plot): Cannot convert object of class character into
+## a grob.
+
+## Warning in as_grob.default(plot): Cannot convert object of class character into
+## a grob.</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p_char &lt;-<span class="st"> </span><span class="kw">plot_grid</span>(p_ct1, p_lfc2, <span class="dt">ncol =</span> <span class="dv">1</span>, <span class="dt">rel_heights =</span> <span class="kw">c</span>(<span class="fl">1.5</span>, <span class="dv">1</span>))
+p_char</code></pre></div>
+<p><img src="generate_benchmark_figures_files/figure-html/characterization-1.svg" width="1152" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">### Plot batch types
+p_type &lt;-<span class="st"> </span><span class="kw">grid.grabExpr</span>(<span class="kw">draw</span>(h_type))
+ptype_title &lt;-<span class="st"> </span><span class="kw">ggdraw</span>() +<span class="st"> </span>
+<span class="st">  </span><span class="kw">draw_label</span>(<span class="st">&quot;Batch types: Bias after adjustment&quot;</span>,
+    <span class="dt">fontface =</span> <span class="st">&#39;bold&#39;</span>, <span class="dt">x =</span> <span class="dv">0</span>, <span class="dt">size =</span> <span class="dv">20</span>, <span class="dt">hjust =</span> -<span class="st"> </span><span class="fl">0.3</span>, <span class="dt">vjust =</span> <span class="fl">0.5</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">plot.margin =</span> <span class="kw">margin</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">7</span>))
+p_type1 &lt;-<span class="st"> </span><span class="kw">plot_grid</span>(ptype_title, p_type, <span class="st">&quot;&quot;</span>, <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&#39;B&#39;</span>, <span class="st">&#39;&#39;</span>, <span class="st">&#39;&#39;</span>), 
+                     <span class="dt">label_size =</span> <span class="dv">20</span>, <span class="dt">ncol =</span> <span class="dv">1</span>, <span class="dt">rel_heights =</span> <span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">10</span>, <span class="dv">1</span>))</code></pre></div>
+<pre><code>## Warning in as_grob.default(plot): Cannot convert object of class character into
+## a grob.</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p_tsne &lt;-<span class="st"> </span>tsne_type +<span class="st"> </span>theme_def +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">plot.title =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">20</span>))
+p_tsne &lt;-<span class="st"> </span><span class="kw">plot_grid</span>(<span class="st">&#39;&#39;</span>, p_tsne, <span class="st">&#39;&#39;</span>, <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&#39;A&#39;</span>, <span class="st">&#39;&#39;</span>, <span class="st">&#39;&#39;</span>), 
+                    <span class="dt">label_size =</span> <span class="dv">20</span>, <span class="dt">ncol =</span> <span class="dv">3</span>, <span class="dt">rel_widths =</span> <span class="kw">c</span>(<span class="fl">0.4</span>,<span class="dv">10</span>, <span class="fl">0.7</span>))</code></pre></div>
+<pre><code>## Warning in as_grob.default(plot): Cannot convert object of class character into
+## a grob.
+
+## Warning in as_grob.default(plot): Cannot convert object of class character into
+## a grob.</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p3 &lt;-<span class="st"> </span><span class="kw">plot_grid</span>(p_tsne, p_type1, <span class="dt">ncol =</span> <span class="dv">1</span>, <span class="dt">rel_heights =</span> <span class="kw">c</span>(<span class="fl">1.1</span>, <span class="dv">1</span>) )
+p3</code></pre></div>
+<p><img src="generate_benchmark_figures_files/figure-html/characterization-2.svg" width="1152" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">### Save plots
+<span class="kw">ggsave</span>(<span class="dt">filename =</span> <span class="kw">paste0</span>(out_path, <span class="st">&quot;results_type.pdf&quot;</span>), <span class="dt">plot =</span> p3, <span class="dt">dpi =</span> <span class="dv">600</span>)</code></pre></div>
+<pre><code>## Saving 12 x 15 in image</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggsave</span>(<span class="dt">filename =</span> <span class="kw">paste0</span>(out_path, <span class="st">&quot;results_char.pdf&quot;</span>), <span class="dt">plot =</span> p_char, <span class="dt">dpi =</span> <span class="dv">600</span>)</code></pre></div>
+<pre><code>## Saving 12 x 15 in image</code></pre>
+</div>
+<div id="figure-characterization-short-supplement" class="section level3">
+<h3>Figure Characterization short supplement</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggsave</span>(<span class="dt">filename =</span> <span class="kw">paste0</span>(out_path, <span class="st">&quot;results_char_short.pdf&quot;</span>), <span class="dt">plot =</span> p_ct1, <span class="dt">dpi =</span> <span class="dv">600</span>)</code></pre></div>
+<pre><code>## Saving 12 x 8 in image</code></pre>
+<p>Results summary metrics and batch characteristics</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># p1_1 &lt;- cor_char + theme_axis_long + </span>
+<span class="co">#   theme(legend.position = &quot;right&quot;,</span>
+<span class="co">#         axis.text.x = element_text(size=22, angle=45, hjust = 1))</span>
+<span class="co"># </span>
+<span class="co"># p_char_metrics &lt;- plot_grid(&#39;&#39;, p1_1, ncol = 2,</span>
+<span class="co">#                 rel_widths = c(0.5,10))</span>
+<span class="co">#   </span>
+<span class="co"># p_char_metrics</span>
+<span class="co"># </span>
+<span class="co"># ggsave(filename = paste0(out_path, &quot;results_char_metrics.pdf&quot;), plot = p1_1,</span>
+<span class="co">#        dpi = 600)</span>
+met_char$data$metric &lt;-<span class="st"> </span><span class="kw">recode</span>(met_char$data$metric, <span class="dt">cms.kmin80 =</span> <span class="st">&quot;cms_kmin&quot;</span>, <span class="dt">cms.bmin80 =</span> <span class="st">&quot;cms_bmin&quot;</span>,
+       <span class="dt">cms =</span> <span class="st">&quot;cms_default&quot;</span>, <span class="dt">graph_connectivity =</span> <span class="st">&quot;graph&quot;</span>, <span class="dt">kbet =</span> <span class="st">&quot;kBet&quot;</span>)
+
+
+p_task1 &lt;-<span class="st"> </span>met_char +<span class="st"> </span>
+<span class="st">  </span>theme_axis +
+<span class="st">  </span><span class="kw">xlab</span>(<span class="st">&#39;mean PVE-Batch&#39;</span>) +
+<span class="st">  </span><span class="kw">ylab</span>(<span class="st">&#39;scaled metric score&#39;</span>) +
+<span class="st">  </span><span class="kw">guides</span>(<span class="dt">linetype=</span><span class="kw">guide_legend</span>(<span class="dt">keywidth =</span> <span class="dv">3</span>, <span class="dt">keyheight =</span> <span class="dv">1</span>)) +
+<span class="st">  </span><span class="kw">scale_linetype_discrete</span>(<span class="st">&quot;characteristics&quot;</span>, <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&quot;DE genes&quot;</span>, <span class="st">&quot;PVE-Batch&quot;</span>)) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;bottom&quot;</span>,
+        <span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">25</span>)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">ggtitle</span>(<span class="st">&quot;Metric scores and batch characteristics across datasets&quot;</span>)
+
+p_task1</code></pre></div>
+<p><img src="generate_benchmark_figures_files/figure-html/char%20split%201-1.svg" width="1344" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggsave</span>(<span class="dt">filename =</span> <span class="kw">paste0</span>(out_path, <span class="st">&quot;results_char_metrics.pdf&quot;</span>), <span class="dt">plot =</span> p_task1)</code></pre></div>
+<pre><code>## Saving 14 x 14 in image</code></pre>
+</div>
+<div id="figure-characterization-varpart" class="section level3">
+<h3>Figure characterization varPart</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(ggtern)</code></pre></div>
+<pre><code>## --
+## Remember to cite, run citation(package = &#39;ggtern&#39;) for further info.
+## --</code></pre>
+<pre><code>## 
+## Attaching package: &#39;ggtern&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:ggplot2&#39;:
+## 
+##     aes, annotate, ggplot, ggplot_build, ggplot_gtable, ggplotGrob,
+##     ggsave, layer_data, theme_bw, theme_classic, theme_dark,
+##     theme_gray, theme_light, theme_linedraw, theme_minimal, theme_void</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Plot characteristics
+p_gi &lt;-<span class="st"> </span><span class="kw">grid.grabExpr</span>(<span class="kw">draw</span>(h_gi, <span class="dt">annotation_legend_list =</span> gi_legend))
+p_gi1 &lt;-<span class="st"> </span><span class="kw">plot_grid</span>(<span class="st">&#39;&#39;</span>, p_gi, <span class="st">&#39;&#39;</span>, <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&#39;A&#39;</span>, <span class="st">&#39;&#39;</span>, <span class="st">&#39;&#39;</span>), <span class="dt">label_size =</span> <span class="dv">20</span>, 
+                   <span class="dt">ncol =</span> <span class="dv">3</span>, <span class="dt">rel_widths =</span> <span class="kw">c</span>(<span class="fl">0.1</span>, <span class="dv">2</span>, <span class="fl">0.1</span>))</code></pre></div>
+<pre><code>## Warning in as_grob.default(plot): Cannot convert object of class character into
+## a grob.
+
+## Warning in as_grob.default(plot): Cannot convert object of class character into
+## a grob.</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p_tern &lt;-<span class="st"> </span><span class="kw">ggplotGrob</span>(tern)</code></pre></div>
+<pre><code>## Warning: Computation failed in `stat_density_tern()`:
+## unused argument (z.range = z.range)</code></pre>
+<pre><code>## Warning: Computation failed in `stat_density_tern()`:
+## unused argument (z.range = z.range)
+
+## Warning: Computation failed in `stat_density_tern()`:
+## unused argument (z.range = z.range)
+
+## Warning: Computation failed in `stat_density_tern()`:
+## unused argument (z.range = z.range)
+
+## Warning: Computation failed in `stat_density_tern()`:
+## unused argument (z.range = z.range)
+
+## Warning: Computation failed in `stat_density_tern()`:
+## unused argument (z.range = z.range)
+
+## Warning: Computation failed in `stat_density_tern()`:
+## unused argument (z.range = z.range)
+
+## Warning: Computation failed in `stat_density_tern()`:
+## unused argument (z.range = z.range)
+
+## Warning: Computation failed in `stat_density_tern()`:
+## unused argument (z.range = z.range)</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">den1 &lt;-<span class="st"> </span><span class="kw">grid.grabExpr</span>(<span class="kw">draw</span>(den_1, <span class="dt">heatmap_legend_side =</span> <span class="st">&quot;bottom&quot;</span>, <span class="dt">annotation_legend_side =</span> <span class="st">&quot;bottom&quot;</span>))
+den2 &lt;-<span class="st"> </span><span class="kw">grid.grabExpr</span>(<span class="kw">draw</span>(den_2, <span class="dt">heatmap_legend_side =</span> <span class="st">&quot;bottom&quot;</span>, <span class="dt">annotation_legend_side =</span> <span class="st">&quot;bottom&quot;</span>))
+
+p_tern1 &lt;-<span class="st"> </span><span class="kw">plot_grid</span>(p_tern, <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&#39;A&#39;</span>), <span class="dt">label_size =</span> <span class="dv">20</span>, <span class="dt">ncol =</span> <span class="dv">1</span>)
+
+p_1 &lt;-<span class="st"> </span><span class="kw">plot_grid</span>(<span class="st">&#39;&#39;</span>, den1, <span class="st">&#39;&#39;</span>, den2, <span class="st">&#39;&#39;</span>, <span class="dt">ncol =</span> <span class="dv">5</span>, <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&#39;B&#39;</span>,<span class="st">&#39;&#39;</span>, <span class="st">&#39;C&#39;</span>, <span class="st">&#39;&#39;</span>, <span class="st">&#39;&#39;</span>), <span class="dt">label_size =</span> <span class="dv">20</span>, 
+                 <span class="dt">rel_widths =</span> <span class="kw">c</span>(<span class="fl">0.2</span>, <span class="dv">2</span>, <span class="fl">0.1</span>, <span class="dv">2</span>, <span class="fl">0.2</span>))</code></pre></div>
+<pre><code>## Warning in as_grob.default(plot): Cannot convert object of class character into
+## a grob.</code></pre>
+<pre><code>## Warning in as_grob.default(plot): Cannot convert object of class character into
+## a grob.
+
+## Warning in as_grob.default(plot): Cannot convert object of class character into
+## a grob.</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">plfc_title &lt;-<span class="st"> </span><span class="kw">ggdraw</span>() +<span class="st"> </span>
+<span class="st">  </span><span class="kw">draw_label</span>(<span class="st">&quot;Batch logFC distribution across cell types&quot;</span>,
+    <span class="dt">fontface =</span> <span class="st">&#39;bold&#39;</span>, <span class="dt">x =</span> <span class="dv">0</span>, <span class="dt">size =</span> <span class="dv">22</span>, <span class="dt">hjust =</span> -<span class="st"> </span><span class="fl">0.2</span>, <span class="dt">vjust =</span> <span class="dv">0</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">plot.margin =</span> <span class="kw">margin</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>))
+
+p_den1 &lt;-<span class="st"> </span><span class="kw">plot_grid</span>(plfc_title, p_1, <span class="dt">ncol =</span> <span class="dv">1</span>, <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&#39;&#39;</span>, <span class="st">&#39;&#39;</span>), <span class="dt">label_size =</span> <span class="dv">20</span>, 
+                    <span class="dt">rel_heights =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">10</span>))
+
+p_tern_den &lt;-<span class="st">  </span><span class="kw">plot_grid</span>(p_tern1,<span class="st">&#39;&#39;</span>, p_den1, <span class="dt">ncol =</span> <span class="dv">1</span>, <span class="dt">rel_heights =</span> <span class="kw">c</span>(<span class="fl">1.7</span>, <span class="fl">0.04</span>, <span class="fl">0.8</span>))</code></pre></div>
+<pre><code>## Warning in as_grob.default(plot): Cannot convert object of class character into
+## a grob.</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># p_char2 &lt;-  plot_grid(p_gi1, p_tern_den, ncol = 1, rel_heights = c(0.7, 3), </span>
+<span class="co">#                       labels = c(&#39;&#39;, &#39;&#39;), label_size = 20)</span>
+
+### Save plots
+<span class="kw">ggsave</span>(<span class="dt">filename =</span> <span class="kw">paste0</span>(out_path, <span class="st">&quot;results_char_tern.pdf&quot;</span>), <span class="dt">plot =</span> p_tern_den, <span class="dt">dpi =</span> <span class="dv">600</span>)</code></pre></div>
+<pre><code>## Saving 15 x 20 in image</code></pre>
+<pre><code>## Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+## font width unknown for character 0x9</code></pre>
+<pre><code>## Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+## font width unknown for character 0x9
+
+## Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+## font width unknown for character 0x9
+
+## Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+## font width unknown for character 0x9
+
+## Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+## font width unknown for character 0x9
+
+## Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+## font width unknown for character 0x9
+
+## Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+## font width unknown for character 0x9
+
+## Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+## font width unknown for character 0x9
+
+## Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+## font width unknown for character 0x9</code></pre>
+</div>
+<div id="supplementary-figures-simulation" class="section level3">
+<h3>Supplementary figure(s) Simulation</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tern1_title &lt;-<span class="st"> </span><span class="kw">ggdraw</span>() +<span class="st"> </span>
+<span class="st">  </span><span class="kw">draw_label</span>(<span class="st">&quot;Real data&quot;</span>,
+    <span class="dt">fontface =</span> <span class="st">&#39;bold&#39;</span>, <span class="dt">x =</span> <span class="dv">0</span>, <span class="dt">size =</span> <span class="dv">30</span>, <span class="dt">hjust =</span> -<span class="st"> </span><span class="fl">0.5</span>, <span class="dt">vjust =</span> <span class="fl">0.5</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">plot.margin =</span> <span class="kw">margin</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>))
+
+tern2_title &lt;-<span class="st"> </span><span class="kw">ggdraw</span>() +<span class="st"> </span>
+<span class="st">  </span><span class="kw">draw_label</span>(<span class="st">&quot;Simulated data&quot;</span>,
+    <span class="dt">fontface =</span> <span class="st">&#39;bold&#39;</span>, <span class="dt">x =</span> <span class="dv">0</span>, <span class="dt">size =</span> <span class="dv">30</span>, <span class="dt">hjust =</span> -<span class="st"> </span><span class="fl">0.5</span>, <span class="dt">vjust =</span> <span class="fl">0.5</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">plot.margin =</span> <span class="kw">margin</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>))
+
+p_tern_sim &lt;-<span class="st"> </span><span class="kw">ggplotGrob</span>(tern_sim)</code></pre></div>
+<pre><code>## Warning: Computation failed in `stat_density_tern()`:
+## unused argument (z.range = z.range)
+
+## Warning: Computation failed in `stat_density_tern()`:
+## unused argument (z.range = z.range)
+
+## Warning: Computation failed in `stat_density_tern()`:
+## unused argument (z.range = z.range)
+
+## Warning: Computation failed in `stat_density_tern()`:
+## unused argument (z.range = z.range)
+
+## Warning: Computation failed in `stat_density_tern()`:
+## unused argument (z.range = z.range)
+
+## Warning: Computation failed in `stat_density_tern()`:
+## unused argument (z.range = z.range)
+
+## Warning: Computation failed in `stat_density_tern()`:
+## unused argument (z.range = z.range)
+
+## Warning: Computation failed in `stat_density_tern()`:
+## unused argument (z.range = z.range)</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p_tern_nopan &lt;-<span class="st"> </span><span class="kw">ggplotGrob</span>(tern_nopan)</code></pre></div>
+<pre><code>## Warning: Computation failed in `stat_density_tern()`:
+## unused argument (z.range = z.range)
+
+## Warning: Computation failed in `stat_density_tern()`:
+## unused argument (z.range = z.range)
+
+## Warning: Computation failed in `stat_density_tern()`:
+## unused argument (z.range = z.range)
+
+## Warning: Computation failed in `stat_density_tern()`:
+## unused argument (z.range = z.range)
+
+## Warning: Computation failed in `stat_density_tern()`:
+## unused argument (z.range = z.range)
+
+## Warning: Computation failed in `stat_density_tern()`:
+## unused argument (z.range = z.range)
+
+## Warning: Computation failed in `stat_density_tern()`:
+## unused argument (z.range = z.range)
+
+## Warning: Computation failed in `stat_density_tern()`:
+## unused argument (z.range = z.range)</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p_tern1 &lt;-<span class="st"> </span><span class="kw">plot_grid</span>(tern1_title, p_tern_nopan, <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&#39;A&#39;</span>, <span class="st">&#39;&#39;</span>), <span class="dt">label_size =</span> <span class="dv">20</span>, <span class="dt">ncol =</span> <span class="dv">1</span>, <span class="dt">rel_heights =</span> <span class="kw">c</span>(<span class="fl">0.2</span>,<span class="dv">10</span>))
+p_tern2 &lt;-<span class="st"> </span><span class="kw">plot_grid</span>(tern2_title, p_tern_sim, <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&#39;B&#39;</span>, <span class="st">&#39;&#39;</span>), <span class="dt">label_size =</span> <span class="dv">20</span>, <span class="dt">ncol =</span> <span class="dv">1</span>, <span class="dt">rel_heights =</span> <span class="kw">c</span>(<span class="fl">0.2</span>,<span class="dv">10</span>))
+
+p_tern_com &lt;-<span class="st">  </span><span class="kw">plot_grid</span>(p_tern1, <span class="st">&quot;&quot;</span>, p_tern2, <span class="dt">ncol =</span> <span class="dv">3</span>, <span class="dt">rel_widths =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="fl">0.1</span>, <span class="dv">1</span>))</code></pre></div>
+<pre><code>## Warning in as_grob.default(plot): Cannot convert object of class character into
+## a grob.</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">### Save plots
+<span class="kw">ggsave</span>(<span class="dt">filename =</span> <span class="kw">paste0</span>(out_path, <span class="st">&quot;results_sim_tern.pdf&quot;</span>), <span class="dt">plot =</span> p_tern_com, <span class="dt">dpi =</span> <span class="dv">600</span>)</code></pre></div>
+<pre><code>## Saving 18 x 20 in image</code></pre>
+<pre><code>## Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+## font width unknown for character 0x9</code></pre>
+<pre><code>## Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+## font width unknown for character 0x9
+
+## Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+## font width unknown for character 0x9
+
+## Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+## font width unknown for character 0x9
+
+## Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+## font width unknown for character 0x9
+
+## Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+## font width unknown for character 0x9
+
+## Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+## font width unknown for character 0x9
+
+## Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+## font width unknown for character 0x9
+
+## Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+## font width unknown for character 0x9
+
+## Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+## font width unknown for character 0x9
+
+## Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+## font width unknown for character 0x9
+
+## Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+## font width unknown for character 0x9
+
+## Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+## font width unknown for character 0x9
+
+## Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+## font width unknown for character 0x9
+
+## Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+## font width unknown for character 0x9
+
+## Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+## font width unknown for character 0x9</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">den1_title &lt;-<span class="st"> </span><span class="kw">ggdraw</span>() +<span class="st"> </span>
+<span class="st">  </span><span class="kw">draw_label</span>(<span class="st">&quot;Real data&quot;</span>,
+    <span class="dt">fontface =</span> <span class="st">&#39;bold&#39;</span>, <span class="dt">x =</span> <span class="dv">0</span>, <span class="dt">size =</span> <span class="dv">30</span>, <span class="dt">hjust =</span> -<span class="fl">0.5</span>, <span class="dt">vjust =</span> <span class="fl">0.5</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">plot.margin =</span> <span class="kw">margin</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>))
+
+den2_title &lt;-<span class="st"> </span><span class="kw">ggdraw</span>() +<span class="st"> </span>
+<span class="st">  </span><span class="kw">draw_label</span>(<span class="st">&quot;Simulated data&quot;</span>,
+    <span class="dt">fontface =</span> <span class="st">&#39;bold&#39;</span>, <span class="dt">x =</span> <span class="dv">0</span>, <span class="dt">size =</span> <span class="dv">30</span>, <span class="dt">hjust =</span> -<span class="fl">0.5</span>, <span class="dt">vjust =</span> <span class="fl">0.5</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">plot.margin =</span> <span class="kw">margin</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>))
+
+den1 &lt;-<span class="st"> </span><span class="kw">grid.grabExpr</span>(<span class="kw">draw</span>(den_3))
+den2 &lt;-<span class="st"> </span><span class="kw">grid.grabExpr</span>(<span class="kw">draw</span>(den_4))
+den3 &lt;-<span class="st"> </span><span class="kw">grid.grabExpr</span>(<span class="kw">draw</span>(den_5))
+
+sim1 &lt;-<span class="st"> </span><span class="kw">grid.grabExpr</span>(<span class="kw">draw</span>(sim_1))
+sim2 &lt;-<span class="st"> </span><span class="kw">grid.grabExpr</span>(<span class="kw">draw</span>(sim_2))
+sim3 &lt;-<span class="st"> </span><span class="kw">grid.grabExpr</span>(<span class="kw">draw</span>(sim_3))
+
+p_den &lt;-<span class="st"> </span><span class="kw">plot_grid</span>(den1_title, den1, den2, den3, <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&#39;&#39;</span>, <span class="st">&#39;A&#39;</span>, <span class="st">&#39;C&#39;</span>, <span class="st">&#39;E&#39;</span>), <span class="dt">label_size =</span> <span class="dv">20</span>, <span class="dt">ncol =</span> <span class="dv">1</span>, <span class="dt">rel_heights =</span> <span class="kw">c</span>(<span class="fl">0.2</span>,<span class="dv">2</span>,<span class="dv">2</span>,<span class="dv">2</span>,<span class="dv">2</span>))
+p_sim &lt;-<span class="st"> </span><span class="kw">plot_grid</span>(den2_title, sim1, sim2, sim3, <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&#39;&#39;</span>, <span class="st">&#39;B&#39;</span>, <span class="st">&#39;D&#39;</span>, <span class="st">&#39;F&#39;</span>), <span class="dt">label_size =</span> <span class="dv">20</span>, <span class="dt">ncol =</span> <span class="dv">1</span>, <span class="dt">rel_heights =</span> <span class="kw">c</span>(<span class="fl">0.2</span>,<span class="dv">2</span>,<span class="dv">2</span>,<span class="dv">2</span>,<span class="dv">2</span>))
+
+p_den_com &lt;-<span class="st">  </span><span class="kw">plot_grid</span>(p_den, p_sim, <span class="dt">ncol =</span> <span class="dv">2</span>, <span class="dt">rel_widths =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>))
+
+### Save plots
+<span class="kw">ggsave</span>(<span class="dt">filename =</span> <span class="kw">paste0</span>(out_path, <span class="st">&quot;results_sim_den.pdf&quot;</span>), <span class="dt">plot =</span> p_den_com, <span class="dt">dpi =</span> <span class="dv">600</span>)</code></pre></div>
+<pre><code>## Saving 16 x 18 in image</code></pre>
+</div>
+</div>
+<div id="supplemental-figure-correlation-rveb-and-number-of-cells-resp.-genes" class="section level2">
+<h2>Supplemental figure: Correlation RVEB and number of cells resp. genes</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p_cells &lt;-<span class="st"> </span>rel_cells +<span class="st"> </span>
+<span class="st">  </span><span class="kw">ggtitle</span>(<span class="st">&quot;Number of cells&quot;</span>)
+p_genes &lt;-<span class="st"> </span>rel_genes +
+<span class="st">  </span><span class="kw">ggtitle</span>(<span class="st">&quot;Number of genes&quot;</span>)
+
+p_rel &lt;-<span class="st"> </span><span class="kw">plot_grid</span>(p_cells, p_genes, <span class="dt">ncol =</span> <span class="dv">2</span>,
+                <span class="dt">rel_widths =</span> <span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">1</span>))
+  
+p_rel</code></pre></div>
+<p><img src="generate_benchmark_figures_files/figure-html/supp%20ext%20factor-1.svg" width="1152" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggsave</span>(<span class="dt">filename =</span> <span class="kw">paste0</span>(out_path, <span class="st">&quot;results_char_rel_corr_ext.pdf&quot;</span>), <span class="dt">plot =</span> p_rel,
+       <span class="dt">dpi =</span> <span class="dv">600</span>)</code></pre></div>
+<pre><code>## Saving 12 x 18 in image</code></pre>
+</div>
+<div id="time-and-memory" class="section level2">
+<h2>Time and memory</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p_mem &lt;-<span class="st"> </span>mem +<span class="st"> </span><span class="kw">theme_ipsum</span>(<span class="dt">base_family =</span> <span class="st">&#39;Helvetica&#39;</span>,
+                    <span class="dt">strip_text_face =</span> <span class="st">&quot;bold&quot;</span>,
+                    <span class="dt">axis_title_size =</span> <span class="dv">25</span>,
+                    <span class="dt">strip_text_size =</span> <span class="dv">22</span>,
+                    <span class="dt">plot_margin =</span> <span class="kw">margin</span>(<span class="dv">5</span>, <span class="dv">5</span>, <span class="dv">5</span>, <span class="dv">5</span>),
+                    <span class="dt">base_size =</span> <span class="dv">23</span>) +
+<span class="st">        </span><span class="kw">theme</span>(
+            <span class="dt">legend.position=</span><span class="st">&quot;none&quot;</span>,
+            <span class="dt">plot.title =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">26</span>),
+            <span class="dt">panel.grid.major =</span> <span class="kw">element_blank</span>(),
+            <span class="dt">panel.spacing =</span> <span class="kw">unit</span>(<span class="dv">1</span>, <span class="st">&quot;lines&quot;</span>)
+        ) +<span class="st"> </span><span class="kw">ggtitle</span>(<span class="st">&quot;RSS&quot;</span>)
+p_time &lt;-<span class="st"> </span>time +<span class="st"> </span><span class="kw">theme_ipsum</span>(<span class="dt">base_family =</span> <span class="st">&#39;Helvetica&#39;</span>,
+                    <span class="dt">strip_text_face =</span> <span class="st">&quot;bold&quot;</span>,
+                    <span class="dt">axis_title_size =</span> <span class="dv">25</span>,
+                    <span class="dt">strip_text_size =</span> <span class="dv">18</span>,
+                    <span class="dt">base_size =</span> <span class="dv">25</span>) +
+<span class="st">        </span><span class="kw">theme</span>(
+            <span class="dt">legend.position=</span><span class="st">&quot;bottom&quot;</span>,
+            <span class="dt">plot.title =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">26</span>),
+            <span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">25</span>),
+            <span class="dt">axis.text.y =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">25</span>)
+        )
+
+
+
+p_time_mem &lt;-<span class="st"> </span><span class="kw">plot_grid</span>(p_time, p_mem, <span class="dt">ncol =</span> <span class="dv">1</span>,
+                <span class="dt">rel_heights =</span> <span class="kw">c</span>(<span class="dv">1</span>,<span class="fl">0.9</span>), <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&#39;A&#39;</span>, <span class="st">&#39;B&#39;</span>), <span class="dt">label_size =</span> <span class="dv">20</span>)
+
+
+p_time2 &lt;-<span class="st"> </span><span class="kw">plot_grid</span>(p_time)
+
+<span class="kw">ggsave</span>(<span class="dt">filename =</span> <span class="kw">paste0</span>(out_path, <span class="st">&quot;results_time_mem.pdf&quot;</span>), <span class="dt">plot =</span> p_time2,
+       <span class="dt">dpi =</span> <span class="dv">600</span>)</code></pre></div>
+<pre><code>## Saving 13 x 10 in image</code></pre>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("show" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

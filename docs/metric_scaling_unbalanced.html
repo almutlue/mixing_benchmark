@@ -443,7 +443,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">metric_scaling_unbalanced</h1>
 <h4 class="author">Almut Lütge</h4>
-<h4 class="date">25 June, 2020</h4>
+<h4 class="date">24 November, 2020</h4>
 
 </div>
 
@@ -470,6 +470,7 @@ div.tocify {
   <span class="kw">library</span>(hrbrthemes)
   <span class="kw">library</span>(corrplot)
   <span class="kw">library</span>(RColorBrewer)
+  <span class="kw">library</span>(ggforce)
 })
 
 <span class="kw">options</span>(<span class="dt">bitmapType=</span><span class="st">&#39;cairo&#39;</span>)</code></pre></div>
@@ -499,11 +500,12 @@ sce_list &lt;-<span class="st"> </span><span class="kw">lapply</span>(sce_name, 
 
 out_path_cor &lt;-<span class="st"> </span>params$out_cor
 out_path_res &lt;-<span class="st"> </span>params$out_res
+out_path_fig &lt;-<span class="st"> </span>params$fig_res
 
 cols_data &lt;-<span class="kw">c</span>(<span class="kw">c</span>(<span class="kw">jcolors</span>(<span class="st">&#39;pal6&#39;</span>),<span class="kw">jcolors</span>(<span class="st">&#39;pal8&#39;</span>))[<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">8</span>,<span class="dv">14</span>,<span class="dv">5</span>,<span class="dv">2</span>:<span class="dv">4</span>,<span class="dv">6</span>,<span class="dv">7</span>,<span class="dv">9</span>:<span class="dv">13</span>,<span class="dv">15</span>:<span class="dv">20</span>)],<span class="kw">jcolors</span>(<span class="st">&#39;pal4&#39;</span>))
 <span class="kw">names</span>(cols_data) &lt;-<span class="st"> </span><span class="kw">c</span>()
 
-cols &lt;-<span class="kw">c</span>(<span class="kw">c</span>(<span class="kw">jcolors</span>(<span class="st">&#39;pal6&#39;</span>),<span class="kw">jcolors</span>(<span class="st">&#39;pal8&#39;</span>), <span class="kw">jcolors</span>(<span class="st">&#39;pal7&#39;</span>))[<span class="kw">c</span>(<span class="dv">12</span>,<span class="dv">18</span>,<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">25</span>,<span class="dv">27</span>,<span class="dv">4</span>,<span class="dv">7</span>,<span class="dv">3</span>,<span class="dv">6</span>,<span class="dv">8</span>,<span class="dv">14</span>,<span class="dv">9</span>,<span class="dv">20</span>)],<span class="kw">jcolors</span>(<span class="st">&#39;pal4&#39;</span>))
+cols &lt;-<span class="kw">c</span>(<span class="kw">c</span>(<span class="kw">jcolors</span>(<span class="st">&#39;pal6&#39;</span>),<span class="kw">jcolors</span>(<span class="st">&#39;pal8&#39;</span>), <span class="kw">jcolors</span>(<span class="st">&#39;pal7&#39;</span>))[<span class="kw">c</span>(<span class="dv">12</span>,<span class="dv">18</span>,<span class="dv">1</span>,<span class="dv">25</span>,<span class="dv">27</span>,<span class="dv">2</span>,<span class="dv">4</span>,<span class="dv">7</span>,<span class="dv">3</span>,<span class="dv">6</span>,<span class="dv">8</span>,<span class="dv">14</span>,<span class="dv">9</span>,<span class="dv">20</span>)],<span class="kw">jcolors</span>(<span class="st">&#39;pal4&#39;</span>))
 <span class="kw">names</span>(cols) &lt;-<span class="st"> </span><span class="kw">c</span>()</code></pre></div>
 </div>
 <div id="metric-score-trends" class="section level2">
@@ -577,7 +579,7 @@ scale_means &lt;-<span class="st"> </span><span class="kw">lapply</span>(<span c
     mm_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;mm&quot;</span>, <span class="kw">colnames</span>(mean_res))
     lis_ind &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;isi&quot;</span>, <span class="kw">colnames</span>(mean_res))
     scal_vec &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="dv">1</span>, <span class="kw">ncol</span>(mean_res)-<span class="dv">1</span>)
-    scal_vec[mm_ind] &lt;-<span class="st"> </span><span class="dv">300</span>
+    scal_vec[mm_ind] &lt;-<span class="st"> </span><span class="dv">200</span>
     scal_vec[lis_ind] &lt;-<span class="st"> </span>n_bids -<span class="st"> </span><span class="dv">1</span>
     max_res &lt;-<span class="st"> </span>mean_res[mean_res$unbalanced ==<span class="st"> </span><span class="dv">0</span>, !<span class="kw">colnames</span>(mean_res) %in%<span class="st"> &quot;unbalanced&quot;</span>]
     scale_res &lt;-<span class="st"> </span>mean_res %&gt;%<span class="st"> </span><span class="kw">select</span>(-unbalanced) %&gt;%
@@ -588,7 +590,7 @@ scale_means &lt;-<span class="st"> </span><span class="kw">lapply</span>(<span c
 
 <span class="co">#get_descriptive_names</span>
 ind_no_batch &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;_0$&quot;</span>, <span class="kw">names</span>(mean_tab))
-ind_int_batch &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;_0.7$&quot;</span>, <span class="kw">names</span>(mean_tab))
+ind_int_batch &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;_0.3$&quot;</span>, <span class="kw">names</span>(mean_tab))
 ind_strong_batch &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;_1$&quot;</span>, <span class="kw">names</span>(mean_tab))
 d_names &lt;-<span class="st"> </span><span class="kw">names</span>(mean_tab)
 d_names[ind_no_batch] &lt;-<span class="st"> &quot;no_batch_effect&quot;</span>
@@ -637,24 +639,75 @@ plots &lt;-<span class="st"> </span><span class="kw">lapply</span>(<span class="
 </div>
 <div id="metrics-performance-separated" class="section level3 tabset">
 <h3>Metrics performance separated</h3>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sep_trends &lt;-<span class="st"> </span>function(dataset){
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Get lowest level of unbalance that deviates more than 5% from the balanced value. </span>
+limit_tab &lt;-<span class="st"> </span><span class="kw">lapply</span>(<span class="kw">names</span>(scale_means), function(dataset){
+    mean_res &lt;-<span class="st"> </span>scale_means[[dataset]]
+    dev_lim &lt;-<span class="st"> </span>function(x){
+        dev_all &lt;-<span class="st"> </span><span class="kw">which</span>(<span class="kw">abs</span>(x) &gt;<span class="st"> </span><span class="fl">0.05</span>)
+        batch &lt;-<span class="st"> </span>mean_res$unbalanced[dev_all] %&gt;%<span class="st"> </span><span class="kw">min</span>()
+    }
+    batch_lim &lt;-<span class="st"> </span><span class="kw">apply</span>(mean_res, <span class="dv">2</span>, dev_lim)
+}) %&gt;%<span class="st"> </span><span class="kw">set_names</span>(<span class="kw">names</span>(scale_means)) %&gt;%<span class="st"> </span><span class="kw">bind_cols</span>() %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">metric =</span> <span class="kw">colnames</span>(scale_means[[<span class="dv">1</span>]]))</code></pre></div>
+<pre><code>## Warning in min(.): no non-missing arguments to min; returning Inf
+
+## Warning in min(.): no non-missing arguments to min; returning Inf
+
+## Warning in min(.): no non-missing arguments to min; returning Inf
+
+## Warning in min(.): no non-missing arguments to min; returning Inf
+
+## Warning in min(.): no non-missing arguments to min; returning Inf
+
+## Warning in min(.): no non-missing arguments to min; returning Inf
+
+## Warning in min(.): no non-missing arguments to min; returning Inf
+
+## Warning in min(.): no non-missing arguments to min; returning Inf
+
+## Warning in min(.): no non-missing arguments to min; returning Inf
+
+## Warning in min(.): no non-missing arguments to min; returning Inf</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">limit_tab[limit_tab ==<span class="st"> </span><span class="ot">Inf</span>] &lt;-<span class="st"> </span><span class="dv">1</span> 
+
+
+
+sep_trends &lt;-<span class="st"> </span>function(dataset){
   mean_res &lt;-<span class="st"> </span>scale_means[[dataset]]
   mean_long &lt;-<span class="st"> </span>mean_res %&gt;%<span class="st"> </span><span class="kw">pivot_longer</span>(-unbalanced, <span class="dt">names_to =</span> <span class="st">&quot;metric&quot;</span>,
                                            <span class="dt">values_to =</span> <span class="st">&quot;scaled_result&quot;</span>)
   mean_long &lt;-<span class="st"> </span>mean_long %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">metric2 =</span> metric)
   cols_rep &lt;-<span class="st"> </span><span class="kw">rep</span>(cols[<span class="dv">1</span>:<span class="st"> </span><span class="kw">ncol</span>(mean_res)-<span class="dv">1</span>], <span class="dt">each =</span> <span class="kw">nrow</span>(mean_res))
   mean_long$metric &lt;-<span class="st"> </span><span class="kw">factor</span>(mean_long$metric,<span class="dt">levels =</span> metric_order)
+  lim_ordered &lt;-<span class="st"> </span>limit_tab %&gt;%<span class="st"> </span><span class="kw">filter</span>(metric %in%<span class="st"> </span>metric_order) %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">arrange</span>(<span class="kw">match</span>(metric, metric_order))
+  find_scal &lt;-<span class="st"> </span>function(met){
+    lim &lt;-<span class="st"> </span>lim_ordered[lim_ordered$metric %in%<span class="st"> </span>met, dataset]
+    lim_score &lt;-<span class="st"> </span>mean_res[mean_res$unbalanced ==<span class="st"> </span>lim[[<span class="dv">1</span>]], met]
+  }
+  mean_lim &lt;-<span class="st"> </span>metric_order %&gt;%<span class="st"> </span><span class="kw">map</span>(find_scal) %&gt;%<span class="st"> </span><span class="kw">unlist</span>()
+  unb_limit &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="st">&quot;unbalanced&quot;</span> =<span class="st"> </span>lim_ordered[,dataset][[<span class="dv">1</span>]],
+                           <span class="st">&quot;metric&quot;</span> =<span class="st"> </span>metric_order,
+                           <span class="st">&quot;scaled_score&quot;</span> =<span class="st"> </span>mean_lim,
+                           <span class="st">&quot;label&quot;</span> =<span class="st"> </span><span class="kw">paste0</span>(<span class="st">&quot;limit = &quot;</span>, lim_ordered[,dataset][[<span class="dv">1</span>]]))
+  
   p &lt;-<span class="st"> </span><span class="kw">ggplot</span>(mean_long, <span class="kw">aes</span>(<span class="dt">x =</span> unbalanced, <span class="dt">y =</span> scaled_result)) +
 <span class="st">        </span><span class="kw">geom_line</span>(<span class="dt">data=</span>mean_long %&gt;%<span class="st"> </span>dplyr::<span class="kw">select</span>(-metric), <span class="kw">aes</span>(<span class="dt">group=</span>metric2),
                    <span class="dt">color=</span><span class="st">&quot;grey&quot;</span>, <span class="dt">size=</span><span class="fl">0.5</span>, <span class="dt">alpha=</span><span class="fl">0.5</span>) +<span class="st"> </span>
 <span class="st">        </span><span class="kw">geom_line</span>( <span class="kw">aes</span>(<span class="dt">color=</span>metric), <span class="dt">color=</span>cols_rep, <span class="dt">size=</span><span class="fl">1.2</span> ) +<span class="st"> </span>
 <span class="st">        </span><span class="kw">scale_color_viridis</span>(<span class="dt">discrete =</span> <span class="ot">TRUE</span>) +
-<span class="st">        </span><span class="kw">theme_ipsum</span>() +
+<span class="st">        </span><span class="kw">theme_ipsum</span>(<span class="dt">base_family =</span> <span class="st">&#39;Helvetica&#39;</span>) +
 <span class="st">        </span><span class="kw">theme</span>(
           <span class="dt">legend.position=</span><span class="st">&quot;none&quot;</span>,
           <span class="dt">plot.title =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">14</span>),
           <span class="dt">panel.grid.minor =</span> <span class="kw">element_blank</span>()
         ) +
+<span class="st">        </span><span class="kw">geom_mark_circle</span>(<span class="dt">data =</span> unb_limit, <span class="kw">aes</span>(<span class="dt">label =</span> label, <span class="dt">x =</span> unbalanced, <span class="dt">y =</span> scaled_score),
+                        <span class="dt">label.colour =</span> <span class="st">&quot;black&quot;</span>, <span class="dt">inherit.aes =</span> <span class="ot">FALSE</span>,
+                        <span class="dt">label.fontsize =</span> <span class="dv">20</span>,
+                        <span class="dt">size =</span> <span class="dv">1</span>,
+                        <span class="dt">expand =</span> <span class="kw">unit</span>(<span class="dv">1</span>, <span class="st">&quot;mm&quot;</span>),
+                        <span class="dt">label.minwidth =</span> <span class="kw">unit</span>(<span class="dv">20</span>, <span class="st">&quot;mm&quot;</span>)) +
 <span class="st">        </span><span class="kw">ggtitle</span>(dataset) +
 <span class="st">        </span><span class="kw">facet_wrap</span>(~metric)
   p
@@ -663,7 +716,9 @@ plots &lt;-<span class="st"> </span><span class="kw">lapply</span>(<span class="
 template_sep &lt;-<span class="st"> </span><span class="kw">c</span>(
     <span class="st">&quot;#### {{nm}}</span><span class="ch">\n</span><span class="st">&quot;</span>,
     <span class="st">&quot;```{r scaling sep {{nm}}, echo = FALSE, fig.width = 8, fig.height = 7}</span><span class="ch">\n</span><span class="st">&quot;</span>,
-    <span class="st">&quot;sep_trends(&#39;{{nm}}&#39;)</span><span class="ch">\n</span><span class="st">&quot;</span>,
+    <span class="st">&quot;p &lt;- sep_trends(&#39;{{nm}}&#39;)</span><span class="ch">\n</span><span class="st">&quot;</span>,
+    <span class="st">&quot;p&quot;</span>,
+    <span class="st">&quot;saveRDS(p, paste0(out_path_fig, &#39;_{{nm}}.rds&#39;))&quot;</span>,
     <span class="st">&quot;```</span><span class="ch">\n</span><span class="st">&quot;</span>,
     <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>
   )
@@ -708,20 +763,47 @@ lim_long &lt;-<span class="st"> </span>limit_tab %&gt;%<span class="st"> </span>
 ## order by metrics type
 lim_long$metric &lt;-<span class="st"> </span><span class="kw">factor</span>(lim_long$metric,<span class="dt">levels =</span> metric_order)
 
-<span class="kw">ggplot</span>(lim_long, <span class="kw">aes</span>(<span class="dt">x =</span> metric , <span class="dt">y =</span> unbalanced_limit, <span class="dt">fill =</span> dataset)) +<span class="st"> </span>
+p &lt;-<span class="st"> </span><span class="kw">ggplot</span>(lim_long, <span class="kw">aes</span>(<span class="dt">x =</span> metric , <span class="dt">y =</span> unbalanced_limit, <span class="dt">fill =</span> dataset)) +<span class="st"> </span>
 <span class="st">    </span><span class="kw">geom_boxplot</span>(<span class="dt">fill =</span> cols[<span class="dv">1</span>:<span class="kw">length</span>(<span class="kw">levels</span>(<span class="kw">as.factor</span>(lim_long$metric)))], <span class="dt">alpha =</span> <span class="fl">0.5</span>) +<span class="st"> </span>
 <span class="st">    </span><span class="kw">geom_dotplot</span>(<span class="dt">binaxis=</span><span class="st">&#39;y&#39;</span>, <span class="dt">stackdir=</span><span class="st">&#39;center&#39;</span>, <span class="dt">dotsize=</span><span class="fl">0.5</span>) +
 <span class="st">    </span><span class="kw">scale_fill_manual</span>(<span class="dt">values=</span>cols_data) +<span class="st"> </span>
-<span class="st">    </span><span class="kw">theme_ipsum</span>() +
-<span class="st">    </span><span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">face=</span><span class="st">&quot;bold&quot;</span>, <span class="dt">size=</span><span class="dv">10</span>, <span class="dt">angle=</span><span class="dv">45</span>))</code></pre></div>
+<span class="st">    </span><span class="kw">theme_ipsum</span>(<span class="dt">base_family =</span> <span class="st">&#39;Helvetica&#39;</span>) +
+<span class="st">    </span><span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">face=</span><span class="st">&quot;bold&quot;</span>, <span class="dt">size=</span><span class="dv">10</span>, <span class="dt">angle=</span><span class="dv">45</span>))
+
+p</code></pre></div>
 <pre><code>## `stat_bindot()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
 <p><img src="metric_scaling_unbalanced_files/figure-html/metric%20deviation-1.svg" width="768" /></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#save mean results</span>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">saveRDS</span>(p, <span class="kw">paste0</span>(out_path_fig, <span class="st">&quot;_limits.rds&quot;</span>))
+
+<span class="co">#save mean results</span>
 mean_unb_lim &lt;-<span class="st"> </span>lim_long %&gt;%<span class="st"> </span><span class="kw">group_by</span>(metric) %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">summarise</span>(<span class="dt">unb_limit =</span> <span class="kw">mean</span>(unbalanced_limit),
             <span class="dt">unb_limit_sd =</span> <span class="kw">sd</span>(unbalanced_limit))
 
 <span class="kw">saveRDS</span>(mean_unb_lim, out_path_res)</code></pre></div>
+<p>As lollipop plot</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lim_long$metric &lt;-<span class="st"> </span><span class="kw">recode</span>(lim_long$metric, <span class="dt">cms.kmin =</span> <span class="st">&quot;cms_kmin&quot;</span>, <span class="dt">cms.bmin =</span> <span class="st">&quot;cms_bmin&quot;</span>,
+       <span class="dt">cms.batch_id =</span> <span class="st">&quot;cms_default&quot;</span>, <span class="dt">graph.connectivity =</span> <span class="st">&quot;graph&quot;</span>, <span class="dt">kbet =</span> <span class="st">&quot;kBet&quot;</span>)
+<span class="kw">names</span>(cols) &lt;-<span class="st"> </span><span class="kw">c</span>()
+
+p &lt;-<span class="st"> </span><span class="kw">ggplot</span>(lim_long) +
+<span class="st">  </span><span class="kw">geom_segment</span>( <span class="kw">aes</span>(<span class="dt">x=</span>dataset, <span class="dt">xend=</span>dataset, <span class="dt">y=</span><span class="dv">0</span>, <span class="dt">yend=</span>unbalanced_limit), <span class="dt">color=</span><span class="st">&quot;black&quot;</span>) +
+<span class="st">  </span><span class="kw">geom_point</span>( <span class="kw">aes</span>(<span class="dt">x=</span>dataset, <span class="dt">y=</span>unbalanced_limit, <span class="dt">color=</span>metric, <span class="dt">shape =</span> dataset), <span class="dt">size=</span><span class="dv">4</span> ) +
+<span class="st">  </span><span class="co">#coord_flip()+</span>
+<span class="st">  </span><span class="kw">theme_ipsum</span>(<span class="dt">base_family =</span> <span class="st">&#39;Helvetica&#39;</span>) +
+<span class="st">  </span><span class="kw">theme</span>(
+    <span class="dt">legend.position =</span> <span class="st">&quot;top&quot;</span>,
+    <span class="dt">panel.border =</span> <span class="kw">element_blank</span>(),
+    <span class="dt">panel.spacing =</span> <span class="kw">unit</span>(<span class="fl">0.1</span>, <span class="st">&quot;lines&quot;</span>)
+  ) +
+<span class="st">  </span><span class="kw">scale_colour_manual</span>(<span class="dt">values =</span> <span class="kw">c</span>(cols[<span class="dv">1</span>:<span class="kw">length</span>(<span class="kw">levels</span>(<span class="kw">as.factor</span>(lim_long$metric)))]), <span class="dt">guide=</span><span class="ot">FALSE</span>) +
+<span class="st">  </span><span class="kw">xlab</span>(<span class="st">&quot;&quot;</span>) +
+<span class="st">  </span><span class="kw">ylab</span>(<span class="st">&quot;Value of Y&quot;</span>) +
+<span class="st">  </span><span class="kw">facet_wrap</span>(~metric, <span class="dt">ncol=</span><span class="kw">length</span>(<span class="kw">levels</span>(<span class="kw">as.factor</span>(lim_long$metric))), <span class="dt">strip.position =</span> <span class="st">&quot;bottom&quot;</span>)
+
+p</code></pre></div>
+<p><img src="metric_scaling_unbalanced_files/figure-html/dot%20plot-1.svg" width="960" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">saveRDS</span>(p, <span class="kw">paste0</span>(out_path_fig, <span class="st">&quot;_limits_lolli.rds&quot;</span>))</code></pre></div>
 </div>
 <div id="correlation-between-metrics" class="section level3">
 <h3>Correlation between metrics</h3>
@@ -729,9 +811,10 @@ mean_unb_lim &lt;-<span class="st"> </span>lim_long %&gt;%<span class="st"> </sp
 cor_met &lt;-<span class="st"> </span><span class="kw">lapply</span>(<span class="kw">names</span>(mean_tab), function(dataset){
     mean_res &lt;-<span class="st"> </span>mean_tab[[dataset]] %&gt;%<span class="st"> </span><span class="kw">select</span>(-unbalanced)
     cor_scal &lt;-<span class="st"> </span><span class="kw">cor</span>(mean_res, <span class="dt">use =</span> <span class="st">&quot;complete.obs&quot;</span>, <span class="dt">method =</span> <span class="st">&quot;spearman&quot;</span>) 
-})
-
-cor_met_mean &lt;-<span class="st"> </span><span class="kw">Reduce</span>(<span class="st">`</span><span class="dt">+</span><span class="st">`</span>, cor_met)/<span class="kw">length</span>(cor_met)
+})</code></pre></div>
+<pre><code>## Warning in cor(mean_res, use = &quot;complete.obs&quot;, method = &quot;spearman&quot;): the
+## standard deviation is zero</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cor_met_mean &lt;-<span class="st"> </span><span class="kw">Reduce</span>(<span class="st">`</span><span class="dt">+</span><span class="st">`</span>, cor_met)/<span class="kw">length</span>(cor_met)
 
 <span class="kw">corrplot</span>(cor_met_mean, 
          <span class="dt">type=</span><span class="st">&quot;upper&quot;</span>, 

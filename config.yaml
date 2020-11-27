@@ -18,7 +18,12 @@ src_com: "src/comparison/"
 src_summary: "src/summary_files/"
 src_de: "src/de_files/"
 src_index: "src/index_files/"
-
+src_metric: "src/metric_files/"
+src_fig: "src/figure_files/"
+src_plot: "src/figures/"
+src_norm: "src/normalization/"
+src_time_dat: "src/time_data/"
+src_time: "src/time/"
 
 ## Path to output 
 out_time: "out/time/"
@@ -36,6 +41,12 @@ out_pcr: "out/pcr/"
 out_gcon: "out/graph_connectivity/"
 out_cor: "out/cor_summary/"
 out_res: "out/res/"
+out_fig_obj: "out/res/fig_objects/"
+out_fig: "out/res/figs/"
+out_norm: "out/normalization/"
+out_time_dat: "out/time_data/"
+out_time_res: "out/time_res/"
+out_bench: "out/benchmark/"
 
 ## Path to logs
 log_dir: "log/dir_setup/"
@@ -51,7 +62,8 @@ log_asw: "log/asw/"
 log_kbet: "log/kbet/"
 log_pcr: "log/pcr/"
 log_gcon: "log/graph_connectivity/"
-
+log_norm: "log/normalization/"
+log_time: "log/time/"
 
 ## Path to website files
 docs: "docs/"
@@ -61,5 +73,5 @@ docs_libs: "docs/site_libs"
 ## Subdirectory names 
 ### Names of subfdirectories to be generated in output and log directories
 ### Here they correspond to the rule names
-dir_names: time cms_default cms_kmin cms_bmin mm isi wisi entropy lisi kbet asw pcr gcon out_cor out_res
+dir_names: time cms_default cms_kmin cms_bmin mm isi wisi entropy lisi kbet asw pcr gcon out_cor out_res time time_dat
 

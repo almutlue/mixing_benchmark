@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Almut Lütge" />
+
+
+<title>Figures benchmark</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/journal.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; background-color: #f8f8f8; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+pre, code { background-color: #f8f8f8; }
+code > span.kw { color: #204a87; font-weight: bold; } /* Keyword */
+code > span.dt { color: #204a87; } /* DataType */
+code > span.dv { color: #0000cf; } /* DecVal */
+code > span.bn { color: #0000cf; } /* BaseN */
+code > span.fl { color: #0000cf; } /* Float */
+code > span.ch { color: #4e9a06; } /* Char */
+code > span.st { color: #4e9a06; } /* String */
+code > span.co { color: #8f5902; font-style: italic; } /* Comment */
+code > span.ot { color: #8f5902; } /* Other */
+code > span.al { color: #ef2929; } /* Alert */
+code > span.fu { color: #000000; } /* Function */
+code > span.er { color: #a40000; font-weight: bold; } /* Error */
+code > span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #000000; } /* Constant */
+code > span.sc { color: #000000; } /* SpecialChar */
+code > span.vs { color: #4e9a06; } /* VerbatimString */
+code > span.ss { color: #4e9a06; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #000000; } /* Variable */
+code > span.cf { color: #204a87; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #ce5c00; font-weight: bold; } /* Operator */
+code > span.pp { color: #8f5902; font-style: italic; } /* Preprocessor */
+code > span.ex { } /* Extension */
+code > span.at { color: #c4a000; } /* Attribute */
+code > span.do { color: #8f5902; font-weight: bold; font-style: italic; } /* Documentation */
+code > span.an { color: #8f5902; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #8f5902; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #8f5902; font-weight: bold; font-style: italic; } /* Information */
+
+.sourceCode .row {
+  width: 100%;
+}
+.sourceCode {
+  overflow-x: auto;
+}
+.code-folding-btn {
+  margin-right: -30px;
+}
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="fluid-row" id="header">
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Figures benchmark</h1>
+<h4 class="author">Almut Lütge</h4>
+<h4 class="date">30 July, 2020</h4>
+
+</div>
+
+
+<div id="generate-plot-objects-related-to-the-mixing-metric-benchmark" class="section level2">
+<h2>Generate plot objects related to the mixing metric benchmark</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">suppressPackageStartupMessages</span>({
+  <span class="kw">library</span>(scater)
+  <span class="kw">library</span>(CellMixS)
+  <span class="kw">library</span>(purrr)
+  <span class="kw">library</span>(tidyr)
+  <span class="kw">library</span>(dplyr)
+  <span class="kw">library</span>(gridExtra)
+  <span class="kw">library</span>(scran)
+  <span class="kw">library</span>(cowplot)
+  <span class="kw">library</span>(jcolors)
+  <span class="kw">library</span>(ggpubr)
+  <span class="kw">library</span>(hrbrthemes)
+  <span class="kw">library</span>(magrittr)
+  <span class="kw">library</span>(viridis)
+  <span class="kw">library</span>(scales)
+  <span class="kw">library</span>(corrplot)
+  <span class="kw">library</span>(RColorBrewer)
+  <span class="kw">library</span>(limma)
+})</code></pre></div>
+<p>Data</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Scaling simulation
+ex_data &lt;-<span class="st"> </span><span class="kw">unlist</span>(<span class="kw">c</span>(<span class="kw">strsplit</span>(params$ex_data, <span class="st">&quot;,&quot;</span>)))
+<span class="co">#Single cell experiment objects from simulations</span>
+sce_whole_name &lt;-<span class="st"> </span><span class="kw">unlist</span>(<span class="kw">c</span>(<span class="kw">strsplit</span>(params$sce_name, <span class="st">&quot;,&quot;</span>))) %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">grep</span>(<span class="kw">paste</span>(ex_data, <span class="dt">collapse=</span><span class="st">&quot;|&quot;</span>), ., <span class="dt">value =</span> <span class="ot">TRUE</span>)
+
+<span class="co">#levels to plot</span>
+lev &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;0&quot;</span>, <span class="st">&quot;0.3&quot;</span>, <span class="st">&quot;0.5&quot;</span>, <span class="st">&quot;0.6&quot;</span>, <span class="st">&quot;0.7&quot;</span>, 
+         <span class="st">&quot;0.8&quot;</span>, <span class="st">&quot;0.9&quot;</span>, <span class="st">&quot;1&quot;</span>, <span class="st">&quot;1.2&quot;</span>, <span class="st">&quot;1.5&quot;</span>, <span class="st">&quot;2&quot;</span>, <span class="st">&quot;4&quot;</span>)
+lev_ &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="st">&quot;_&quot;</span>, lev, <span class="st">&quot;__&quot;</span>)
+sce_whole_name &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="kw">paste</span>(lev_, <span class="dt">collapse=</span><span class="st">&quot;|&quot;</span>), sce_whole_name, <span class="dt">value =</span> <span class="ot">TRUE</span>)
+
+sce_name &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&quot;^sim_&quot;</span>, <span class="st">&quot;&quot;</span>, sce_whole_name) %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">gsub</span>(<span class="st">&quot;_[0-9].*&quot;</span>, <span class="st">&quot;&quot;</span>, .) %&gt;%<span class="st"> </span><span class="kw">unique</span>()
+
+sce_sim_list &lt;-<span class="st"> </span><span class="kw">lapply</span>(sce_name, function(dataset){
+    sim_vec &lt;-<span class="st"> </span>sce_whole_name[<span class="kw">grepl</span>(dataset, sce_whole_name)]
+}) %&gt;%<span class="st"> </span><span class="kw">set_names</span>(sce_name)
+
+
+sce_list &lt;-<span class="st"> </span><span class="kw">lapply</span>(sce_name, function(dataset){
+  sim_vec &lt;-<span class="st"> </span><span class="kw">paste0</span>(params$data_path, sce_sim_list[[dataset]], <span class="st">&quot;.rds&quot;</span>) %&gt;%
+<span class="st">             </span><span class="kw">set_names</span>(sce_sim_list[[dataset]])
+}) %&gt;%<span class="st"> </span><span class="kw">set_names</span>(sce_name)
+
+
+## Unbalanced
+un_whole_name &lt;-<span class="st"> </span><span class="kw">unlist</span>(<span class="kw">c</span>(<span class="kw">strsplit</span>(params$un_name, <span class="st">&quot;,&quot;</span>))) %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">grep</span>(<span class="st">&quot;_0.7__1_sce$&quot;</span>, ., <span class="dt">value =</span> <span class="ot">TRUE</span>)
+
+
+un_name &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&quot;^un_[0-9].*_sim_&quot;</span>, <span class="st">&quot;&quot;</span>, un_whole_name) %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">gsub</span>(<span class="st">&quot;__[0-9]_sce.*&quot;</span>, <span class="st">&quot;&quot;</span>, .) %&gt;%<span class="st"> </span><span class="kw">unique</span>()
+
+un_sim_list &lt;-<span class="st"> </span><span class="kw">lapply</span>(un_name, function(dataset){
+    sim_vec &lt;-<span class="st"> </span>un_whole_name[<span class="kw">grepl</span>(<span class="kw">paste0</span>(dataset, <span class="st">&quot;_&quot;</span>), un_whole_name)]
+}) %&gt;%<span class="st"> </span><span class="kw">set_names</span>(un_name)
+
+un_list &lt;-<span class="st"> </span><span class="kw">lapply</span>(un_name, function(dataset){
+    sim_vec &lt;-<span class="st"> </span>un_whole_name[<span class="kw">grepl</span>(dataset, un_whole_name)]
+    sim_vec &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&quot;^un_&quot;</span>, <span class="st">&quot;&quot;</span>, sim_vec) %&gt;%<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&quot;_sim.*&quot;</span>, <span class="st">&quot;&quot;</span>, .) %&gt;%<span class="st"> </span>
+<span class="st">        </span><span class="kw">as.numeric</span>()
+}) %&gt;%<span class="st"> </span><span class="kw">set_names</span>(un_name)
+
+
+un_sim &lt;-<span class="st"> </span><span class="kw">lapply</span>(un_name, function(dataset){
+  sim_vec &lt;-<span class="st"> </span><span class="kw">paste0</span>(params$data_path, un_sim_list[[dataset]], <span class="st">&quot;.rds&quot;</span>) %&gt;%
+<span class="st">             </span><span class="kw">set_names</span>(un_sim_list[[dataset]])
+}) %&gt;%<span class="st"> </span><span class="kw">set_names</span>(un_name)
+
+<span class="co"># batch type</span>
+sce_type &lt;-<span class="st"> </span><span class="kw">readRDS</span>(params$sce_type)
+
+out_path &lt;-<span class="st"> </span>params$out_path
+
+cols_data &lt;-<span class="kw">c</span>(<span class="kw">c</span>(<span class="kw">jcolors</span>(<span class="st">&#39;pal6&#39;</span>),<span class="kw">jcolors</span>(<span class="st">&#39;pal8&#39;</span>))[<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">8</span>,<span class="dv">14</span>,<span class="dv">5</span>,<span class="dv">2</span>:<span class="dv">4</span>,<span class="dv">6</span>,<span class="dv">7</span>,<span class="dv">9</span>:<span class="dv">13</span>,<span class="dv">15</span>:<span class="dv">20</span>)],<span class="kw">jcolors</span>(<span class="st">&#39;pal4&#39;</span>))
+<span class="kw">names</span>(cols_data) &lt;-<span class="st"> </span><span class="kw">c</span>()
+
+cols &lt;-<span class="kw">c</span>(<span class="kw">c</span>(<span class="kw">jcolors</span>(<span class="st">&#39;pal6&#39;</span>),<span class="kw">jcolors</span>(<span class="st">&#39;pal8&#39;</span>), <span class="kw">jcolors</span>(<span class="st">&#39;pal7&#39;</span>))[<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">12</span>,<span class="dv">18</span>,<span class="dv">25</span>,<span class="dv">27</span>,<span class="dv">2</span>,<span class="dv">4</span>,<span class="dv">7</span>,<span class="dv">3</span>,<span class="dv">6</span>,<span class="dv">8</span>,<span class="dv">14</span>,<span class="dv">9</span>,<span class="dv">20</span>)],<span class="kw">jcolors</span>(<span class="st">&#39;pal4&#39;</span>))
+<span class="kw">names</span>(cols) &lt;-<span class="st"> </span><span class="kw">c</span>()</code></pre></div>
+<div id="generate-fig-objects-scaling-simulation" class="section level3">
+<h3>Generate fig objects scaling simulation</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">plot_data &lt;-<span class="st"> </span>function(dataset){
+    tsne_long &lt;-<span class="st"> </span><span class="kw">lapply</span>(sce_sim_list[[dataset]], function(sim_name){
+        sim_start &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&#39;__[0-9]_sce&#39;</span>,<span class="st">&#39;&#39;</span>, sim_name)
+        sim &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&#39;[A-z_]&#39;</span>, <span class="st">&#39;&#39;</span>, sim_start)
+        sce &lt;-<span class="st"> </span><span class="kw">readRDS</span>(sce_list[[dataset]][[sim_name]])
+        sce &lt;-<span class="st"> </span><span class="kw">runTSNE</span>(sce, <span class="dt">exprs_values =</span> <span class="st">&quot;counts&quot;</span>)
+        tab &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="st">&quot;tsne1&quot;</span> =<span class="st"> </span><span class="kw">reducedDims</span>(sce)[[<span class="st">&quot;TSNE&quot;</span>]][,<span class="dv">1</span>],
+                          <span class="st">&quot;tsne2&quot;</span> =<span class="st"> </span><span class="kw">reducedDims</span>(sce)[[<span class="st">&quot;TSNE&quot;</span>]][,<span class="dv">2</span>],
+                          <span class="st">&quot;batch&quot;</span> =<span class="st"> </span><span class="kw">as.factor</span>(sce$batch_id),
+                          <span class="st">&quot;batch_size&quot;</span> =<span class="st"> </span>sim)
+    }) %&gt;%<span class="st"> </span><span class="kw">bind_rows</span>()
+        
+    cols_batch &lt;-<span class="st"> </span>cols_data[<span class="dv">1</span>:<span class="kw">length</span>(<span class="kw">levels</span>(<span class="kw">as.factor</span>(tsne_long$batch)))] %&gt;%<span class="st"> </span>
+<span class="st">        </span><span class="kw">set_names</span>(<span class="kw">levels</span>(<span class="kw">as.factor</span>(tsne_long$batch)))
+
+    p &lt;-<span class="st"> </span><span class="kw">ggplot</span>(tsne_long, <span class="kw">aes</span>(<span class="dt">x =</span> tsne1, <span class="dt">y =</span> tsne2, <span class="dt">color =</span> batch)) +
+<span class="st">        </span><span class="kw">geom_point</span>(<span class="dt">size =</span> <span class="fl">0.3</span>) +
+<span class="st">        </span><span class="kw">scale_color_manual</span>(<span class="dt">values =</span> cols_batch) +
+<span class="st">        </span><span class="kw">theme_ipsum</span>(<span class="dt">base_family =</span> <span class="st">&#39;Helvetica&#39;</span>,
+                    <span class="dt">strip_text_face =</span> <span class="st">&quot;bold&quot;</span>) +
+<span class="st">        </span><span class="kw">theme</span>(
+            <span class="dt">legend.position=</span><span class="st">&quot;top&quot;</span>,
+            <span class="dt">plot.title =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">14</span>),
+            <span class="dt">panel.grid.major =</span> <span class="kw">element_blank</span>(),
+            <span class="dt">axis.text.x =</span> <span class="kw">element_blank</span>(),
+            <span class="dt">axis.text.y =</span> <span class="kw">element_blank</span>(),
+            <span class="dt">panel.spacing =</span> <span class="kw">unit</span>(<span class="dv">1</span>, <span class="st">&quot;lines&quot;</span>)
+        ) +
+<span class="st">        </span><span class="kw">ggtitle</span>(<span class="st">&quot;Increasing batch strength&quot;</span>) +
+<span class="st">        </span><span class="kw">facet_wrap</span>(~batch_size, <span class="dt">ncol =</span> <span class="dv">2</span>)
+    <span class="kw">saveRDS</span>(p, <span class="kw">paste0</span>(out_path, <span class="st">&quot;sim_scaling_&quot;</span>, dataset, <span class="st">&quot;.rds&quot;</span>))
+    p
+}
+
+<span class="kw">lapply</span>(sce_name, plot_data)</code></pre></div>
+<pre><code>## Warning in bind_rows_(x, .id): Unequal factor levels: coercing to character</code></pre>
+<pre><code>## Warning in bind_rows_(x, .id): binding character and factor vector, coercing
+## into character vector
+
+## Warning in bind_rows_(x, .id): binding character and factor vector, coercing
+## into character vector
+
+## Warning in bind_rows_(x, .id): binding character and factor vector, coercing
+## into character vector
+
+## Warning in bind_rows_(x, .id): binding character and factor vector, coercing
+## into character vector
+
+## Warning in bind_rows_(x, .id): binding character and factor vector, coercing
+## into character vector
+
+## Warning in bind_rows_(x, .id): binding character and factor vector, coercing
+## into character vector
+
+## Warning in bind_rows_(x, .id): binding character and factor vector, coercing
+## into character vector
+
+## Warning in bind_rows_(x, .id): binding character and factor vector, coercing
+## into character vector
+
+## Warning in bind_rows_(x, .id): binding character and factor vector, coercing
+## into character vector
+
+## Warning in bind_rows_(x, .id): binding character and factor vector, coercing
+## into character vector
+
+## Warning in bind_rows_(x, .id): binding character and factor vector, coercing
+## into character vector
+
+## Warning in bind_rows_(x, .id): binding character and factor vector, coercing
+## into character vector</code></pre>
+<pre><code>## [[1]]</code></pre>
+<p><img src="generate_plot_obj_files/figure-html/fig_obj%20scaling-1.svg" width="576" /></p>
+</div>
+<div id="generate-fig-objects-scaling-simulation-1" class="section level3">
+<h3>Generate fig objects scaling simulation</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">plot_un &lt;-<span class="st"> </span>function(dataset){
+    tsne_long &lt;-<span class="st"> </span><span class="kw">lapply</span>(un_sim_list[[dataset]], function(sim_name){
+        un_start &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&#39;_sim.*&#39;</span>,<span class="st">&#39;&#39;</span>, sim_name)
+        un &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&#39;un_&#39;</span>, <span class="st">&#39;&#39;</span>, un_start)
+        sce &lt;-<span class="st"> </span><span class="kw">readRDS</span>(un_sim[[dataset]][[sim_name]])
+        sce &lt;-<span class="st"> </span><span class="kw">runTSNE</span>(sce, <span class="dt">exprs_values =</span> <span class="st">&quot;counts&quot;</span>)
+        tab &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="st">&quot;tsne1&quot;</span> =<span class="st"> </span><span class="kw">reducedDims</span>(sce)[[<span class="st">&quot;TSNE&quot;</span>]][,<span class="dv">1</span>],
+                          <span class="st">&quot;tsne2&quot;</span> =<span class="st"> </span><span class="kw">reducedDims</span>(sce)[[<span class="st">&quot;TSNE&quot;</span>]][,<span class="dv">2</span>],
+                          <span class="st">&quot;batch&quot;</span> =<span class="st"> </span><span class="kw">as.factor</span>(sce$batch_id),
+                          <span class="st">&quot;celltype&quot;</span> =<span class="st"> </span><span class="kw">as.factor</span>(sce$cluster_id),
+                          <span class="st">&quot;unbalanced&quot;</span> =<span class="st"> </span>un)
+    }) %&gt;%<span class="st"> </span><span class="kw">bind_rows</span>()
+        
+    cols_batch &lt;-<span class="st"> </span>cols_data[<span class="dv">1</span>:<span class="kw">length</span>(<span class="kw">levels</span>(<span class="kw">as.factor</span>(tsne_long$batch)))] %&gt;%<span class="st"> </span>
+<span class="st">        </span><span class="kw">set_names</span>(<span class="kw">levels</span>(<span class="kw">as.factor</span>(tsne_long$batch)))
+
+    p &lt;-<span class="st"> </span><span class="kw">ggplot</span>(tsne_long, <span class="kw">aes</span>(<span class="dt">x =</span> tsne1, <span class="dt">y =</span> tsne2, <span class="dt">color =</span> batch)) +
+<span class="st">        </span><span class="kw">geom_point</span>(<span class="dt">size =</span> <span class="fl">0.3</span>) +
+<span class="st">        </span><span class="kw">scale_color_manual</span>(<span class="dt">values =</span> cols_batch) +
+<span class="st">        </span><span class="kw">theme_ipsum</span>(<span class="dt">base_family =</span> <span class="st">&#39;Helvetica&#39;</span>,
+                    <span class="dt">strip_text_face =</span> <span class="st">&quot;bold&quot;</span>) +
+<span class="st">        </span><span class="kw">theme</span>(
+            <span class="dt">legend.position=</span><span class="st">&quot;right&quot;</span>,
+            <span class="dt">plot.title =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">14</span>),
+            <span class="dt">panel.grid.major =</span> <span class="kw">element_blank</span>(),
+            <span class="dt">axis.text.x =</span> <span class="kw">element_blank</span>(),
+            <span class="dt">axis.text.y =</span> <span class="kw">element_blank</span>(),
+            <span class="dt">panel.spacing =</span> <span class="kw">unit</span>(<span class="dv">1</span>, <span class="st">&quot;lines&quot;</span>)
+        ) +
+<span class="st">        </span><span class="kw">ggtitle</span>(<span class="st">&quot;Unbalanced batch effects&quot;</span>) +
+<span class="st">        </span><span class="kw">facet_wrap</span>(~unbalanced)
+    <span class="kw">saveRDS</span>(p, <span class="kw">paste0</span>(out_path, <span class="st">&quot;unbalanced_&quot;</span>, dataset, <span class="st">&quot;.rds&quot;</span>))
+    p
+}
+
+<span class="kw">lapply</span>(un_name, plot_un)</code></pre></div>
+<pre><code>## Warning in bind_rows_(x, .id): Unequal factor levels: coercing to character</code></pre>
+<pre><code>## Warning in bind_rows_(x, .id): binding character and factor vector, coercing
+## into character vector
+
+## Warning in bind_rows_(x, .id): binding character and factor vector, coercing
+## into character vector
+
+## Warning in bind_rows_(x, .id): binding character and factor vector, coercing
+## into character vector
+
+## Warning in bind_rows_(x, .id): binding character and factor vector, coercing
+## into character vector
+
+## Warning in bind_rows_(x, .id): binding character and factor vector, coercing
+## into character vector
+
+## Warning in bind_rows_(x, .id): binding character and factor vector, coercing
+## into character vector
+
+## Warning in bind_rows_(x, .id): binding character and factor vector, coercing
+## into character vector
+
+## Warning in bind_rows_(x, .id): binding character and factor vector, coercing
+## into character vector
+
+## Warning in bind_rows_(x, .id): binding character and factor vector, coercing
+## into character vector
+
+## Warning in bind_rows_(x, .id): binding character and factor vector, coercing
+## into character vector
+
+## Warning in bind_rows_(x, .id): binding character and factor vector, coercing
+## into character vector</code></pre>
+<pre><code>## [[1]]</code></pre>
+<p><img src="generate_plot_obj_files/figure-html/fig_obj%20unbalanced-1.svg" width="1056" /></p>
+</div>
+</div>
+<div id="generate-plot-to-visualize-batch-types" class="section level2">
+<h2>Generate plot to visualize batch types</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">### ------------ Batch types -------------------------###
+## This function will remove the batch effect if it is constant for all cell
+## types, and the cell type composition is the same across batches. It will not
+## work if the cell type compositions differ, since it is basically just
+## equalizing the overall means across the batches
+adj1 &lt;-<span class="st"> </span>function(X, bt, ct) {
+  mm &lt;-<span class="st"> </span><span class="kw">model.matrix</span>(~<span class="st"> </span>bt)
+  fit &lt;-<span class="st"> </span><span class="kw">lmFit</span>(X, mm)
+  beta &lt;-<span class="st"> </span>fit$coefficients
+  beta[, <span class="dv">1</span>] &lt;-<span class="st"> </span><span class="dv">0</span>
+  X -<span class="st"> </span>beta %*%<span class="st"> </span><span class="kw">t</span>(mm)
+}
+
+## This function will remove the batch effect if it is constant for all cell
+## types, even if the cell type composition is not the same across batches. It
+## will not work for cell type-specific batch effects, since we don&#39;t include an
+## interaction effect between batch and cell type
+adj2 &lt;-<span class="st"> </span>function(X, bt, ct) {
+  mm &lt;-<span class="st"> </span><span class="kw">model.matrix</span>(~<span class="st"> </span>ct +<span class="st"> </span>bt)
+  fit &lt;-<span class="st"> </span><span class="kw">lmFit</span>(X, mm)
+  beta &lt;-<span class="st"> </span>fit$coefficients
+  beta[, <span class="kw">grep</span>(<span class="st">&quot;^bt&quot;</span>, <span class="kw">colnames</span>(beta), <span class="dt">invert =</span> <span class="ot">TRUE</span>)] &lt;-<span class="st"> </span><span class="dv">0</span>
+  X -<span class="st"> </span>beta %*%<span class="st"> </span><span class="kw">t</span>(mm)
+}
+
+## This function will remove the batch effect even if it is cell type specific
+adj3 &lt;-<span class="st"> </span>function(X, bt, ct) {
+  mm &lt;-<span class="st"> </span><span class="kw">model.matrix</span>(~<span class="st"> </span>ct /<span class="st"> </span>bt)
+  fit &lt;-<span class="st"> </span><span class="kw">lmFit</span>(X, mm)
+  beta &lt;-<span class="st"> </span>fit$coefficients
+  beta[, <span class="kw">union</span>(<span class="kw">grep</span>(<span class="st">&quot;^ct&quot;</span>, <span class="kw">colnames</span>(beta), <span class="dt">invert =</span> <span class="ot">TRUE</span>),
+               <span class="kw">grep</span>(<span class="st">&quot;:bt&quot;</span>, <span class="kw">colnames</span>(beta), <span class="dt">invert =</span> <span class="ot">TRUE</span>))] &lt;-<span class="st"> </span><span class="dv">0</span>
+  X -<span class="st"> </span>beta %*%<span class="st"> </span><span class="kw">t</span>(mm)
+}
+
+<span class="co"># Run models</span>
+Xadj1 &lt;-<span class="st"> </span><span class="kw">adj1</span>(<span class="kw">logcounts</span>(sce_type), <span class="kw">colData</span>(sce_type)[, <span class="st">&quot;tech&quot;</span>], <span class="kw">colData</span>(sce_type)[, <span class="st">&quot;celltype&quot;</span>])
+Xadj2 &lt;-<span class="st"> </span><span class="kw">adj2</span>(<span class="kw">logcounts</span>(sce_type), <span class="kw">colData</span>(sce_type)[, <span class="st">&quot;tech&quot;</span>], <span class="kw">colData</span>(sce_type)[, <span class="st">&quot;celltype&quot;</span>])
+Xadj3 &lt;-<span class="st"> </span><span class="kw">adj3</span>(<span class="kw">logcounts</span>(sce_type), <span class="kw">colData</span>(sce_type)[, <span class="st">&quot;tech&quot;</span>], <span class="kw">colData</span>(sce_type)[, <span class="st">&quot;celltype&quot;</span>])
+
+<span class="co">#calculate red dimensions</span>
+add_dim_adj &lt;-<span class="st"> </span>function(X, name_X){
+  <span class="co">#pca &lt;- prcomp(t(X), rank. = 10)</span>
+  <span class="co">#reducedDims(sce_type)[[paste0(&quot;PCA_&quot;, name_X)]] &lt;- pca$x</span>
+  <span class="kw">assays</span>(sce_type)$removed_batch &lt;-<span class="st"> </span>X
+  sce_type &lt;-<span class="st"> </span><span class="kw">runTSNE</span>(sce_type, <span class="dt">ntop =</span> <span class="dv">1000</span>, <span class="dt">exprs_values =</span> <span class="st">&quot;removed_batch&quot;</span>,
+                 <span class="dt">name =</span> <span class="kw">paste0</span>(<span class="st">&quot;TSNE_&quot;</span>, name_X))
+  sce_type
+}
+
+sce_type &lt;-<span class="st"> </span><span class="kw">add_dim_adj</span>(Xadj1, <span class="st">&quot;Xadj1&quot;</span>)
+sce_type &lt;-<span class="st"> </span><span class="kw">add_dim_adj</span>(Xadj2, <span class="st">&quot;Xadj2&quot;</span>)
+sce_type &lt;-<span class="st"> </span><span class="kw">add_dim_adj</span>(Xadj3, <span class="st">&quot;Xadj3&quot;</span>)
+
+adjust_list &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;linear&quot;</span>, <span class="st">&quot;additive&quot;</span>, <span class="st">&quot;interacting&quot;</span>, <span class="st">&quot;none&quot;</span>)
+adjust_order &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;none&quot;</span>, <span class="st">&quot;linear&quot;</span>, <span class="st">&quot;additive&quot;</span>, <span class="st">&quot;interacting&quot;</span>)
+
+tsne_type_long &lt;-<span class="st"> </span><span class="kw">lapply</span>(<span class="dv">1</span>:<span class="dv">3</span>, function(adj_num){
+       tab &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="st">&quot;tsne1&quot;</span> =<span class="st"> </span><span class="kw">reducedDims</span>(sce_type)[[<span class="kw">paste0</span>(<span class="st">&quot;TSNE_Xadj&quot;</span>, adj_num)]][,<span class="dv">1</span>],
+                          <span class="st">&quot;tsne2&quot;</span> =<span class="st"> </span><span class="kw">reducedDims</span>(sce_type)[[<span class="kw">paste0</span>(<span class="st">&quot;TSNE_Xadj&quot;</span>, adj_num)]][,<span class="dv">2</span>],
+                          <span class="st">&quot;batch&quot;</span> =<span class="st"> </span><span class="kw">as.factor</span>(sce_type$tech),
+                          <span class="st">&quot;celltype&quot;</span> =<span class="st"> </span><span class="kw">as.factor</span>(sce_type$celltype),
+                          <span class="st">&quot;adjustment&quot;</span> =<span class="st"> </span>adjust_list[adj_num])
+    }) %&gt;%<span class="st"> </span><span class="kw">bind_rows</span>()</code></pre></div>
+<pre><code>## Warning in bind_rows_(x, .id): Unequal factor levels: coercing to character</code></pre>
+<pre><code>## Warning in bind_rows_(x, .id): binding character and factor vector, coercing
+## into character vector
+
+## Warning in bind_rows_(x, .id): binding character and factor vector, coercing
+## into character vector
+
+## Warning in bind_rows_(x, .id): binding character and factor vector, coercing
+## into character vector</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tsne_none &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="st">&quot;tsne1&quot;</span> =<span class="st"> </span><span class="kw">reducedDims</span>(sce_type)[[<span class="st">&quot;TSNE&quot;</span>]][,<span class="dv">1</span>],
+                        <span class="st">&quot;tsne2&quot;</span> =<span class="st"> </span><span class="kw">reducedDims</span>(sce_type)[[<span class="st">&quot;TSNE&quot;</span>]][,<span class="dv">2</span>],
+                        <span class="st">&quot;batch&quot;</span> =<span class="st"> </span><span class="kw">as.factor</span>(sce_type$tech),
+                        <span class="st">&quot;celltype&quot;</span> =<span class="st"> </span><span class="kw">as.factor</span>(sce_type$celltype),
+                        <span class="st">&quot;adjustment&quot;</span> =<span class="st"> &quot;none&quot;</span>)
+
+tsne_type &lt;-<span class="st"> </span><span class="kw">rbind</span>(tsne_type_long, tsne_none)
+
+tsne_type$adjustment &lt;-<span class="st"> </span><span class="kw">factor</span>(tsne_type$adjustment, <span class="dt">levels =</span> adjust_order)
+
+cols_batch &lt;-<span class="st"> </span>cols_data[<span class="dv">1</span>:<span class="kw">length</span>(<span class="kw">levels</span>(<span class="kw">as.factor</span>(tsne_type$batch)))] %&gt;%<span class="st"> </span>
+<span class="st">        </span><span class="kw">set_names</span>(<span class="kw">levels</span>(<span class="kw">as.factor</span>(tsne_type$batch)))
+
+
+p &lt;-<span class="st"> </span><span class="kw">ggplot</span>(tsne_type, <span class="kw">aes</span>(<span class="dt">x =</span> tsne1, <span class="dt">y =</span> tsne2, <span class="dt">color =</span> batch)) +
+<span class="st">        </span><span class="kw">geom_point</span>(<span class="dt">size =</span> <span class="fl">0.3</span>) +
+<span class="st">        </span><span class="kw">scale_color_manual</span>(<span class="dt">values =</span> cols_batch) +
+<span class="st">        </span><span class="kw">theme_ipsum</span>(<span class="dt">base_family =</span> <span class="st">&#39;Helvetica&#39;</span>,
+                    <span class="dt">strip_text_face =</span> <span class="st">&quot;bold&quot;</span>) +
+<span class="st">        </span><span class="kw">theme</span>(
+            <span class="dt">legend.position=</span><span class="st">&quot;right&quot;</span>,
+            <span class="dt">plot.title =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">14</span>),
+            <span class="dt">panel.grid.major =</span> <span class="kw">element_blank</span>(),
+            <span class="dt">axis.text.x =</span> <span class="kw">element_blank</span>(),
+            <span class="dt">axis.text.y =</span> <span class="kw">element_blank</span>(),
+            <span class="dt">panel.spacing =</span> <span class="kw">unit</span>(<span class="dv">1</span>, <span class="st">&quot;lines&quot;</span>)
+        ) +
+<span class="st">        </span><span class="kw">ggtitle</span>(<span class="st">&quot;Effects of batch type adjustments&quot;</span>) +
+<span class="st">        </span><span class="kw">facet_wrap</span>(~adjustment)
+p</code></pre></div>
+<p><img src="generate_plot_obj_files/figure-html/batch%20types-1.svg" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">saveRDS</span>(p, <span class="kw">paste0</span>(out_path, <span class="st">&quot;batch_type_adjustment.rds&quot;</span>))</code></pre></div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("show" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

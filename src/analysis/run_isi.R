@@ -17,6 +17,8 @@ print(meta)
 #libraries
 suppressPackageStartupMessages({
   library(SingleCellExperiment)
+  library(scater)
+  library(scran)
   library(CellMixS)
   library(foreach)
   library(tictoc)
@@ -31,19 +33,18 @@ batch <- meta[["batch"]]
 celltype <- meta[["celltype"]]
 
 
-### ------------ CellMixS-------------------------###
+### ------------ Isi-------------------------###
+if (is.null(assays(sce)[["logcounts"]])) {
+  assay_nam <- "counts"
+}else{
+  assay_nam <- "logcounts"
+}
+
 if( !is.null(reducedDims(sce)[["PCA"]]) && ncol(reducedDims(sce)[["PCA"]]) < 10 ){
   n_dim = ncol(reducedDims(sce)[["PCA"]])
 }else{
   n_dim = 10
 }
-
-if (is.null(assays(sce)[["logcounts"]])) {
-    assay_nam <- "counts"
-}else{
-    assay_nam <- "logcounts"
-}
-
 
 tic.clearlog()
 for( batch_var in batch ){
