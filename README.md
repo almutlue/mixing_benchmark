@@ -10,7 +10,7 @@ This pipeline is build to evaluate metrics to detect batch effects and/or mixing
 + [k-nearest neighbour batch effect test (kbet)](https://github.com/theislab/kBET)
 + [Seurat's mixingMetric (mm)](https://www.cell.com/cell/fulltext/S0092-8674(19)30559-8)
 + [local inverse simpson index (lisi)](https://www.nature.com/articles/s41592-019-0619-0)
-+ [Shannon's entrophy](https://www.biorxiv.org/content/10.1101/2020.05.22.111211v1.full)
++ [Shannon's entropy](https://www.biorxiv.org/content/10.1101/2020.05.22.111211v1.full)
 + [Graph connectivity (graph)](https://www.biorxiv.org/content/10.1101/2020.05.22.111161v2.full)
 + [Average silouette width (asw)](https://www.biorxiv.org/content/10.1101/2020.05.22.111161v2.full)
 + [Principal component regression (pcr)](https://www.biorxiv.org/content/10.1101/2020.05.22.111161v2.full)
